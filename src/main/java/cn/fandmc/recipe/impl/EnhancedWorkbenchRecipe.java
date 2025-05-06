@@ -1,4 +1,4 @@
-package cn.fandmc.recipe.list;
+package cn.fandmc.recipe.impl;
 
 import cn.fandmc.recipe.Recipe;
 import org.bukkit.Material;

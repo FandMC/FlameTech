@@ -1,5 +1,6 @@
-package cn.fandmc.gui;
+package cn.fandmc.gui.item;
 
+import cn.fandmc.gui.GUIComponent;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

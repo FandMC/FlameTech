@@ -1,6 +1,7 @@
 // GUIListener.java
-package cn.fandmc.gui;
+package cn.fandmc.listener;
 
+import cn.fandmc.gui.GUI;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;

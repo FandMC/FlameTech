@@ -1,4 +1,3 @@
-// HelpItem.java 示例组件
 package cn.fandmc.gui.guild;
 
 import cn.fandmc.gui.GUIComponent;

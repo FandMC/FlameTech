@@ -2,6 +2,8 @@ package cn.fandmc.gui;
 
 import cn.fandmc.Main;
 import cn.fandmc.gui.guild.*;
+import cn.fandmc.gui.item.BorderItem;
+import cn.fandmc.listener.GUIListener;
 import cn.fandmc.logger.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -97,7 +99,7 @@ public class GUI {
                 .findFirst();
     }
 
-    static class GUIHolder implements InventoryHolder {
+    public static class GUIHolder implements InventoryHolder {
         @Override
         public @NotNull Inventory getInventory() {
             return null;

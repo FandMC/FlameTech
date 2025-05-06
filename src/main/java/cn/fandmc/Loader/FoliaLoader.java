@@ -6,9 +6,12 @@ import cn.fandmc.command.TabComplete.FlameTechCommand;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
+import cn.fandmc.listener.StructureListener;
 import cn.fandmc.logger.Logger;
 import cn.fandmc.recipe.RecipeReg;
-import cn.fandmc.recipe.list.EnhancedWorkbenchRecipe;
+import cn.fandmc.recipe.impl.EnhancedWorkbenchRecipe;
+import cn.fandmc.structure.StructureManager;
+import cn.fandmc.structure.impl.*;
 import cn.fandmc.util.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -28,6 +31,8 @@ public class FoliaLoader implements Listener {
         init();
     }
     private void init(){
+        StructureManager.registerStructure(new EnhancedWorkbenchStructure());
+        plugin.getServer().getPluginManager().registerEvents(new StructureListener(), plugin);
         Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task -> {
             checkUpdate(null);
         }, 40L);
