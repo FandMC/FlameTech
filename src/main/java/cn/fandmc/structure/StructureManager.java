@@ -34,8 +34,6 @@ public class StructureManager {
     }
 
     public static void handleStructureBreak(Location loc) {
-        if (activeStructures.containsKey(loc)) {
-            activeStructures.remove(loc);
-        }
+        activeStructures.remove(loc);
     }
 }

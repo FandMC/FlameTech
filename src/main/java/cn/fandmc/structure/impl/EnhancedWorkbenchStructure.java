@@ -1,5 +1,6 @@
 package cn.fandmc.structure.impl;
 
+import cn.fandmc.Main;
 import cn.fandmc.structure.Structure;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,8 +26,11 @@ public class EnhancedWorkbenchStructure extends Structure {
     @Override
     public void onStructureCreated(Player player, Location coreBlock) {
         super.onStructureCreated(player, coreBlock);
-        player.sendMessage("§7在发射器中放入物品进行高级合成吧！");
-
+        player.sendMessage(getlang("BlockStructure.EnhancedWorkbench.Dispenser"));
         player.closeInventory();
+    }
+
+    public static String getlang(String config){
+        return Main.getconfig().color(config);
     }
 }

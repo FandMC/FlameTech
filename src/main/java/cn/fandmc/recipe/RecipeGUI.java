@@ -30,14 +30,14 @@ public class RecipeGUI implements Listener {
     public static void open(Player player, String recipeId) {
         Recipe recipe = RecipeReg.getRecipe(recipeId);
         if (recipe == null) {
-            player.sendMessage("§c无效的合成配方");
+            player.sendMessage(getlang("Recipe.Error.Invalid"));
             return;
         }
 
         Inventory inv = Bukkit.createInventory(
-                new RecipeInventoryHolder(recipeId), // 使用自定义Holder
+                new RecipeInventoryHolder(recipeId),
                 27,
-                "§6合成配方 - " + recipe.getDisplayName()
+                getlang("Recipe.Title") + recipe.getDisplayName()
         );
 
         fillBackground(inv);
@@ -84,5 +84,9 @@ public class RecipeGUI implements Listener {
         meta.setDisplayName(" ");
         glass.setItemMeta(meta);
         return glass;
+    }
+
+    public static String getlang(String config){
+        return Main.getconfig().color(config);
     }
 }

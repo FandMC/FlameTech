@@ -71,6 +71,7 @@ public class GUI {
         cleanComponents();
         fillDefaultComponents();
         registerComponent(new BaseMachine());
+        registerComponent(new StrangeToolTool());
         registerComponent(new PlayerHead(4, player));
 
         player.openInventory(createGUI());

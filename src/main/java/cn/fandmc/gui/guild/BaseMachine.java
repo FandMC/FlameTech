@@ -1,5 +1,6 @@
 package cn.fandmc.gui.guild;
 
+import cn.fandmc.Main;
 import cn.fandmc.gui.GUIComponent;
 import cn.fandmc.gui.gui.BaseMachineGUI;
 import org.bukkit.Material;
@@ -16,8 +17,8 @@ public class BaseMachine implements GUIComponent {
     public ItemStack getItem() {
         ItemStack item = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("§a基础的机器");
-        meta.setLore(List.of("§7> 点击打开"));
+        meta.setDisplayName(getlang("Item.BaseMachine.Name"));
+        meta.setLore(List.of(getlang("GUI.Tooltip.ClickToOpen")));
         item.setItemMeta(meta);
         return item;
     }
@@ -29,4 +30,8 @@ public class BaseMachine implements GUIComponent {
 
     @Override
     public int id() { return 1; }
+
+    public static String getlang(String config){
+        return Main.getconfig().color(config);
+    }
 }
