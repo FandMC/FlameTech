@@ -49,34 +49,59 @@ public class BukkitLoader implements Listener {
 
     public void checkUpdate(CommandSender sender) {
         if (!plugin.getConfig().getBoolean("update-checker.enabled", true)) {
-            if (sender != null) {
-                sender.sendMessage("§c更新检查功能已被禁用");
-            }
             return;
         }
-        Runnable checkTask = () -> {
-            try {
-                String currentVersion = plugin.getDescription().getVersion();
-                UpdateChecker checker = new UpdateChecker(
-                        "FandMC/FlameTech",
-                        currentVersion,
-                        plugin.getLogger()
-                );
 
-                String finalMessage = getString(checker, currentVersion);
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    Logger.send(sender, "§8[§cFlameTech§8] §r" + finalMessage);
-                });
-            } catch (Exception e) {
-                String errorMsg = "更新检查失败: " + e.getMessage();
-                plugin.getLogger().warning(errorMsg);
-                if (sender != null) {
-                    sender.sendMessage("§c" + errorMsg);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String currentVersion = plugin.getDescription().getVersion();
+                    UpdateChecker checker = new UpdateChecker(
+                            "FandMC/FlameTech",
+                            currentVersion,
+                            plugin.getLogger()
+                    );
+
+                    String latestVersion = checker.getLatestVersion();
+                    String normalizedCurrent = currentVersion.replaceAll("[^\\d.]", "");
+                    String normalizedLatest = latestVersion.replaceAll("[^\\d.]", "");
+                    String finalMessage;
+
+                    if (normalizedCurrent.equals(normalizedLatest)) {
+                        finalMessage = "§a当前已是最新版本 (" + currentVersion + ")";
+                    } else {
+                        finalMessage = "§c发现新版本 " + latestVersion + "! 当前版本: " + currentVersion + "\n"
+                                + "§b下载地址: https://github.com/FandMC/FlameTech/releases/latest";
+                    }
+
+                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (sender != null) {
+                                Logger.send(sender, finalMessage);
+                            } else {
+                                Logger.log(finalMessage, plugin);
+                            }
+                        }
+                    });
+
+                } catch (Exception e) {
+                    String errorMsg = "更新检查失败: " + e.getMessage();
+                    plugin.getLogger().warning(errorMsg);
+                    e.printStackTrace();
+
+                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (sender != null) {
+                                sender.sendMessage("§c" + errorMsg);
+                            }
+                        }
+                    });
                 }
             }
-        };
-        Bukkit.getGlobalRegionScheduler().run(plugin, task -> checkTask.run());
-
+        });
     }
 
     private static @NotNull String getString(UpdateChecker checker, String currentVersion) {

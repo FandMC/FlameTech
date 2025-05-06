@@ -1,5 +1,7 @@
 package cn.fandmc.command;
 
+import cn.fandmc.Loader.BukkitLoader;
+import cn.fandmc.Loader.FoliaLoader;
 import cn.fandmc.Main;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
@@ -9,6 +11,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import cn.fandmc.config.ConfigManager;
+
 import java.util.Arrays;
 
 public class FlameTechCommands implements CommandExecutor{
@@ -41,15 +44,9 @@ public class FlameTechCommands implements CommandExecutor{
             case "guide" -> handleGuide(sender);
             case "open" -> handleOpen(sender);
             case "reload" -> reload(config, sender);
-            case "update" -> update(sender);
             default -> Logger.send(sender, getConfig("Commands.default"));
         }
         return true;
-    }
-
-    private void update(CommandSender sender){
-        sender.sendMessage("§a正在检查更新...");
-        plugin.checkUpdate(sender);
     }
 
     private void handleOpen(CommandSender sender) {

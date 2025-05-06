@@ -10,7 +10,7 @@ FlameTech
 - Paper分支/Folia分支 1.21.4+
 
 ### 安装步骤
-1. 你可以从 [此处](https://github.com/FandMC/FlameTech/releases/latest) 下载最新的构建结果 **(**1.21.4)
+1. 你可以从 [此处](https://github.com/FandMC/FlameTech/releases/latest) 下载最新的构建结果 (1.21.4)
 2. 将文件放入plugins文件夹
 3. 启动游戏即可体验
 

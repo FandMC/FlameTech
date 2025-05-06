@@ -16,8 +16,7 @@ public class FlameTechCommand implements TabCompleter {
             "help",
             "guide",
             "open",
-            "reload",
-            "update"
+            "reload"
     );
 
     public FlameTechCommand(Main plugin) {

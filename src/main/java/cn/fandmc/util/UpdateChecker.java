@@ -1,6 +1,5 @@
 package cn.fandmc.util;
 
-import org.bukkit.plugin.java.JavaPlugin;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -9,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
 public class UpdateChecker {
     private static final String GITHUB_API = "https://api.github.com/repos/%s/releases/latest";
 
@@ -20,24 +20,50 @@ public class UpdateChecker {
         this.currentVersion = currentVersion;
         this.logger = logger;
     }
+
     public String getLatestVersion() {
         try {
             URL url = new URL(String.format(GITHUB_API, repo));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "FlameTech-Plugin/" + currentVersion);
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
+            int responseCode = conn.getResponseCode();
 
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream()))) {
-                    JSONObject response = (JSONObject) new JSONParser().parse(reader);
-                    return (String) response.get("tag_name");
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder content = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line);
                 }
+                reader.close();
+                JSONObject json = (JSONObject) new JSONParser().parse(content.toString());
+                Object tagNameObj = json.get("tag_name");
+                if (tagNameObj instanceof String) {
+                    String tag = (String) tagNameObj;
+                    return tag;
+                } else {
+                    logger.warning("tag_name Error! " +
+                            (tagNameObj != null ? tagNameObj.getClass().getName() : "null"));
+                    return null;
+                }
+            } else {
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                StringBuilder errorContent = new StringBuilder();
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    errorContent.append(errorLine);
+                }
+                errorReader.close();
+                logger.warning("GitHub API return: " + errorContent);
+                return null;
             }
         } catch (Exception e) {
-            logger.warning("更新检查异常: " + e.getMessage());
+            logger.warning("Error! " + e);
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 }
