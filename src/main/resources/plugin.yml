@@ -1,0 +1,10 @@
+name: FlameTech
+version: '1.1.0'
+main: cn.fandmc.Main
+api-version: '1.21'
+folia-supported: true
+commands:
+  flametech:
+    description: 主命令
+    usage: /flametech <二级命令>
+    aliases: [ft]
