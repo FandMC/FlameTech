@@ -1,6 +1,7 @@
 package cn.fandmc.recipe;
 
-import cn.fandmc.Main;
+import org.bukkit.inventory.ItemStack;
+import cn.fandmc.util.LangUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,16 +13,23 @@ public final class RecipeRegistry {
 
     public static void register(Recipe recipe) {
         if (RECIPES.containsKey(recipe.getId())) {
-            throw new IllegalArgumentException(getlang("Recipe.Error.DuplicateID") + recipe.getId());
+            throw new IllegalArgumentException(LangUtil.get("Recipe.Error.DuplicateID") + recipe.getId());
         }
         RECIPES.put(recipe.getId(), recipe);
     }
 
-    public static Recipe getRecipe(String id) {
-        return RECIPES.get(id);
+    public static Recipe getRecipeByResult(ItemStack item) {
+        if (item == null) return null;
+        for (Recipe recipe : RECIPES.values()) {
+            ItemStack preview = recipe.getResultPreview();
+            if (preview.isSimilar(item)) {
+                return recipe;
+            }
+        }
+        return null;
     }
 
-    public static String getlang(String config){
-        return Main.getconfig().color(config);
+    public static Recipe getRecipe(String id) {
+        return RECIPES.get(id);
     }
 }

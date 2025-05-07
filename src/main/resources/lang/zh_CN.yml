@@ -6,6 +6,8 @@ BlockStructure.EnhancedWorkbench.Dispenser: "§7在发射器中放入物品进�
 
 Item.BaseMachine.Name: "§a基础机器"
 Item.StrangeTool.Name: "§a奇怪的工具"
+Item.FlameTechManual.DisplayName: " 使用指南"
+Item.FlameTechManual.Lore: " 右键打开科技菜单"
 
 Commands.Console: "&4此命令控制台无法执行"
 Commands.HelpMenu: "&6===== 帮助 ====="

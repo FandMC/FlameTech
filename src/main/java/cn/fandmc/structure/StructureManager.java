@@ -6,34 +6,45 @@ import java.util.*;
 
 public class StructureManager {
     private static final Map<String, Structure> structures = new HashMap<>();
-    private static final Map<Location, Structure> activeStructures = new HashMap<>();
+    private static final Map<Location, Structure> activeStructures = Collections.synchronizedMap(new WeakHashMap<>());
 
     public static void registerStructure(Structure structure) {
         structures.put(structure.getId(), structure);
     }
 
-    public static Structure detectStructure(Location loc) {
-        if (activeStructures.containsKey(loc)) {
-            return activeStructures.get(loc);
-        }
+    public static boolean isValidStructureAt(Location loc, String structureId) {
+        Structure structure = detectStructure(loc);
+        return structure != null && structure.getId().equals(structureId);
+    }
 
+    public static Structure detectStructure(Location loc) {
         for (Structure structure : structures.values()) {
             if (structure.checkStructure(loc)) {
-                activeStructures.put(loc, structure);
+                activeStructures.put(loc.clone(), structure); // 更新缓存
                 return structure;
             }
         }
+        activeStructures.remove(loc);
         return null;
     }
+
 
     public static void handleStructureCreation(Player player, Location coreBlock) {
         Structure structure = detectStructure(coreBlock);
         if (structure != null) {
-            structure.onStructureCreated(player, coreBlock);
+            structure.onStructureCreated(player,coreBlock);
+            trackStructureLocation(coreBlock);
         }
     }
 
+    public static void trackStructureLocation(Location loc) {
+        loc = loc.clone();
+        loc.setYaw(0);
+        loc.setPitch(0);
+        activeStructures.put(loc, activeStructures.get(loc));
+    }
+
     public static void handleStructureBreak(Location loc) {
-        activeStructures.remove(loc);
+        activeStructures.entrySet().removeIf(entry -> entry.getKey().equals(loc));
     }
 }

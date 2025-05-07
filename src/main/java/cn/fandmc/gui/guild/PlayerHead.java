@@ -2,6 +2,7 @@ package cn.fandmc.gui.guild;
 
 import cn.fandmc.gui.GUI;
 import cn.fandmc.gui.GUIComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -25,15 +26,13 @@ public class PlayerHead implements GUIComponent {
         return slot;
     }
 
-    @Override
     public ItemStack getItem() {
-        if (player == null) return new ItemStack(Material.PLAYER_HEAD);
-
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta meta = (SkullMeta) head.getItemMeta();
-        meta.setPlayerProfile(player.getPlayerProfile());
-        meta.setDisplayName("§a" + player.getName());
-        head.setItemMeta(meta);
+        if (player != null && Bukkit.isOwnedByCurrentRegion(player)) {
+            SkullMeta meta = (SkullMeta) head.getItemMeta();
+            meta.setPlayerProfile(player.getPlayerProfile());
+            head.setItemMeta(meta);
+        }
         return head;
     }
 

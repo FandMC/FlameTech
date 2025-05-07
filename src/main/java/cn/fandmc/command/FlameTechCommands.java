@@ -4,11 +4,13 @@ import cn.fandmc.Main;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
 import cn.fandmc.logger.Logger;
+import cn.fandmc.util.LangUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import cn.fandmc.config.ConfigManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
@@ -23,15 +25,15 @@ public class FlameTechCommands implements CommandExecutor{
         this.config = config;
     }
 
-    private String[] HELP_MENU = {
-            getConfig("Commands.HelpMenu"),
-            "&e/flametech help &7- " + getConfig("Commands.help.help"),
-            "&e/flametech guide &7- " + getConfig("Commands.help.guide"),
-            "&e/flametech open &7- " + getConfig("Commands.help.open"),
-            "&e/flametech reload &7- " + getConfig("Commands.help.reload")
+    private final String[] HELP_MENU = {
+            LangUtil.get("Commands.HelpMenu"),
+            "&e/flametech help &7- " + LangUtil.get("Commands.help.help"),
+            "&e/flametech guide &7- " + LangUtil.get("Commands.help.guide"),
+            "&e/flametech open &7- " + LangUtil.get("Commands.help.open"),
+            "&e/flametech reload &7- " + LangUtil.get("Commands.help.reload")
     };
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (args.length == 0) {
             sendHelp(sender);
             return true;
@@ -42,14 +44,14 @@ public class FlameTechCommands implements CommandExecutor{
             case "guide" -> handleGuide(sender);
             case "open" -> handleOpen(sender);
             case "reload" -> reload(config, sender);
-            default -> Logger.send(sender, getConfig("Commands.default"));
+            default -> Logger.send(sender, LangUtil.get("Commands.default"));
         }
         return true;
     }
 
     private void handleOpen(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            Logger.send(sender, getConfig("Commands.Console"));
+            Logger.send(sender, LangUtil.get("Commands.Console"));
             return;
         }
         GUI.open(player, "main");
@@ -58,7 +60,7 @@ public class FlameTechCommands implements CommandExecutor{
     private void reload(ConfigManager config,CommandSender sender) {
         config.save();
         config.reload();
-        Logger.send(sender, getConfig("Commands.reload.done"));
+        Logger.send(sender, LangUtil.get("Commands.reload.done"));
     }
 
     private void sendHelp(CommandSender sender) {
@@ -66,18 +68,15 @@ public class FlameTechCommands implements CommandExecutor{
     }
     private void handleGuide(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            Logger.send(sender, getConfig("Commands.Console"));
+            Logger.send(sender, LangUtil.get("Commands.Console"));
             return;
         }
 
         try {
             Book.giveGuideBook(player);
-            Logger.send(sender, getConfig("Commands.giveBook"));
+            Logger.send(sender, LangUtil.get("Commands.giveBook"));
         } catch (Exception e) {
             Logger.error("生成指南书失败: " + e.getMessage(),plugin);
         }
-    }
-    private String getConfig(String config){
-        return Main.getconfig().color(config);
     }
 }

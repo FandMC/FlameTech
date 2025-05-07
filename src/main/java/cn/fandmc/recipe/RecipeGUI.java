@@ -1,6 +1,7 @@
 package cn.fandmc.recipe;
 
 import cn.fandmc.Main;
+import cn.fandmc.util.LangUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -30,14 +31,14 @@ public class RecipeGUI implements Listener {
     public static void open(Player player, String recipeId) {
         Recipe recipe = RecipeRegistry.getRecipe(recipeId);
         if (recipe == null) {
-            player.sendMessage(getlang("Recipe.Error.Invalid"));
+            player.sendMessage(LangUtil.get("Recipe.Error.Invalid"));
             return;
         }
 
         Inventory inv = Bukkit.createInventory(
                 new RecipeInventoryHolder(recipeId),
                 27,
-                getlang("Recipe.Title") + recipe.getDisplayName()
+                LangUtil.get("Recipe.Title") + recipe.getDisplayName()
         );
 
         fillBackground(inv);
@@ -86,7 +87,4 @@ public class RecipeGUI implements Listener {
         return glass;
     }
 
-    public static String getlang(String config){
-        return Main.getconfig().color(config);
-    }
 }

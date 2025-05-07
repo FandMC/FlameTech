@@ -6,6 +6,7 @@ import cn.fandmc.command.TabComplete.FlameTechCommand;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
+import cn.fandmc.recipe.CraftingListener;
 import cn.fandmc.structure.StructureListener;
 import cn.fandmc.logger.Logger;
 import cn.fandmc.recipe.RecipeRegistry;
@@ -35,9 +36,8 @@ public class BukkitLoader implements Listener {
     private void init(){
         StructureManager.registerStructure(new EnhancedWorkbenchStructure());
         plugin.getServer().getPluginManager().registerEvents(new StructureListener(), plugin);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            checkUpdate(null);
-        }, 40L);
+        plugin.getServer().getPluginManager().registerEvents(new CraftingListener(), plugin);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> checkUpdate(null), 40L);
         new Book(plugin);
         GUI.init(plugin);
         RegRecipe();
@@ -57,37 +57,28 @@ public class BukkitLoader implements Listener {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String finalMessage = BukkitLoader.this.getString();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String finalMessage = BukkitLoader.this.getString();
 
-                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (sender != null) {
-                                Logger.send(sender, finalMessage);
-                            } else {
-                                Logger.log(finalMessage, plugin);
-                            }
-                        }
-                    });
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (sender != null) {
+                        Logger.send(sender, finalMessage);
+                    } else {
+                        Logger.log(finalMessage, plugin);
+                    }
+                });
 
-                } catch (Exception e) {
-                    String errorMsg = "更新检查失败: " + e.getMessage();
-                    plugin.getLogger().warning(errorMsg);
-                    e.printStackTrace();
+            } catch (Exception e) {
+                String errorMsg = "Error! " + e.getMessage();
+                plugin.getLogger().warning(errorMsg);
+                e.printStackTrace();
 
-                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (sender != null) {
-                                sender.sendMessage("§c" + errorMsg);
-                            }
-                        }
-                    });
-                }
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (sender != null) {
+                        sender.sendMessage("§c" + errorMsg);
+                    }
+                });
             }
         });
     }

@@ -6,6 +6,7 @@ import cn.fandmc.command.TabComplete.FlameTechCommand;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
+import cn.fandmc.recipe.CraftingListener;
 import cn.fandmc.structure.StructureListener;
 import cn.fandmc.logger.Logger;
 import cn.fandmc.recipe.RecipeRegistry;
@@ -34,9 +35,8 @@ public class FoliaLoader implements Listener {
     private void init(){
         StructureManager.registerStructure(new EnhancedWorkbenchStructure());
         plugin.getServer().getPluginManager().registerEvents(new StructureListener(), plugin);
-        Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task -> {
-            checkUpdate(null);
-        }, 40L);
+        plugin.getServer().getPluginManager().registerEvents(new CraftingListener(), plugin);
+        Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task -> checkUpdate(null), 40L);
         new Book(plugin);
         GUI.init(plugin);
         RegRecipe();

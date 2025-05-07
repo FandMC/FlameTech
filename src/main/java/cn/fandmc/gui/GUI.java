@@ -4,6 +4,7 @@ import cn.fandmc.Main;
 import cn.fandmc.gui.guild.*;
 import cn.fandmc.gui.item.BaseMachine.*;
 import cn.fandmc.gui.item.BorderItem;
+import cn.fandmc.util.LangUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -19,16 +20,14 @@ import java.util.*;
 
 public class GUI {
     private static JavaPlugin plugin;
-    private static final String GUI_NAME = getlang("GUI.Name");
     private static final GUIHolder holder = new GUIHolder();
     static final Map<Player, Stack<String>> guiHistory = new HashMap<>();
-    private static final Map<String, Map<Player, List<GUIComponent>>> dynamicComponents = new HashMap<>();
 
     public static void init(JavaPlugin plugin) {
         GUI.plugin = plugin;
-        GUIRegistry.registerPage("main", getlang("GUI.Name"), 54, false);
-        GUIRegistry.registerPage("base_machine", getlang("Item.BaseMachine.Name"), 54, true);
-        GUIRegistry.registerPage("strange_tool", getlang("Item.StrangeTool.Name"), 54, true);
+        GUIRegistry.registerPage("main", LangUtil.get("GUI.Name"), 54, false);
+        GUIRegistry.registerPage("base_machine", LangUtil.get("Item.BaseMachine.Name"), 54, true);
+        GUIRegistry.registerPage("strange_tool", LangUtil.get("Item.StrangeTool.Name"), 54, true);
 
         registerDefaultComponents();
         registerListeners();
@@ -46,7 +45,6 @@ public class GUI {
         GUIRegistry.registerComponent("main", new PlayerHead(4));
 
         GUIRegistry.registerComponent("base_machine", new EnhancedWorkbench());
-        //GUIRegistry.registerComponent("strange_tool", new StrangeToolTool());
     }
 
     private static void registerListeners() {
@@ -82,9 +80,6 @@ public class GUI {
         public @NotNull Inventory getInventory() {
             return null;
         }
-    }
-    public static String getlang(String config){
-        return Main.getconfig().color(config);
     }
 
     private static Inventory createGUI(GUIRegistry.Page page) {

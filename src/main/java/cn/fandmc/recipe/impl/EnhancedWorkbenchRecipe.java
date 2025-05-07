@@ -1,7 +1,7 @@
 package cn.fandmc.recipe.impl;
 
-import cn.fandmc.Main;
 import cn.fandmc.recipe.Recipe;
+import cn.fandmc.util.LangUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -15,7 +15,10 @@ public class EnhancedWorkbenchRecipe extends Recipe {
     private static final int RESULT_SLOT = 16;
 
     public EnhancedWorkbenchRecipe() {
-        super("enhanced_workbench", getlang("Block.EnhancedWorkbench.Name"));
+        super("enhanced_workbench",
+                LangUtil.get("Block.EnhancedWorkbench.Name"),
+                true,  // 这是一个多方块结构配方
+                null); // 结构配方本身不需要绑定结构
     }
 
     @Override
@@ -34,15 +37,11 @@ public class EnhancedWorkbenchRecipe extends Recipe {
     private ItemStack createEnhancedWorkbenchItem() {
         ItemStack result = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta meta = result.getItemMeta();
-        meta.setDisplayName(getlang("BlockStructure.EnhancedWorkbench.Title"));
+        meta.setDisplayName(LangUtil.get("BlockStructure.EnhancedWorkbench.Title"));
         meta.setLore(Arrays.asList(
-                getlang("BlockStructure.EnhancedWorkbench.Description")
+                LangUtil.get("BlockStructure.EnhancedWorkbench.Description")
         ));
         result.setItemMeta(meta);
         return result;
-    }
-
-    public static String getlang(String config){
-        return Main.getconfig().color(config);
     }
 }
