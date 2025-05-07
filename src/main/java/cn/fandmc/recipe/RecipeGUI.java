@@ -28,7 +28,7 @@ public class RecipeGUI implements Listener {
     }
 
     public static void open(Player player, String recipeId) {
-        Recipe recipe = RecipeReg.getRecipe(recipeId);
+        Recipe recipe = RecipeRegistry.getRecipe(recipeId);
         if (recipe == null) {
             player.sendMessage(getlang("Recipe.Error.Invalid"));
             return;

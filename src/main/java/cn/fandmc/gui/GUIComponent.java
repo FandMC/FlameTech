@@ -1,4 +1,3 @@
-// GUIComponent.java
 package cn.fandmc.gui;
 
 import cn.fandmc.Main;
@@ -13,6 +12,10 @@ public interface GUIComponent {
     ItemStack getItem();
     void onClick(Player player);
     int id();
+
+    default String getPageId() {
+        return GUIRegistry.getComponentPage(this.getClass());
+    }
 
     default ItemStack createItem() {
         ItemStack item = getItem().clone();

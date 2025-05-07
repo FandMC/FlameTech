@@ -1,8 +1,8 @@
 package cn.fandmc.gui.guild;
 
 import cn.fandmc.Main;
+import cn.fandmc.gui.GUI;
 import cn.fandmc.gui.GUIComponent;
-import cn.fandmc.gui.gui.StrangeToolGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +25,7 @@ public class StrangeToolTool implements GUIComponent {
 
     @Override
     public void onClick(Player player) {
-        StrangeToolGUI.open(player);
+        GUI.open(player,"strange_tool");
     }
 
     @Override

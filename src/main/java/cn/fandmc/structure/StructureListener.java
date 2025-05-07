@@ -1,7 +1,5 @@
-package cn.fandmc.listener;
+package cn.fandmc.structure;
 
-import cn.fandmc.structure.Structure;
-import cn.fandmc.structure.StructureManager;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

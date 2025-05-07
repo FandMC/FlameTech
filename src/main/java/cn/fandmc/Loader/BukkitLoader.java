@@ -6,9 +6,9 @@ import cn.fandmc.command.TabComplete.FlameTechCommand;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
-import cn.fandmc.listener.StructureListener;
+import cn.fandmc.structure.StructureListener;
 import cn.fandmc.logger.Logger;
-import cn.fandmc.recipe.RecipeReg;
+import cn.fandmc.recipe.RecipeRegistry;
 import cn.fandmc.recipe.impl.*;
 import cn.fandmc.structure.StructureManager;
 import cn.fandmc.structure.impl.EnhancedWorkbenchStructure;
@@ -44,7 +44,7 @@ public class BukkitLoader implements Listener {
     }
 
     private void RegRecipe() {
-        RecipeReg.register(new EnhancedWorkbenchRecipe());
+        RecipeRegistry.register(new EnhancedWorkbenchRecipe());
     }
 
     private void initCommand() {
@@ -61,24 +61,7 @@ public class BukkitLoader implements Listener {
             @Override
             public void run() {
                 try {
-                    String currentVersion = plugin.getDescription().getVersion();
-                    UpdateChecker checker = new UpdateChecker(
-                            "FandMC/FlameTech",
-                            currentVersion,
-                            plugin.getLogger()
-                    );
-
-                    String latestVersion = checker.getLatestVersion();
-                    String normalizedCurrent = currentVersion.replaceAll("[^\\d.]", "");
-                    String normalizedLatest = latestVersion.replaceAll("[^\\d.]", "");
-                    String finalMessage;
-
-                    if (normalizedCurrent.equals(normalizedLatest)) {
-                        finalMessage = "§a当前已是最新版本 (" + currentVersion + ")";
-                    } else {
-                        finalMessage = "§c发现新版本 " + latestVersion + "! 当前版本: " + currentVersion + "\n"
-                                + "§b下载地址: https://github.com/FandMC/FlameTech/releases/latest";
-                    }
+                    String finalMessage = BukkitLoader.this.getString();
 
                     Bukkit.getScheduler().runTask(plugin, new Runnable() {
                         @Override
@@ -109,17 +92,47 @@ public class BukkitLoader implements Listener {
         });
     }
 
-    private static @NotNull String getString(UpdateChecker checker, String currentVersion) {
+    private @NotNull String getString() {
+        String currentVersion = plugin.getDescription().getVersion();
+        UpdateChecker checker = new UpdateChecker(
+                "FandMC/FlameTech",
+                currentVersion,
+                plugin.getLogger()
+        );
+
         String latestVersion = checker.getLatestVersion();
-        String finalMessage;
         if (latestVersion == null) {
-            finalMessage = "§e无法连接到更新服务器";
-        } else if (currentVersion.equals(latestVersion)) {
-            finalMessage = "§a已运行最新版本 (" + currentVersion + ")";
-        } else {
+            return "§c无法获取最新版本信息";
+        }
+
+        String normalizedCurrent = currentVersion.replaceAll("[^\\d.]", "");
+        String normalizedLatest = latestVersion.replaceAll("[^\\d.]", "");
+
+        int versionComparison = compareVersions(normalizedCurrent, normalizedLatest);
+        String finalMessage;
+
+        if (versionComparison == 0) {
+            finalMessage = "§a当前已是最新版本 (" + currentVersion + ")";
+        } else if (versionComparison < 0) {
             finalMessage = "§c发现新版本 " + latestVersion + "! 当前版本: " + currentVersion + "\n"
-                    + "§b下载地址: https://github.com/你的GitHub用户名/仓库名/releases/latest";
+                    + "§b下载地址: https://github.com/FandMC/FlameTech/releases/latest";
+        } else {
+            finalMessage = "§e当前为测试版本 (" + currentVersion + ")，最新正式版为 " + latestVersion;
         }
         return finalMessage;
+    }
+
+    private int compareVersions(String version1, String version2) {
+        String[] parts1 = version1.split("\\.");
+        String[] parts2 = version2.split("\\.");
+
+        int maxLength = Math.max(parts1.length, parts2.length);
+        for (int i = 0; i < maxLength; i++) {
+            int num1 = (i < parts1.length) ? Integer.parseInt(parts1[i]) : 0;
+            int num2 = (i < parts2.length) ? Integer.parseInt(parts2[i]) : 0;
+            if (num1 < num2) return -1;
+            if (num1 > num2) return 1;
+        }
+        return 0;
     }
 }

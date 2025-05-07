@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 public class EnhancedWorkbenchStructure extends Structure {
 
     public EnhancedWorkbenchStructure() {
-        super("enhanced_workbench", "增强工作台");
+        super("enhanced_workbench", getlang("Block.EnhancedWorkbench.Name"));
     }
 
     @Override

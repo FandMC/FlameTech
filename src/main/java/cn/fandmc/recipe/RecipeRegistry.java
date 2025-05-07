@@ -5,10 +5,10 @@ import cn.fandmc.Main;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RecipeReg {
+public final class RecipeRegistry {
     private static final Map<String, Recipe> RECIPES = new HashMap<>();
 
-    private RecipeReg() {}
+    private RecipeRegistry() {}
 
     public static void register(Recipe recipe) {
         if (RECIPES.containsKey(recipe.getId())) {

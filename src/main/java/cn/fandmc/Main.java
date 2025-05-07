@@ -6,6 +6,7 @@ import cn.fandmc.config.ConfigManager;
 import cn.fandmc.logger.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import cn.fandmc.util.UpdateChecker;
 import org.jetbrains.annotations.NotNull;

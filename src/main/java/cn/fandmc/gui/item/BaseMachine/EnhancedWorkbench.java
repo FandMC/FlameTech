@@ -31,7 +31,7 @@ public class EnhancedWorkbench implements GUIComponent {
     }
 
     @Override
-    public int id() { return 2; }
+    public int id() { return 4; }
 
     public static String getlang(String config){
         return Main.getconfig().color(config);

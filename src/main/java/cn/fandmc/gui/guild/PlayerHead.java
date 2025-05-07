@@ -9,11 +9,15 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 public class PlayerHead implements GUIComponent {
     private final int slot;
-    private final Player player;
+    private Player player;
 
-    public PlayerHead(int slot, Player player) {
+    public PlayerHead(int slot) {
         this.slot = slot;
+    }
+
+    public PlayerHead withPlayer(Player player) {
         this.player = player;
+        return this;
     }
 
     @Override
@@ -23,24 +27,22 @@ public class PlayerHead implements GUIComponent {
 
     @Override
     public ItemStack getItem() {
+        if (player == null) return new ItemStack(Material.PLAYER_HEAD);
+
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) head.getItemMeta();
-
         meta.setPlayerProfile(player.getPlayerProfile());
         meta.setDisplayName("§a" + player.getName());
-
         head.setItemMeta(meta);
         return head;
     }
 
     @Override
     public void onClick(Player player) {
-        GUI.registerComponent(new PlayerHead(slot, player));
-        GUI.open(player);
+        GUI.refresh(player);
     }
-
     @Override
     public int id() {
-        return 2;
+        return 3;
     }
 }

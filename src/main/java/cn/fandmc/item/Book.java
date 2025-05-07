@@ -48,7 +48,7 @@ public class Book implements Listener {
             ItemStack item = event.getItem();
             if (isGuideBook(item)) {
                 event.setCancelled(true);
-                GUI.open(event.getPlayer());
+                GUI.open(event.getPlayer(), "main");
             }
         }
     }

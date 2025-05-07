@@ -1,7 +1,5 @@
 package cn.fandmc.command;
 
-import cn.fandmc.Loader.BukkitLoader;
-import cn.fandmc.Loader.FoliaLoader;
 import cn.fandmc.Main;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.item.Book;
@@ -54,7 +52,7 @@ public class FlameTechCommands implements CommandExecutor{
             Logger.send(sender, getConfig("Commands.Console"));
             return;
         }
-        GUI.open(player);
+        GUI.open(player, "main");
     }
 
     private void reload(ConfigManager config,CommandSender sender) {
