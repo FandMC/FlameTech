@@ -3,6 +3,7 @@ package cn.fandmc.gui;
 import cn.fandmc.Main;
 import cn.fandmc.gui.guild.*;
 import cn.fandmc.gui.item.BaseMachine.*;
+import cn.fandmc.gui.item.StrangeTool.*;
 import cn.fandmc.gui.item.BorderItem;
 import cn.fandmc.util.LangUtil;
 import org.bukkit.Bukkit;
@@ -41,10 +42,11 @@ public class GUI {
         }
 
         GUIRegistry.registerComponent("main", new BaseMachine());
-        GUIRegistry.registerComponent("main", new StrangeToolTool());
+        GUIRegistry.registerComponent("main", new StrangeTool());
         GUIRegistry.registerComponent("main", new PlayerHead(4));
 
         GUIRegistry.registerComponent("base_machine", new EnhancedWorkbench());
+        GUIRegistry.registerComponent("strange_tool", new SmeltingPickaxe());
     }
 
     private static void registerListeners() {
@@ -123,10 +125,16 @@ public class GUI {
 
     public static void refresh(Player player) {
         if (player.getOpenInventory() != null) {
-            String currentPage = guiHistory.get(player).peek();
+            Stack<String> history = guiHistory.get(player);
+            if (history == null || history.isEmpty()) {
+                open(player, "main");
+                return;
+            }
+            String currentPage = history.peek();
             open(player, currentPage);
         }
     }
+
 
     public static Optional<GUIComponent> getComponentByItem(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return Optional.empty();

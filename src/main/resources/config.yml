@@ -1,4 +1,3 @@
 language: zh_CN
 update-checker:
   enabled: true
-  check-interval: 24

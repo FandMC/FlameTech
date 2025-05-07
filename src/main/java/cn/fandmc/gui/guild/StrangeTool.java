@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import java.util.List;
 
-public class StrangeToolTool implements GUIComponent {
+public class StrangeTool implements GUIComponent {
     @Override
     public int getSlot() { return 11; }
 
