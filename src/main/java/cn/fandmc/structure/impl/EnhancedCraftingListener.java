@@ -40,15 +40,22 @@ public class EnhancedCraftingListener implements Listener {
     private void processCrafting(Player player, Dispenser dispenser) {
         Inventory inv = dispenser.getInventory();
 
-        Recipe recipe = RecipeRegistry.getRecipe("smelting_pickaxe");
-        if (recipe == null || !recipe.matches(inv)) {
+        Recipe matchedRecipe = null;
+        for (Recipe recipe : RecipeRegistry.getAllRecipes()) {
+            if (recipe.matches(inv)) {
+                matchedRecipe = recipe;
+                break;
+            }
+        }
+
+        if (matchedRecipe == null) {
             player.sendMessage(LangUtil.get("Crafting.Error.InvalidRecipe"));
             return;
         }
 
-        consumeIngredients(inv, recipe);
+        consumeIngredients(inv, matchedRecipe);
+        ItemStack result = matchedRecipe.getResultPreview().clone();
 
-        ItemStack result = recipe.getResultPreview().clone();
         Map<Integer, ItemStack> remaining = inv.addItem(result);
 
         if (!remaining.isEmpty()) {

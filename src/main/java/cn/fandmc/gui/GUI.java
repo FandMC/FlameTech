@@ -47,6 +47,7 @@ public class GUI {
 
         GUIRegistry.registerComponent("base_machine", new EnhancedWorkbench());
         GUIRegistry.registerComponent("strange_tool", new SmeltingPickaxe());
+        GUIRegistry.registerComponent("strange_tool", new ExplosivePickaxe());
     }
 
     private static void registerListeners() {

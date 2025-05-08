@@ -16,9 +16,11 @@ public class Main extends JavaPlugin {
     private static Main instance;
     private String serverName = Bukkit.getServer().getName();
     private static ConfigManager config;
+    public static boolean Folia;
     private RecipeGUI recipeGUI;
     @Override
     public void onEnable() {
+        isFolia();
         getLogger().info("\n"+
                 "  ______ _                   _______        _     \n" +
                 " |  ____| |                 |__   __|      | |    \n" +
@@ -28,7 +30,7 @@ public class Main extends JavaPlugin {
                 " |_|    |_|\\__,_|_| |_| |_|\\___|_|\\___|\\___|_| |_|\n"
         );
         getLogger().info(
-            String.format("热力科技 - v%s [%s]",
+            String.format("热力科技 - %s [%s]",
             getDescription().getVersion(),
             serverName
         ));
@@ -36,7 +38,6 @@ public class Main extends JavaPlugin {
         recipeGUI = new RecipeGUI(this);
         config = new ConfigManager(this);
         instance = this;
-        validateEnvironment();
         initPlatform();
     }
 
@@ -44,22 +45,21 @@ public class Main extends JavaPlugin {
     public void onDisable() {
     }
 
-    private void validateEnvironment() {
+    private void initPlatform() {
         if (Runtime.version().feature() < 21) {
             throw new UnsupportedOperationException("需要Java21或更高版本");
         }
-    }
 
-    private void initPlatform() {
-        if(isFolia()){
+        if(Folia) {
             getLogger().info("检测到Folia服务端，启用Folia适配模式");
             new FoliaLoader(this, logger, config);
-        }else{
+        } else {
             getLogger().info("检测到标准Bukkit服务端，启用传统模式");
             new BukkitLoader(this, logger, config);
         }
 
     }
+
     public static Main getPlugin() {
         return instance;
     }
@@ -68,12 +68,12 @@ public class Main extends JavaPlugin {
         return config;
     }
 
-    public static boolean isFolia() {
+    public void isFolia() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
-            return true;
+            Folia = true;
         } catch (ClassNotFoundException e) {
-            return false;
+            Folia = false;
         }
     }
 }

@@ -1,6 +1,7 @@
-package cn.fandmc.gui.item.StrangeTool;
+package cn.fandmc.gui.item.StrangeTool.listener.bukkit;
 
 import cn.fandmc.Main;
+import cn.fandmc.gui.item.StrangeTool.SmeltingPickaxe;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,18 +25,10 @@ public class SmeltingListener implements Listener {
         Player player = event.getPlayer();
         ItemStack tool = player.getInventory().getItemInMainHand();
         Block block = event.getBlock();
-
         if (!SmeltingPickaxe.isSmeltingPickaxe(tool)) return;
-
         Material result = SmeltingPickaxe.getSmeltedResult(block.getType());
         event.setDropItems(false);
-
-        if (Main.isFolia()) {
-            if (!Bukkit.isOwnedByCurrentRegion(block.getLocation())) return;
-            Bukkit.getServer().getRegionScheduler().execute(plugin, block.getLocation(), () -> dropItem(block, result));
-        } else {
-            Bukkit.getScheduler().runTask(plugin, () -> dropItem(block, result));
-        }
+        Bukkit.getScheduler().runTask(plugin, () -> dropItem(block, result));
     }
 
     private void dropItem(Block block, Material material) {

@@ -36,7 +36,8 @@ public abstract class Recipe {
 
     public boolean matches(Inventory inventory) {
         for (Map.Entry<Integer, ItemStack> entry : ingredients.entrySet()) {
-            ItemStack current = inventory.getItem(entry.getKey());
+            int slot = entry.getKey();
+            ItemStack current = inventory.getItem(slot);
             ItemStack required = entry.getValue();
 
             if (current == null ||

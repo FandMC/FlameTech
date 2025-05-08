@@ -5,7 +5,8 @@ import cn.fandmc.command.FlameTechCommands;
 import cn.fandmc.command.TabComplete.FlameTechCommand;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.gui.GUI;
-import cn.fandmc.gui.item.StrangeTool.*;
+import cn.fandmc.gui.item.StrangeTool.listener.ExplosiveListener;
+import cn.fandmc.gui.item.StrangeTool.listener.bukkit.SmeltingListener;
 import cn.fandmc.item.Book;
 import cn.fandmc.recipe.CraftingListener;
 import cn.fandmc.structure.StructureListener;
@@ -39,6 +40,7 @@ public class BukkitLoader implements Listener {
         plugin.getServer().getPluginManager().registerEvents(new StructureListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new CraftingListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new SmeltingListener(plugin), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new ExplosiveListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new EnhancedCraftingListener(), plugin);
         Bukkit.getScheduler().runTaskLater(plugin, () -> checkUpdate(null), 40L);
         new Book(plugin);
@@ -49,6 +51,7 @@ public class BukkitLoader implements Listener {
     private void RegRecipe() {
         RecipeRegistry.register(new EnhancedWorkbenchRecipe());
         RecipeRegistry.register(new SmeltingPickaxeRecipe());
+        RecipeRegistry.register(new ExplosivePickaxeRecipe());
     }
 
     private void initCommand() {
