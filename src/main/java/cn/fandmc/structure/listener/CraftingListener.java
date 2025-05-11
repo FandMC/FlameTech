@@ -1,7 +1,9 @@
-package cn.fandmc.recipe;
+package cn.fandmc.structure.listener;
 
-import cn.fandmc.util.LangUtil;
+import cn.fandmc.recipe.Recipe;
+import cn.fandmc.recipe.RecipeRegistry;
 import cn.fandmc.structure.StructureManager;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
@@ -12,8 +14,6 @@ import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.entity.Player;
-import org.bukkit.Location;
 
 public class CraftingListener implements Listener {
 
@@ -30,7 +30,7 @@ public class CraftingListener implements Listener {
 
             if (!StructureManager.isValidStructureAt(craftLocation, recipe.getRequiredStructureId())) {
                 event.setCancelled(true);
-                event.getWhoClicked().sendMessage(LangUtil.get("Recipe.Error.MissingStructure"));
+                event.getWhoClicked().sendMessage("Recipe.Error.MissingStructure");
                 return;
             }
             processEnhancedCrafting(event, craftLocation);

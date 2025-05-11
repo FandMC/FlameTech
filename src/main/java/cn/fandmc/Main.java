@@ -1,15 +1,12 @@
 package cn.fandmc;
 
-import cn.fandmc.recipe.RecipeGUI;
-import cn.fandmc.Loader.*;
+import cn.fandmc.Loader.BukkitLoader;
+import cn.fandmc.Loader.FoliaLoader;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.logger.Logger;
+import cn.fandmc.recipe.RecipeGUI;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import cn.fandmc.util.UpdateChecker;
-import org.jetbrains.annotations.NotNull;
 
 public class Main extends JavaPlugin {
     private Logger logger;

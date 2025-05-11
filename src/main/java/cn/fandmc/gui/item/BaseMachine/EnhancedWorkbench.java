@@ -1,12 +1,13 @@
 package cn.fandmc.gui.item.BaseMachine;
 
+import cn.fandmc.config.Config;
 import cn.fandmc.gui.GUIComponent;
 import cn.fandmc.recipe.RecipeGUI;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
 import java.util.List;
 public class EnhancedWorkbench implements GUIComponent {
     @Override
@@ -16,10 +17,10 @@ public class EnhancedWorkbench implements GUIComponent {
     public ItemStack getItem() {
         ItemStack item = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(LangUtil.get("BlockStructure.EnhancedWorkbench.Title"));
+        meta.setDisplayName(Config.BLOCKSTRUCTURE_ENHANCEDWORKBENCH_TITLE);
         meta.setLore(List.of(
-                LangUtil.get("GUI.Tooltip.ClickToCraft"),
-                LangUtil.get("BlockStructure.EnhancedWorkbench.Description")
+                Config.GUI_TOOLTIP_CLICKTOCRAFT,
+                Config.BLOCKSTRUCTURE_ENHANCEDWORKBENCH_DESCRIPTION
         ));
         item.setItemMeta(meta);
         return item;
@@ -31,5 +32,5 @@ public class EnhancedWorkbench implements GUIComponent {
     }
 
     @Override
-    public int id() { return 4; }
+    public String id() { return "enhanced_workbench"; }
 }

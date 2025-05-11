@@ -1,8 +1,8 @@
 package cn.fandmc.structure.impl;
 
+import cn.fandmc.config.Config;
 import cn.fandmc.structure.Structure;
 import cn.fandmc.structure.StructureManager;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 public class EnhancedWorkbenchStructure extends Structure {
 
     public EnhancedWorkbenchStructure() {
-        super("enhanced_workbench", LangUtil.get("Block.EnhancedWorkbench.Name"));
+        super("enhanced_workbench", Config.BLOCK_ENHANCEDWORKBENCH_NAME);
     }
 
     @Override
@@ -23,8 +23,8 @@ public class EnhancedWorkbenchStructure extends Structure {
 
     @Override
     public void onStructureCreated(Player player, Location coreLocation) {
-        super.onStructureCreated(player, coreLocation);
+        super.onStructureCreated(player,coreLocation);
         StructureManager.trackStructureLocation(coreLocation);
-        player.sendMessage(LangUtil.get("BlockStructure.EnhancedWorkbench.Dispenser"));
+        player.sendMessage(Config.BLOCKSTRUCTURE_ENHANCEDWORKBENCH_DISPENSER);
     }
 }

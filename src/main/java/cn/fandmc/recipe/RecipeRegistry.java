@@ -1,9 +1,9 @@
 package cn.fandmc.recipe;
 
 import cn.fandmc.Main;
+import cn.fandmc.config.Config;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -18,7 +18,7 @@ public final class RecipeRegistry {
 
     public static void register(Recipe recipe) {
         if (RECIPES.containsKey(recipe.getId())) {
-            throw new IllegalArgumentException(LangUtil.get("Recipe.Error.DuplicateID") + recipe.getId());
+            throw new IllegalArgumentException(Config.RECIPE_ERROR_DUPLICATEID + recipe.getId());
         }
         RECIPES.put(recipe.getId(), recipe);
     }

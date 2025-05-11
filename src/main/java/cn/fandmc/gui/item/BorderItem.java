@@ -20,5 +20,5 @@ public class BorderItem implements GUIComponent {
     @Override public int getSlot() { return slot; }
     @Override public ItemStack getItem() { return item.clone(); }
     @Override public void onClick(Player player) {}
-    @Override public int id() { return 0; }
+    @Override public String id() { return "border"; }
 }

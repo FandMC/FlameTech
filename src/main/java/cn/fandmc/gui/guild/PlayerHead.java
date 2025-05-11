@@ -41,7 +41,7 @@ public class PlayerHead implements GUIComponent {
         GUI.refresh(player);
     }
     @Override
-    public int id() {
-        return 3;
+    public String id() {
+        return "player_head";
     }
 }

@@ -1,6 +1,6 @@
 package cn.fandmc.structure;
 
-import cn.fandmc.util.LangUtil;
+import cn.fandmc.config.Config;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -16,7 +16,8 @@ public abstract class Structure {
     public abstract boolean checkStructure(Location coreLocation);
 
     public void onStructureCreated(Player player, Location coreLocation) {
-        player.sendMessage(String.format(LangUtil.get("BlockStructure.Created.Success"), name));
+        String message = String.format(Config.BLOCKSTRUCTURE_CREATED_SUCCESS, name);
+        player.sendMessage(message);
     }
 
     protected final void saveStructureLocation(Location loc) {

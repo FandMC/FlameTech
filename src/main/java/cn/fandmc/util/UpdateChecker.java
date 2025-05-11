@@ -1,13 +1,13 @@
 package cn.fandmc.util;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.logging.Logger;
-
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 public class UpdateChecker {
     private static final String GITHUB_API = "https://api.github.com/repos/%s/releases/latest";

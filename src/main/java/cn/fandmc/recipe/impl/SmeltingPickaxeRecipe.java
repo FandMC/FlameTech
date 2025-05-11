@@ -1,8 +1,8 @@
 package cn.fandmc.recipe.impl;
 
+import cn.fandmc.config.Config;
 import cn.fandmc.gui.item.StrangeTool.SmeltingPickaxe;
 import cn.fandmc.recipe.Recipe;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -11,8 +11,8 @@ public class SmeltingPickaxeRecipe extends Recipe {
 
     public SmeltingPickaxeRecipe() {
         super("smelting_pickaxe",
-                LangUtil.get("Item.SmeltingPickaxe.Name"),
-                true,
+                Config.ITEM_SMELTINGPICKAXE_NAME,
+                false,
                 "enhanced_workbench");
 
         addIngredient(0, Material.IRON_INGOT, 1)

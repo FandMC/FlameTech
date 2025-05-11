@@ -1,7 +1,7 @@
 package cn.fandmc.recipe.impl;
 
+import cn.fandmc.config.Config;
 import cn.fandmc.recipe.Recipe;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +16,7 @@ public class EnhancedWorkbenchRecipe extends Recipe {
 
     public EnhancedWorkbenchRecipe() {
         super("enhanced_workbench",
-                LangUtil.get("Block.EnhancedWorkbench.Name"),
+                Config.BLOCK_ENHANCEDWORKBENCH_NAME,
                 true,  // 这是一个多方块结构配方
                 null); // 结构配方本身不需要绑定结构
     }
@@ -37,9 +37,9 @@ public class EnhancedWorkbenchRecipe extends Recipe {
     private ItemStack createEnhancedWorkbenchItem() {
         ItemStack result = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta meta = result.getItemMeta();
-        meta.setDisplayName(LangUtil.get("BlockStructure.EnhancedWorkbench.Title"));
+        meta.setDisplayName(Config.BLOCKSTRUCTURE_ENHANCEDWORKBENCH_TITLE);
         meta.setLore(Arrays.asList(
-                LangUtil.get("BlockStructure.EnhancedWorkbench.Description")
+                Config.BLOCKSTRUCTURE_ENHANCEDWORKBENCH_DESCRIPTION
         ));
         result.setItemMeta(meta);
         return result;

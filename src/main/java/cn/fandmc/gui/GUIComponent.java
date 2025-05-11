@@ -11,7 +11,7 @@ public interface GUIComponent {
     int getSlot();
     ItemStack getItem();
     void onClick(Player player);
-    int id();
+    String id();
 
     default String getPageId() {
         return GUIRegistry.getComponentPage(this.getClass());
@@ -22,7 +22,7 @@ public interface GUIComponent {
         ItemMeta meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(
                 new NamespacedKey(Main.getPlugin(), "flametech_item"),
-                PersistentDataType.INTEGER,
+                PersistentDataType.STRING,
                 id()
         );
         item.setItemMeta(meta);

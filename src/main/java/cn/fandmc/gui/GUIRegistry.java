@@ -1,6 +1,9 @@
 package cn.fandmc.gui;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GUIRegistry {
     static final Map<String, Page> pages = new HashMap<>();

@@ -2,7 +2,11 @@ package cn.fandmc.structure;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import java.util.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class StructureManager {
     private static final Map<String, Structure> structures = new HashMap<>();

@@ -1,9 +1,9 @@
 package cn.fandmc.gui.item.StrangeTool;
 
 import cn.fandmc.Main;
+import cn.fandmc.config.Config;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.gui.GUIComponent;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -39,10 +39,10 @@ public class SmeltingPickaxe implements GUIComponent {
         ItemStack pickaxe = new ItemStack(Material.DIAMOND_PICKAXE);
         ItemMeta meta = pickaxe.getItemMeta();
 
-        meta.setDisplayName(LangUtil.get("Item.SmeltingPickaxe.Name"));
+        meta.setDisplayName(Config.ITEM_SMELTINGPICKAXE_NAME);
         meta.setLore(List.of(
-                LangUtil.get("Item.SmeltingPickaxe.Lore1"),
-                LangUtil.get("Item.SmeltingPickaxe.Lore2")
+                Config.ITEM_SMELTINGPICKAXE_LORE1,
+                Config.ITEM_SMELTINGPICKAXE_LORE2
         ));
 
         pickaxe.setItemMeta(meta);
@@ -56,15 +56,15 @@ public class SmeltingPickaxe implements GUIComponent {
     }
 
     @Override
-    public int id() {
-        return 5;
+    public String id() {
+        return "smelting_pickaxe";
     }
 
     public static ItemStack createSmeltingPickaxe() {
         ItemStack pickaxe = new ItemStack(Material.DIAMOND_PICKAXE);
         ItemMeta meta = pickaxe.getItemMeta();
         NamespacedKey typeKey = new NamespacedKey(Main.getPlugin(), "flametech_item");
-        meta.getPersistentDataContainer().set(typeKey, PersistentDataType.INTEGER, new SmeltingPickaxe().id());
+        meta.getPersistentDataContainer().set(typeKey, PersistentDataType.STRING, new SmeltingPickaxe().id());
 
         pickaxe.setItemMeta(meta);
         return pickaxe;
@@ -75,7 +75,7 @@ public class SmeltingPickaxe implements GUIComponent {
         if (item == null || item.getType() != Material.DIAMOND_PICKAXE) return false;
 
         NamespacedKey key = new NamespacedKey(Main.getPlugin(), "flametech_item");
-        Integer id = item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
+        String id = item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.STRING);
         return id != null && id == new SmeltingPickaxe().id();
     }
 

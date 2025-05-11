@@ -1,8 +1,8 @@
 package cn.fandmc.item;
 
 import cn.fandmc.Main;
+import cn.fandmc.config.Config;
 import cn.fandmc.gui.GUI;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -30,9 +30,9 @@ public class Book implements Listener {
         ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta meta = book.getItemMeta();
 
-        meta.setDisplayName( "§aFlameTech" + LangUtil.get("Item.FlameTechManual.DisplayName"));
+        meta.setDisplayName( "§aFlameTech" + Config.ITEM_FLAMETECHMANUAL_DISPLAYNAME);
         meta.setLore(Arrays.asList(
-                "§7»" + LangUtil.get("Item.FlameTechManual.Lore")
+                "§7»" + Config.ITEM_FLAMETECHMANUAL_LORE
         ));
 
         meta.getPersistentDataContainer().set(BOOK_KEY, PersistentDataType.BYTE, (byte) 1);

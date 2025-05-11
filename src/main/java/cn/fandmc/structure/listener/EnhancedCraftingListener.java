@@ -1,9 +1,9 @@
-package cn.fandmc.structure.impl;
+package cn.fandmc.structure.listener;
 
+import cn.fandmc.config.Config;
 import cn.fandmc.recipe.Recipe;
 import cn.fandmc.recipe.RecipeRegistry;
 import cn.fandmc.structure.StructureManager;
-import cn.fandmc.util.LangUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,6 +16,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
 import java.util.Map;
 
 public class EnhancedCraftingListener implements Listener {
@@ -49,7 +50,7 @@ public class EnhancedCraftingListener implements Listener {
         }
 
         if (matchedRecipe == null) {
-            player.sendMessage(LangUtil.get("Crafting.Error.InvalidRecipe"));
+            player.sendMessage(Config.CRAFTING_ERROR_INVALIDRECIPE);
             return;
         }
 
@@ -62,9 +63,9 @@ public class EnhancedCraftingListener implements Listener {
             remaining.values().forEach(item ->
                     dispenser.getWorld().dropItemNaturally(dispenser.getLocation(), item)
             );
-            player.sendMessage(LangUtil.get("Crafting.Error.FullInventory"));
+            player.sendMessage(Config.CRAFTING_ERROR_FULLINVENTORY);
         } else {
-            player.sendMessage(LangUtil.get("Crafting.Success"));
+            player.sendMessage(Config.CRAFTING_SUCCESS);
         }
     }
 

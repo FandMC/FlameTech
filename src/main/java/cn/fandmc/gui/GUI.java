@@ -1,11 +1,13 @@
 package cn.fandmc.gui;
 
 import cn.fandmc.Main;
-import cn.fandmc.gui.guild.*;
-import cn.fandmc.gui.item.BaseMachine.*;
-import cn.fandmc.gui.item.StrangeTool.*;
+import cn.fandmc.config.Config;
+import cn.fandmc.gui.guild.BaseMachine;
+import cn.fandmc.gui.guild.PlayerHead;
+import cn.fandmc.gui.guild.StrangeTool;
+import cn.fandmc.gui.item.BaseMachine.EnhancedWorkbench;
 import cn.fandmc.gui.item.BorderItem;
-import cn.fandmc.util.LangUtil;
+import cn.fandmc.gui.item.StrangeTool.SmeltingPickaxe;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -26,9 +28,9 @@ public class GUI {
 
     public static void init(JavaPlugin plugin) {
         GUI.plugin = plugin;
-        GUIRegistry.registerPage("main", LangUtil.get("GUI.Name"), 54, false);
-        GUIRegistry.registerPage("base_machine", LangUtil.get("Item.BaseMachine.Name"), 54, true);
-        GUIRegistry.registerPage("strange_tool", LangUtil.get("Item.StrangeTool.Name"), 54, true);
+        GUIRegistry.registerPage("main", Config.GUI_NAME, 54, false);
+        GUIRegistry.registerPage("base_machine", Config.ITEM_BASEMACHINE_NAME, 54, true);
+        GUIRegistry.registerPage("strange_tool", Config.ITEM_STRANGETOOL_NAME, 54, true);
 
         registerDefaultComponents();
         registerListeners();
@@ -46,8 +48,8 @@ public class GUI {
         GUIRegistry.registerComponent("main", new PlayerHead(4));
 
         GUIRegistry.registerComponent("base_machine", new EnhancedWorkbench());
+
         GUIRegistry.registerComponent("strange_tool", new SmeltingPickaxe());
-        GUIRegistry.registerComponent("strange_tool", new ExplosivePickaxe());
     }
 
     private static void registerListeners() {
@@ -97,6 +99,7 @@ public class GUI {
 
         return inv;
     }
+
     private static void autoArrangeComponents(Inventory inv, List<GUIComponent> components) {
         int slot = 0;
         for (GUIComponent comp : components) {
@@ -108,6 +111,7 @@ public class GUI {
             }
         }
     }
+
     private static void manualArrangeComponents(Inventory inv, List<GUIComponent> components) {
         for (GUIComponent comp : components) {
             int slot = comp.getSlot();
@@ -136,22 +140,20 @@ public class GUI {
         }
     }
 
-
     public static Optional<GUIComponent> getComponentByItem(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return Optional.empty();
         ItemMeta meta = item.getItemMeta();
         NamespacedKey key = new NamespacedKey(Main.getPlugin(), "flametech_item");
-        Integer id = meta.getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
+        String id = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
         if (id == null) return Optional.empty();
 
         for (GUIRegistry.Page page : GUIRegistry.pages.values()) {
             for (GUIComponent comp : page.getComponents()) {
-                if (comp.id() == id) {
+                if (comp.id().equals(id)) {
                     return Optional.of(comp);
                 }
             }
         }
         return Optional.empty();
     }
-
 }
