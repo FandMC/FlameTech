@@ -27,21 +27,24 @@ public final class RecipeRegistry {
         return RECIPES.values();
     }
 
+    public static Recipe getRecipe(String id) {
+        return RECIPES.get(id);
+    }
+
     public static Recipe getRecipeByResult(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return null;
+
         ItemMeta meta = item.getItemMeta();
         NamespacedKey key = new NamespacedKey(Main.getPlugin(), "tool_type");
         String toolType = meta.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+
         if (toolType != null) {
             System.out.println("[DEBUG] 查找配方: " + toolType);
             Recipe recipe = RECIPES.get(toolType);
             System.out.println("[DEBUG] 找到配方: " + (recipe != null ? recipe.getId() : "null"));
             return recipe;
         }
-        return null;
-    }
 
-    public static Recipe getRecipe(String id) {
-        return RECIPES.get(id);
+        return null;
     }
 }

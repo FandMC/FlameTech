@@ -10,19 +10,14 @@ import java.util.Map;
 public abstract class Recipe {
     private final String id;
     private final String displayName;
-    private final boolean isStructureRecipe;
+
     private final String requiredStructureId;
     public final Map<Integer, ItemStack> ingredients = new HashMap<>();
 
-    public Recipe(String id, String displayName, boolean isStructure, String requiredStructureId) {
+    public Recipe(String id, String displayName, String requiredStructureId) {
         this.id = id;
         this.displayName = displayName;
-        this.isStructureRecipe = isStructure;
         this.requiredStructureId = requiredStructureId;
-    }
-
-    public boolean isStructureRecipe() {
-        return isStructureRecipe;
     }
 
     public boolean requiresStructure() {

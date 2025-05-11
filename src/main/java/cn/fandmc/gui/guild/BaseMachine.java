@@ -3,6 +3,10 @@ package cn.fandmc.gui.guild;
 import cn.fandmc.config.Config;
 import cn.fandmc.gui.GUI;
 import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.structure.Structure;
+import cn.fandmc.structure.StructureGUI;
+import cn.fandmc.structure.StructureManager;
+import cn.fandmc.structure.impl.EnhancedWorkbenchStructure;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,7 +30,7 @@ public class BaseMachine implements GUIComponent {
 
     @Override
     public void onClick(Player player) {
-        GUI.open(player, "base_machine");
+        StructureGUI.open(player, new EnhancedWorkbenchStructure());
     }
 
     @Override

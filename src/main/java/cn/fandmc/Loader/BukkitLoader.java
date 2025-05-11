@@ -8,14 +8,16 @@ import cn.fandmc.gui.GUI;
 import cn.fandmc.gui.item.StrangeTool.listener.bukkit.SmeltingListener;
 import cn.fandmc.item.Book;
 import cn.fandmc.logger.Logger;
+import cn.fandmc.structure.StructureValidator;
+import cn.fandmc.structure.StructureValidatorImpl;
 import cn.fandmc.structure.listener.CraftingListener;
 import cn.fandmc.recipe.RecipeRegistry;
-import cn.fandmc.recipe.impl.EnhancedWorkbenchRecipe;
-import cn.fandmc.recipe.impl.SmeltingPickaxeRecipe;
+import cn.fandmc.recipe.impl.*;
 import cn.fandmc.structure.StructureListener;
 import cn.fandmc.structure.StructureManager;
 import cn.fandmc.structure.listener.EnhancedCraftingListener;
 import cn.fandmc.structure.impl.EnhancedWorkbenchStructure;
+import cn.fandmc.structure.listener.StructureCraftingListener;
 import cn.fandmc.util.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -38,9 +40,12 @@ public class BukkitLoader implements Listener {
     }
     private void init(){
         StructureManager.registerStructure(new EnhancedWorkbenchStructure());
+        StructureValidator validator = new StructureValidatorImpl();
+        plugin.getServer().getPluginManager().registerEvents(new StructureCraftingListener(validator), plugin);
         plugin.getServer().getPluginManager().registerEvents(new StructureListener(), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new CraftingListener(), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new CraftingListener(validator), plugin);
         plugin.getServer().getPluginManager().registerEvents(new SmeltingListener(plugin), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new StructureCraftingListener(validator), plugin);
         plugin.getServer().getPluginManager().registerEvents(new EnhancedCraftingListener(), plugin);
         Bukkit.getScheduler().runTaskLater(plugin, () -> checkUpdate(null), 40L);
         new Book(plugin);
@@ -49,7 +54,6 @@ public class BukkitLoader implements Listener {
     }
 
     private void RegRecipe() {
-        RecipeRegistry.register(new EnhancedWorkbenchRecipe());
         RecipeRegistry.register(new SmeltingPickaxeRecipe());
     }
 

@@ -12,7 +12,6 @@ public class SmeltingPickaxeRecipe extends Recipe {
     public SmeltingPickaxeRecipe() {
         super("smelting_pickaxe",
                 Config.ITEM_SMELTINGPICKAXE_NAME,
-                false,
                 "enhanced_workbench");
 
         addIngredient(0, Material.IRON_INGOT, 1)

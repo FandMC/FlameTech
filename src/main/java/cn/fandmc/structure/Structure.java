@@ -4,6 +4,8 @@ import cn.fandmc.config.Config;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public abstract class Structure {
     private final String id;
     private final String name;
@@ -26,5 +28,5 @@ public abstract class Structure {
 
     public String getId() { return id; }
     public String getName() { return name; }
-
+    public abstract List<int[]> getStructureLayout();
 }

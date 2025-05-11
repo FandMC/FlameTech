@@ -8,6 +8,7 @@ import cn.fandmc.gui.guild.StrangeTool;
 import cn.fandmc.gui.item.BaseMachine.EnhancedWorkbench;
 import cn.fandmc.gui.item.BorderItem;
 import cn.fandmc.gui.item.StrangeTool.SmeltingPickaxe;
+import cn.fandmc.structure.impl.EnhancedWorkbenchStructure;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -31,13 +32,12 @@ public class GUI {
         GUIRegistry.registerPage("main", Config.GUI_NAME, 54, false);
         GUIRegistry.registerPage("base_machine", Config.ITEM_BASEMACHINE_NAME, 54, true);
         GUIRegistry.registerPage("strange_tool", Config.ITEM_STRANGETOOL_NAME, 54, true);
-
+        registerStructurePages();
         registerDefaultComponents();
         registerListeners();
     }
 
     private static void registerDefaultComponents() {
-
         int[] reservedSlots = {0,1,2,3,5,6,7,8,45,46,47,48,49,50,51,52,53};
         for (int slot : reservedSlots) {
             GUIRegistry.registerComponent("main", new BorderItem(slot));
@@ -46,10 +46,11 @@ public class GUI {
         GUIRegistry.registerComponent("main", new BaseMachine());
         GUIRegistry.registerComponent("main", new StrangeTool());
         GUIRegistry.registerComponent("main", new PlayerHead(4));
+    }
 
-        GUIRegistry.registerComponent("base_machine", new EnhancedWorkbench());
-
-        GUIRegistry.registerComponent("strange_tool", new SmeltingPickaxe());
+    public static void registerStructurePages() {
+        GUIRegistry.registerPage("structure_recipes", "Enhanced Workbench Recipes", 54, false);
+        //GUIRegistry.registerComponent("structure_recipes", new EnhancedWorkbenchStructure());
     }
 
     private static void registerListeners() {

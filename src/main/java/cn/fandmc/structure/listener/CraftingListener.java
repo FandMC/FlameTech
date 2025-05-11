@@ -3,6 +3,7 @@ package cn.fandmc.structure.listener;
 import cn.fandmc.recipe.Recipe;
 import cn.fandmc.recipe.RecipeRegistry;
 import cn.fandmc.structure.StructureManager;
+import cn.fandmc.structure.StructureValidator;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,24 +17,26 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftingListener implements Listener {
+    private final StructureValidator validator;
+
+    public CraftingListener(StructureValidator validator) {
+        this.validator = validator;
+    }
 
     @EventHandler
     public void onCraftItem(CraftItemEvent event) {
         ItemStack result = event.getRecipe().getResult();
         if (result == null) return;
-
         Recipe recipe = RecipeRegistry.getRecipeByResult(result);
         if (recipe == null) return;
-
-        if (recipe.isStructureRecipe()) {
+        if (recipe.requiresStructure()) {
             Location craftLocation = getCraftingLocation(event.getView());
-
-            if (!StructureManager.isValidStructureAt(craftLocation, recipe.getRequiredStructureId())) {
+            if (!validator.matchesStructure(craftLocation, recipe.getRequiredStructureId())) {
                 event.setCancelled(true);
                 event.getWhoClicked().sendMessage("Recipe.Error.MissingStructure");
                 return;
             }
-            processEnhancedCrafting(event, craftLocation);
+            validator.processStructureCraft(craftLocation, recipe);
         }
     }
 
