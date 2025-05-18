@@ -1,0 +1,10 @@
+command:
+  help:
+    title: "&e&l----&eFlameTech 帮助&l----"
+    line1: "&2/flame help &3- &b显示此帮助信息"
+    line2: "&2/flame guide &3- &b显示插件使用指南"
+    line3: "&2/flame open &3- &b打开主交互界面"
+    line4: "&2/flame reload &3- &b重新加载插件配置"
+  reload:
+    success: "&a配置已成功重载！"
+    fail: "&c重载失败，请检查配置文件格式"

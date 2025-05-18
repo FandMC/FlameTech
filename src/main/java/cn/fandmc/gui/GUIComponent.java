@@ -1,31 +1,10 @@
 package cn.fandmc.gui;
 
-import cn.fandmc.Main;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
 public interface GUIComponent {
-    int getSlot();
     ItemStack getItem();
-    void onClick(Player player);
-    String id();
-
-    default String getPageId() {
-        return GUIRegistry.getComponentPage(this.getClass());
-    }
-
-    default ItemStack createItem() {
-        ItemStack item = getItem().clone();
-        ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(
-                new NamespacedKey(Main.getPlugin(), "flametech_item"),
-                PersistentDataType.STRING,
-                id()
-        );
-        item.setItemMeta(meta);
-        return item;
-    }
+    void onClick(Player player, InventoryClickEvent event);
 }

@@ -23,12 +23,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract Plugin Version
+      - name: Version
         id: extract-version
         run: |
           PLUGIN_VERSION=$(awk -F': ' '/^version:/ {gsub(/[^0-9.]/, "", $2); print $2}' src/main/resources/plugin.yml)
           echo "version=$PLUGIN_VERSION" >> $GITHUB_OUTPUT
-          echo "::notice::提取版本号: $PLUGIN_VERSION"
+          echo "::notice::版本号: $PLUGIN_VERSION"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4

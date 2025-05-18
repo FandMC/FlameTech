@@ -1,85 +1,78 @@
 package cn.fandmc.config;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.util.Objects;
 
 public class ConfigManager {
     private final JavaPlugin plugin;
-    private FileConfiguration config;
-    private FileConfiguration lang;
+    private YamlConfiguration config;
+    private File configFile;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
-        reload();
+        this.configFile = new File(plugin.getDataFolder(), "config.yml");
+
+        saveDefaultConfig();
+
+        this.config = YamlConfiguration.loadConfiguration(configFile);
+
+        saveDefaultLang();
     }
 
-    public void reload() {
-        config = loadFile("config.yml");
-        String langFile = "lang/" + config.getString("language") + ".yml";
-        lang = loadFile(langFile);
-        mergeDefault(lang, langFile);
-        plugin.getLogger().info("当前使用语言:"+ config.getString("language"));
+    public void saveDefaultConfig() {
+        if (!configFile.getParentFile().exists()) {
+            configFile.getParentFile().mkdirs();
+        }
+
+        if (!configFile.exists()) {
+            plugin.saveResource("config.yml", false);
+        }
+
+        File langFolder = new File(plugin.getDataFolder(), "lang");
+        if (!langFolder.exists()) {
+            langFolder.mkdirs();
+        }
     }
 
-    private FileConfiguration loadFile(String path) {
-        File file = new File(plugin.getDataFolder(), path);
+    public void reloadConfig() {
         try {
-            if (!file.exists()) {
-                if (plugin.getResource(path) != null) {
-                    plugin.saveResource(path, false);
-                } else {
-                    file.getParentFile().mkdirs();
-                    file.createNewFile();
-                }
-            }
-            return YamlConfiguration.loadConfiguration(file);
+            config = YamlConfiguration.loadConfiguration(configFile);
+            reloadLang();
         } catch (Exception e) {
-            //plugin.getLogger().warning("加载文件失败: " + path);
-            return new YamlConfiguration();
+            plugin.getLogger().severe("配置文件重载失败: " + e.getMessage());
         }
     }
 
-    private void mergeDefault(FileConfiguration target, String path) {
-        try (InputStream stream = plugin.getResource(path)) {
-            if (stream != null) {
-                YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
-                        new InputStreamReader(stream, StandardCharsets.UTF_8)
-                );
-                for (String key : defaultConfig.getKeys(true)) {
-                    if (!target.contains(key)) {
-                        target.set(key, defaultConfig.get(key));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            //plugin.getLogger().warning("合并默认配置失败: " + e.getMessage());
+    private void saveDefaultLang() {
+        String langName = config.getString("language");
+        File langFile = new File(plugin.getDataFolder(), "lang/" + langName + ".yml");
+
+        if (!langFile.exists()) {
+            plugin.saveResource("lang/" + langName + ".yml", false);
         }
     }
 
+    public String getLang(String key) {
+        String langName = config.getString("language"); // 默认语言
+        File langFile = new File(plugin.getDataFolder(), "lang/" + langName + ".yml");
 
-    public String color(String path) {
-        return lang.getString(path, "").replace('&', '§');
-    }
-
-    public String getString(String path) {
-        return config.getString(path);
-    }
-
-    public int getInt(String path) {
-        return config.getInt(path);
-    }
-
-    public void save() {
-        try {
-            config.save(new File(plugin.getDataFolder(), "config.yml"));
-        } catch (Exception e) {
-            plugin.getLogger().warning("保存配置失败");
+        if (!langFile.exists()) {
+            plugin.saveResource("lang/" + langName + ".yml", false);
         }
+
+        YamlConfiguration lang = YamlConfiguration.loadConfiguration(langFile);
+        String message = lang.getString(key, "&c未找到语言键: " + key);
+
+        return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+
+    private void reloadLang() {
+        String langName = Objects.requireNonNull(config.getString("language")).toLowerCase();
+        plugin.saveResource("lang/" + langName + ".yml", false);
     }
 }

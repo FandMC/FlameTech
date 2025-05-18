@@ -1,77 +1,63 @@
 package cn.fandmc;
 
-import cn.fandmc.Loader.BukkitLoader;
-import cn.fandmc.Loader.FoliaLoader;
 import cn.fandmc.config.ConfigManager;
-import cn.fandmc.logger.Logger;
-import cn.fandmc.recipe.RecipeGUI;
+import cn.fandmc.commands.*;
+import cn.fandmc.gui.GUIManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
+
 public class Main extends JavaPlugin {
-    private Logger logger;
-    private static Main instance;
+
     private String serverName = Bukkit.getServer().getName();
-    private static ConfigManager config;
-    public static boolean Folia;
-    private RecipeGUI recipeGUI;
+    private static Main instance;
+    private ConfigManager configManager;
     @Override
     public void onEnable() {
-        isFolia();
-        getLogger().info("\n"+
-                "  ______ _                   _______        _     \n" +
-                " |  ____| |                 |__   __|      | |    \n" +
-                " | |__  | | __ _ _ __ ___   ___| | ___  ___| |__  \n" +
-                " |  __| | |/ _` | '_ ` _ \\ / _ \\ |/ _ \\/ __| '_ \\ \n" +
-                " | |    | | (_| | | | | | |  __/ |  __/ (__| | | |\n" +
-                " |_|    |_|\\__,_|_| |_| |_|\\___|_|\\___|\\___|_| |_|\n"
+        getLogger().info("""
+                
+                  ______ _                   _______        _    \s
+                 |  ____| |                 |__   __|      | |   \s
+                 | |__  | | __ _ _ __ ___   ___| | ___  ___| |__ \s
+                 |  __| | |/ _` | '_ ` _ \\ / _ \\ |/ _ \\/ __| '_ \\\s
+                 | |    | | (_| | | | | | |  __/ |  __/ (__| | | |
+                 |_|    |_|\\__,_|_| |_| |_|\\___|_|\\___|\\___|_| |_|
+                """
         );
         getLogger().info(
             String.format("热力科技 - %s [%s]",
             getDescription().getVersion(),
             serverName
         ));
-        logger = new Logger(this);
-        recipeGUI = new RecipeGUI(this);
-        config = new ConfigManager(this);
-        instance = this;
-        initPlatform();
+        try {
+            if (!getDataFolder().exists()) {
+                getDataFolder().mkdirs();
+            }
+            instance = this;
+            GUIManager.init(this);
+            this.configManager = new ConfigManager(this);
+            configManager.saveDefaultConfig(); // 会触发语言文件保存
+        } catch (Exception e) {
+            getLogger().severe("配置初始化失败: " + e.getMessage());
+            return;
+        }
+        Objects.requireNonNull(getCommand("FlameTech")).setExecutor(new FlameTechCommand(this));
+        Objects.requireNonNull(getCommand("FlameTech")).setTabCompleter(new FlameTechTabCompleter());
     }
 
     @Override
     public void onDisable() {
     }
 
-    private void initPlatform() {
-        if (Runtime.version().feature() < 21) {
-            throw new UnsupportedOperationException("需要Java21或更高版本");
-        }
-
-        if(Folia) {
-            getLogger().info("检测到Folia服务端，启用Folia适配模式");
-            new FoliaLoader(this, logger, config);
-        } else {
-            getLogger().info("检测到标准Bukkit服务端，启用传统模式");
-            new BukkitLoader(this, logger, config);
-        }
-
-    }
-
-    public static Main getPlugin() {
+    public static Main getInstance() {
         return instance;
     }
-
-    public static ConfigManager getconfig(){
-        return config;
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
-
-    public void isFolia() {
-        try {
-            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
-            Folia = true;
-        } catch (ClassNotFoundException e) {
-            Folia = false;
-        }
+    public void reloadLang() {
+        configManager.reloadConfig();
     }
 }
 
