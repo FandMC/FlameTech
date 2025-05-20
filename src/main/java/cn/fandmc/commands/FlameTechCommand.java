@@ -1,11 +1,13 @@
 package cn.fandmc.commands;
 
 import cn.fandmc.Main;
+import cn.fandmc.gui.BookUtils;
 import cn.fandmc.gui.GUIManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -18,7 +20,6 @@ public class FlameTechCommand implements CommandExecutor {
 
     public FlameTechCommand(Main plugin) {
         this.plugin = plugin;
-
         commands.put("help", this::handleHelp);
         commands.put("guide", this::handleGuide);
         commands.put("open", this::handleOpen);
@@ -50,17 +51,24 @@ public class FlameTechCommand implements CommandExecutor {
     }
 
     private Boolean handleGuide(CommandSender sender, String[] args) {
-        if (sender instanceof Player player) {
-        } else {
-            sender.sendMessage("只能对玩家执行此操作");
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(plugin.getConfigManager().getLang("command.guide.only_player"));
+            return true;
         }
+
+        player.getInventory().addItem(BookUtils.createGuideBook());
+        player.sendMessage(plugin.getConfigManager().getLang("command.guide.success")
+                .replace("%book%", plugin.getConfigManager().getLang("guide_book.display_name")));
         return true;
     }
+
 
     private Boolean handleOpen(CommandSender sender, String[] args) {
         if (sender instanceof Player player) {
             String guiName = args.length > 1 ? args[1] : "main";
             GUIManager.openGUI(player, guiName);
+        } else {
+            sender.sendMessage("只能对玩家执行此操作");
         }
         return true;
     }

@@ -8,3 +8,12 @@ command:
   reload:
     success: "&a配置已成功重载！"
     fail: "&c重载失败，请检查配置文件格式"
+  guide:
+    success: "&a已发放%book%"
+    only_player: "&c只能由玩家执行此操作。"
+
+guide_book:
+  display_name: "&a热力科技指南&7(箱子页面)"
+  lore:
+    - "&3右键点击以打开主界面"
+    - "&c&l[FlameTech Gui]"

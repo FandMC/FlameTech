@@ -8,17 +8,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GUIManager {
-    static final Map<String, GUI> guiCache = new HashMap<>();
+    private static final Map<String, GUI> guiMap = new HashMap<>();
+
+    public static void registerGUI(GUI gui) {
+        if (gui.getName() != null && !guiMap.containsKey(gui.getName().toLowerCase())) {
+            guiMap.put(gui.getName().toLowerCase(), gui);
+            gui.buildInventory();
+        }
+    }
 
     public static void init(Main plugin) {
-        GUIRegistry.init(); // 注册所有 GUI
-
-        // 注册点击监听器
+        plugin.getServer().getPluginManager().registerEvents(new BookClickListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new GUIListener(), plugin);
     }
 
-    public static void openGUI(Player player, String guiName) {
-        GUI gui = GUIRegistry.getGUI(guiName);
+    public static void openGUI(Player player, String name) {
+        GUI gui = guiMap.get(name.toLowerCase());
         if (gui != null) {
             gui.open(player);
         } else {
@@ -26,11 +31,9 @@ public class GUIManager {
         }
     }
 
-    public static void handleItemClick(InventoryClickEvent event) {
-        // 获取当前 GUI 实例并处理点击
-        GUI gui = guiCache.get(event.getWhoClicked().getUniqueId());
-        if (gui != null) {
-            gui.handleItemClick(event);
+    public static void handleItemClicked(InventoryClickEvent event) {
+        if (event.getInventory().getHolder() instanceof GUI gui) {
+            gui.onItemClick(event);
         }
     }
 }

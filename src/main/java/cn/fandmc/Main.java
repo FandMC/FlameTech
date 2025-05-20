@@ -2,7 +2,10 @@ package cn.fandmc;
 
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.commands.*;
+import cn.fandmc.gui.BookClickListener;
+import cn.fandmc.gui.GUIListener;
 import cn.fandmc.gui.GUIManager;
+import cn.fandmc.gui.MainGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -30,20 +33,20 @@ public class Main extends JavaPlugin {
             getDescription().getVersion(),
             serverName
         ));
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+        instance = this;
+        Objects.requireNonNull(getCommand("FlameTech")).setExecutor(new FlameTechCommand(this));
+        Objects.requireNonNull(getCommand("FlameTech")).setTabCompleter(new FlameTechTabCompleter());
         try {
-            if (!getDataFolder().exists()) {
-                getDataFolder().mkdirs();
-            }
-            instance = this;
-            GUIManager.init(this);
             this.configManager = new ConfigManager(this);
-            configManager.saveDefaultConfig(); // 会触发语言文件保存
+            GUIManager.init(this);
+            new MainGUI(this);
         } catch (Exception e) {
             getLogger().severe("配置初始化失败: " + e.getMessage());
             return;
         }
-        Objects.requireNonNull(getCommand("FlameTech")).setExecutor(new FlameTechCommand(this));
-        Objects.requireNonNull(getCommand("FlameTech")).setTabCompleter(new FlameTechTabCompleter());
     }
 
     @Override

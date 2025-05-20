@@ -2,21 +2,37 @@ package cn.fandmc.gui;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class GUIRegistry {
-    private static final Map<String, Supplier<GUI>> registry = new HashMap<>();
+    private static final Map<String, GUIConfig> registry = new HashMap<>();
 
-    public static void register(String key, Supplier<GUI> guiSupplier) {
-        registry.put(key.toLowerCase(), guiSupplier);
+    public static void register(String name, int size, String title) {
+        registry.put(name.toLowerCase(), new GUIConfig(size, title));
     }
 
-    public static GUI getGUI(String key) {
-        Supplier<GUI> supplier = registry.get(key.toLowerCase());
-        return supplier != null ? supplier.get() : null;
+    public static GUIConfig getConfig(String name) {
+        return registry.get(name.toLowerCase());
     }
 
-    public static void init() {
-        register("main", MainGUI::new);
+    public static boolean exists(String name) {
+        return registry.containsKey(name.toLowerCase());
+    }
+
+    public static class GUIConfig {
+        private final int size;
+        private final String title;
+
+        public GUIConfig(int size, String title) {
+            this.size = size;
+            this.title = title;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public String getTitle() {
+            return title;
+        }
     }
 }
