@@ -2,21 +2,21 @@ package cn.fandmc.gui.templates;
 
 import cn.fandmc.Main;
 import cn.fandmc.gui.GUI;
-import cn.fandmc.gui.GUIComponent;
 import cn.fandmc.gui.StaticItem;
+import cn.fandmc.gui.GUIComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PaginatedGUI extends GUI {
     private final int ITEMS_PER_PAGE = 21;
     private int currentPage = 0;
-
     private final List<GUIComponent> allItems = new ArrayList<>();
 
     public PaginatedGUI(Main plugin, String name, String title, int size) {
@@ -25,9 +25,18 @@ public abstract class PaginatedGUI extends GUI {
     }
 
     protected void setupDefaultItems() {
-        for (int slot = 0; slot < size; slot++) {
-            if (isEdgeSlot(slot)) {
-                addItem(slot, new StaticItem(createEdgeItem()));
+        for (int i = 0; i < size; i++) {
+            if (isEdgeSlot(i)) {
+                addItem(i, new StaticItem(createEdgeItem()));
+            }
+        }
+
+        if (size >= 13) {
+            Player player = Main.getInstance().getServer().getOnlinePlayers().iterator().hasNext() ?
+                    Main.getInstance().getServer().getOnlinePlayers().iterator().next() : null;
+
+            if (player != null) {
+                addItem(4, new StaticItem(createPlayerHead(player.getName())));
             }
         }
 
@@ -35,11 +44,11 @@ public abstract class PaginatedGUI extends GUI {
         addItem(40, new StaticItem(createNextPageItem()));
     }
 
-    private boolean isEdgeSlot(int slot) {
-        return (slot < 9) || (slot >= size - 9 && slot < size);
+    protected boolean isEdgeSlot(int slot) {
+        return (slot < 9) || (slot >= size - 9);
     }
 
-    private ItemStack createEdgeItem() {
+    protected ItemStack createEdgeItem() {
         ItemStack edge = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         ItemMeta meta = edge.getItemMeta();
         if (meta != null) {
@@ -49,7 +58,19 @@ public abstract class PaginatedGUI extends GUI {
         return edge;
     }
 
-    private ItemStack createPreviousPageItem() {
+    protected ItemStack createPlayerHead(String playerName) {
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) head.getItemMeta();
+        if (meta != null) {
+            meta.setOwningPlayer(Bukkit.getPlayer(playerName));
+            meta.setDisplayName("§a" + playerName + " 的头颅");
+            head.setItemMeta(meta);
+        }
+        return head;
+    }
+
+    protected ItemStack createPreviousPageItem() {
+        int totalPages = (int) Math.ceil((double) allItems.size() / ITEMS_PER_PAGE);
         ItemStack item = new ItemStack(currentPage == 0 ? Material.GRAY_STAINED_GLASS_PANE : Material.PAPER);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -59,7 +80,7 @@ public abstract class PaginatedGUI extends GUI {
         return item;
     }
 
-    private ItemStack createNextPageItem() {
+    protected ItemStack createNextPageItem() {
         int totalPages = (int) Math.ceil((double) allItems.size() / ITEMS_PER_PAGE);
         ItemStack item = new ItemStack(currentPage >= totalPages - 1 ? Material.GRAY_STAINED_GLASS_PANE : Material.PAPER);
         ItemMeta meta = item.getItemMeta();
@@ -72,25 +93,26 @@ public abstract class PaginatedGUI extends GUI {
 
     public void refreshPage(Player player) {
         this.guiItems.clear();
-
         setupDefaultItems();
 
         int start = currentPage * ITEMS_PER_PAGE;
         int end = Math.min(start + ITEMS_PER_PAGE, allItems.size());
+        int[] fillSlots = {
+                10, 11, 12, 13, 14, 15, 16,
+                19, 20, 21, 22, 23, 24, 25,
+                27, 28, 29, 30, 31, 32, 33
+        };
 
-        int guiSlot = 9;
-        for (int i = start; i < end; i++) {
-            if (guiSlot > 33) break;
-
-            GUIComponent item = allItems.get(i);
-            if (item != null) {
-                addItem(guiSlot, item);
+        for (int i = 0; i < fillSlots.length && start + i < end; i++) {
+            int slot = fillSlots[i];
+            GUIComponent item = allItems.get(start + i);
+            if (slot < size) {
+                addItem(slot, item);
             }
-
-            guiSlot++;
         }
 
         buildInventory();
+
         if (player != null) {
             open(player);
         }
