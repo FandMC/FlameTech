@@ -6,76 +6,72 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class GUI implements org.bukkit.inventory.InventoryHolder {
-    private final String name;
-    private final String title;
+    protected final String name;
+    protected final String title;
     protected final int size;
-    protected final List<GUIComponent> guiItems = new ArrayList<>();
-    private Inventory inventory;
-    private final Main plugin;
+    protected final Main plugin;
+    protected Inventory inventory;
+    protected final Map<Integer, GUIComponent> components = new HashMap<>();
 
     public GUI(Main plugin, String name, int size, String title) {
         this.plugin = plugin;
         this.name = name;
         this.size = size;
         this.title = title;
+        this.inventory = Bukkit.createInventory(this, size, title);
         GUIRegistry.register(name, size, title);
-        buildItems();
     }
 
-    protected abstract void buildItems();
+    public void setComponent(int slot, GUIComponent component) {
+        if (slot >= 0 && slot < size) {
+            components.put(slot, component);
+            inventory.setItem(slot, component.item());
+        }
+    }
 
-    protected void buildInventory() {
-        inventory = Bukkit.createInventory(this, size, title);
-        int slot = 0;
-        for (GUIComponent item : guiItems) {
-            if (slot < size) {
-                inventory.setItem(slot++, item.item());
-            }
+    public void removeComponent(int slot) {
+        components.remove(slot);
+        inventory.clear(slot);
+    }
+
+    public void clearComponents() {
+        components.clear();
+        inventory.clear();
+    }
+
+    public void refresh() {
+        inventory.clear();
+        for (Map.Entry<Integer, GUIComponent> entry : components.entrySet()) {
+            inventory.setItem(entry.getKey(), entry.getValue().item());
         }
     }
 
     public void open(Player player) {
-        if (player == null) {
-            return;
-        }
-
-        if (inventory == null) {
-            buildInventory();
-        }
-
+        if (player == null) return;
+        buildGUI();
+        refresh();
         player.openInventory(inventory);
     }
 
+    protected abstract void buildGUI();
 
     public void onItemClick(InventoryClickEvent event) {
         int slot = event.getRawSlot();
-        if (slot >= 0 && slot < guiItems.size()) {
-            guiItems.get(slot).onClick((Player) event.getWhoClicked(), event);
+        GUIComponent component = components.get(slot);
+        if (component != null) {
+            component.onClick((Player) event.getWhoClicked(), event);
         }
     }
 
-    public void addItem(GUIComponent item) {
-        guiItems.add(item);
-    }
-
-    public void addItem(int index, GUIComponent component) {
-        if (index >= 0 && index < guiItems.size()) {
-            guiItems.add(index, component);
-        } else {
-            guiItems.add(component);
-        }
-    }
-
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public String getTitle() { return title; }
+    public int getSize() { return size; }
+    public Main getPlugin() { return plugin; }
 
     @Override
-    public Inventory getInventory() {
-        return inventory;
-    }
+    public Inventory getInventory() { return inventory; }
 }
