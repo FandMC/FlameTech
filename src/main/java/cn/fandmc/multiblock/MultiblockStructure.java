@@ -10,11 +10,17 @@ public abstract class MultiblockStructure {
     protected final String id;
     protected final String displayName;
     protected final Map<BlockOffset, Material> structure;
+    protected final int unlockLevel;
 
-    public MultiblockStructure(String id, String displayName, Map<BlockOffset, Material> structure) {
+    public MultiblockStructure(String id, String displayName, Map<BlockOffset, Material> structure, int unlockLevel) {
         this.id = id;
         this.displayName = displayName;
         this.structure = structure;
+        this.unlockLevel = unlockLevel;
+    }
+
+    public MultiblockStructure(String id, String displayName, Map<BlockOffset, Material> structure) {
+        this(id, displayName, structure, 0);
     }
 
     public boolean checkStructure(Location centerLocation) {
@@ -39,4 +45,5 @@ public abstract class MultiblockStructure {
     public String getId() { return id; }
     public String getDisplayName() { return displayName; }
     public Map<BlockOffset, Material> getStructure() { return structure; }
+    public int getUnlockLevel() { return unlockLevel; }
 }

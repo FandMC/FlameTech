@@ -23,6 +23,7 @@ multiblock:
     created: "&a✔ &e你成功创建了一个增强型工作台！"
     hint: "&7将物品放入下方的发射器中，再次点击工作台即可合成！"
     error: "&c错误：无法找到发射器！"
+  not_unlocked: "&c你还未解锁 %machine%！"
 
 gui:
   basic_machines:
@@ -40,6 +41,39 @@ gui:
         - "&a点击查看配方"
         - ""
         - "&c[基础机器]"
+
+  tools:
+    title: "&b工具配方"
+    explosive_pickaxe:
+      name: "&c&l爆炸镐"
+      lore:
+        - "&7一把充满破坏力的镐子"
+        - "&7能够炸毁大片区域的方块"
+        - "&c小心使用！"
+        - ""
+        - "&e配方:"
+        - "&7铁锭 TNT 铁锭"
+        - "&7 空  木棍  空"
+        - "&7 空  木棍  空"
+        - ""
+        - "&a点击查看详细配方"
+        - ""
+        - "&c[FlameTech 工具]"
+    smelting_pickaxe:
+      name: "&6&l熔炼镐"
+      lore:
+        - "&7一把能够自动熔炼的镐子"
+        - "&7挖掘矿物时自动熔炼成锭"
+        - "&6节省熔炉燃料！"
+        - ""
+        - "&e配方:"
+        - "&7铁锭 熔炉 铁锭"
+        - "&7 空  木棍  空"
+        - "&7 空  木棍  空"
+        - ""
+        - "&a点击查看详细配方"
+        - ""
+        - "&c[FlameTech 工具]"
 
   enhanced_crafting:
     title: "&6增强型工作台"
@@ -63,7 +97,9 @@ gui:
     no_previous_page: "&7没有上一页"
     page_info: "&e页面信息"
     current_page: "&7当前页: &e%current%&7/&e%total%"
+
   recipe_viewer:
+    title: "&6%machine% 结构展示"
     structure_type: "&7结构类型: &e多方块结构"
     structure_type_lore:
       - "&7查看此结构的所有配方"
@@ -76,7 +112,6 @@ gui:
       no_recipes_lore:
         - "&7请添加一些配方"
       click_view_recipe: "&a点击查看配方详情"
-    title: "&6%machine% 配方列表"
     recipe_type: "&7配方类型: &e%type%"
     click_to_view: "&a点击查看配方详情"
     button:
@@ -85,6 +120,19 @@ gui:
         - "&7查看此机器的所有配方"
         - ""
         - "&a点击打开"
+
+  structure_recipes:
+    title: "&6%machine% 配方列表"
+    no_recipes: "&c该结构暂无配方"
+    no_recipes_lore:
+      - "&7请添加一些配方"
+    click_view_recipe: "&a点击查看配方详情"
+
+  item_recipe:
+    title: "&6配方: %item%"
+    recipe_type: "&7配方类型"
+    recipe_type_lore:
+      - "&7这是一个增强工作台配方"
 
   recipe_detail:
     title: "&6配方: %recipe%"
@@ -104,3 +152,8 @@ recipes:
     machines: "机器配方"
     tools: "工具配方"
     materials: "材料配方"
+
+unlock:
+  success: "&a✔ 成功解锁: &e%item%"
+  insufficient_exp: "&c经验不足！需要 &e%required% &c级经验"
+  already_unlocked: "&e该项目已经解锁"

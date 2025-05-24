@@ -3,6 +3,7 @@ package cn.fandmc.machines.basic;
 import cn.fandmc.Main;
 import cn.fandmc.multiblock.BlockOffset;
 import cn.fandmc.multiblock.MultiblockStructure;
+import cn.fandmc.unlock.UnlockManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -19,7 +20,8 @@ public class EnhancedCraftingTable extends MultiblockStructure {
     public EnhancedCraftingTable() {
         super("enhanced_crafting_table",
                 Main.getInstance().getConfigManager().getLang("multiblock.enhanced_crafting_table.name"),
-                createStructure());
+                createStructure(),
+                10);
     }
 
     private static Map<BlockOffset, Material> createStructure() {
@@ -33,6 +35,13 @@ public class EnhancedCraftingTable extends MultiblockStructure {
 
     @Override
     public void onActivate(Player player, Location location) {
+        String unlockId = "multiblock." + getId();
+        if (!UnlockManager.getInstance().isUnlocked(player, unlockId)) {
+            player.sendMessage(Main.getInstance().getConfigManager().getLang("multiblock.not_unlocked")
+                    .replace("%machine%", getDisplayName()));
+            return;
+        }
+
         Block dispenserBlock = location.clone().add(0, -1, 0).getBlock();
 
         if (dispenserBlock.getType() != Material.DISPENSER) {

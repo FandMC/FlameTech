@@ -1,8 +1,10 @@
-package cn.fandmc.gui.item.machines;
+package cn.fandmc.gui.item.tools;
 
 import cn.fandmc.Main;
 import cn.fandmc.gui.GUIComponent;
-import cn.fandmc.gui.impl.RecipeViewerGUI;
+import cn.fandmc.gui.impl.ItemRecipeGUI;
+import cn.fandmc.recipe.Recipe;
+import cn.fandmc.recipe.RecipeManager;
 import cn.fandmc.unlock.UnlockManager;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -13,9 +15,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnhancedCraftingTableButton implements GUIComponent {
-    private final String multiblockId = "enhanced_crafting_table";
-    private final String unlockId = "multiblock." + multiblockId;
+public class SmeltingPickaxeButton implements GUIComponent {
+    private final String recipeId = "smelting_pickaxe";
+    private final String unlockId = "recipe." + recipeId;
 
     @Override
     public ItemStack item() {
@@ -27,7 +29,7 @@ public class EnhancedCraftingTableButton implements GUIComponent {
         ItemMeta meta = locked.getItemMeta();
         if (meta != null) {
             Main plugin = Main.getInstance();
-            meta.setDisplayName("§c" + plugin.getConfigManager().getLang("gui.basic_machines.enhanced_crafting.name") + " §7(未解锁)");
+            meta.setDisplayName("§c" + plugin.getConfigManager().getLang("gui.tools.smelting_pickaxe.name") + " §7(未解锁)");
 
             List<String> lore = new ArrayList<>();
             lore.add("§7需要经验等级: §e" + UnlockManager.getInstance().getRequiredExp(unlockId));
@@ -40,12 +42,12 @@ public class EnhancedCraftingTableButton implements GUIComponent {
     }
 
     private ItemStack createUnlockedDisplay() {
-        ItemStack item = new ItemStack(Material.CRAFTING_TABLE);
+        ItemStack item = new ItemStack(Material.IRON_PICKAXE);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             Main plugin = Main.getInstance();
-            meta.setDisplayName(plugin.getConfigManager().getLang("gui.basic_machines.enhanced_crafting.name"));
-            meta.setLore(plugin.getConfigManager().getStringList("gui.basic_machines.enhanced_crafting.lore"));
+            meta.setDisplayName(plugin.getConfigManager().getLang("gui.tools.smelting_pickaxe.name"));
+            meta.setLore(plugin.getConfigManager().getStringList("gui.tools.smelting_pickaxe.lore"));
             item.setItemMeta(meta);
         }
         return item;
@@ -58,7 +60,7 @@ public class EnhancedCraftingTableButton implements GUIComponent {
 
             if (result.isSuccess()) {
                 player.sendMessage(Main.getInstance().getConfigManager().getLang("unlock.success")
-                        .replace("%item%", Main.getInstance().getConfigManager().getLang("gui.basic_machines.enhanced_crafting.name")));
+                        .replace("%item%", Main.getInstance().getConfigManager().getLang("gui.tools.smelting_pickaxe.name")));
                 event.getInventory().setItem(event.getSlot(), createUnlockedDisplay());
             } else {
                 switch (result.getMessage()) {
@@ -73,8 +75,11 @@ public class EnhancedCraftingTableButton implements GUIComponent {
             }
         } else {
             event.getInventory().setItem(event.getSlot(), createUnlockedDisplay());
-            RecipeViewerGUI viewerGUI = RecipeViewerGUI.getInstance(Main.getInstance(), multiblockId);
-            viewerGUI.open(player);
+            Recipe recipe = RecipeManager.getInstance().getRecipe(recipeId);
+            if (recipe != null) {
+                ItemRecipeGUI recipeGUI = new ItemRecipeGUI(Main.getInstance(), recipe, "enhanced_crafting_table");
+                recipeGUI.open(player);
+            }
         }
     }
 

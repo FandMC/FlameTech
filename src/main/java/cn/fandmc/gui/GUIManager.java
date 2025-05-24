@@ -8,17 +8,22 @@ import java.util.Map;
 
 public class GUIManager {
     private static final Map<String, GUI> registeredGUIs = new HashMap<>();
+    private static boolean initialized = false;
 
     public static void init(Main plugin) {
-        plugin.getServer().getPluginManager().registerEvents(new GUIListener(), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new BookClickListener(), plugin);
-
+        if (!initialized) {
+            plugin.getServer().getPluginManager().registerEvents(new GUIListener(), plugin);
+            plugin.getServer().getPluginManager().registerEvents(new BookClickListener(), plugin);
+            initialized = true;
+        }
     }
 
     public static void registerGUI(GUI gui) {
         if (gui != null && gui.getName() != null) {
-            registeredGUIs.put(gui.getName().toLowerCase(), gui);
-            gui.getPlugin().getLogger().info("已注册GUI: " + gui.getName());
+            if (!registeredGUIs.containsKey(gui.getName().toLowerCase())) {
+                registeredGUIs.put(gui.getName().toLowerCase(), gui);
+                gui.getPlugin().getLogger().info("已注册GUI: " + gui.getName());
+            }
         }
     }
 

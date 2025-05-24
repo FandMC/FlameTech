@@ -10,10 +10,14 @@ public class ShapedRecipe extends Recipe {
     private final Map<Character, ItemStack> ingredients;
 
     public ShapedRecipe(String id, String displayName, ItemStack result, String multiblockId,
-                        String[] pattern, Map<Character, ItemStack> ingredients) {
-        super(id, displayName, result, multiblockId);
+                        String[] pattern, Map<Character, ItemStack> ingredients, int unlockLevel) {
+        super(id, displayName, result, multiblockId, unlockLevel);
         this.pattern = pattern;
         this.ingredients = ingredients;
+    }
+    public ShapedRecipe(String id, String displayName, ItemStack result, String multiblockId,
+                         String[] pattern, Map<Character, ItemStack> ingredients) {
+        this(id, displayName, result, multiblockId, pattern, ingredients, 0);
     }
 
     @Override

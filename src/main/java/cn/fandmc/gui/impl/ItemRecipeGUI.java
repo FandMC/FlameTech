@@ -38,26 +38,6 @@ public class ItemRecipeGUI extends GUI {
     protected void buildGUI() {
         clearComponents();
 
-        ItemStack border = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta borderMeta = border.getItemMeta();
-        if (borderMeta != null) {
-            borderMeta.setDisplayName(" ");
-            border.setItemMeta(borderMeta);
-        }
-
-        for (int i = 0; i < 27; i++) {
-            boolean isRecipeSlot = false;
-            for (int slot : RECIPE_SLOTS) {
-                if (i == slot) {
-                    isRecipeSlot = true;
-                    break;
-                }
-            }
-            if (!isRecipeSlot && i != TYPE_SLOT && i != ACTION_SLOT && i != BACK_SLOT) {
-                setComponent(i, new StaticItem(border));
-            }
-        }
-
         displayRecipe();
 
         ItemStack typeIndicator = new ItemStack(Material.IRON_INGOT);
@@ -82,24 +62,7 @@ public class ItemRecipeGUI extends GUI {
         }
         setComponent(ACTION_SLOT, new StaticItem(resultItem));
 
-        setComponent(BACK_SLOT, new GUIComponent() {
-            @Override
-            public ItemStack item() {
-                ItemStack item = new ItemStack(Material.ARROW);
-                ItemMeta meta = item.getItemMeta();
-                if (meta != null) {
-                    meta.setDisplayName(plugin.getConfigManager().getLang("gui.common.back"));
-                    item.setItemMeta(meta);
-                }
-                return item;
-            }
-
-            @Override
-            public void onClick(Player player, InventoryClickEvent event) {
-                StructureRecipesGUI recipesGUI = StructureRecipesGUI.getInstance(plugin, fromMultiblock);
-                recipesGUI.open(player);
-            }
-        });
+        setupBackButton(BACK_SLOT);
     }
 
     private void displayRecipe() {
