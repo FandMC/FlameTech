@@ -28,7 +28,6 @@ public class RecipeManager {
     }
 
     public void registerRecipe(Recipe recipe) {
-        // 验证多方块结构是否存在
         if (!MultiblockManager.getInstance().hasStructure(recipe.getMultiblockId())) {
             plugin.getLogger().warning("配方 " + recipe.getId() +
                     " 需要的多方块结构 " + recipe.getMultiblockId() + " 不存在！");
@@ -37,7 +36,6 @@ public class RecipeManager {
 
         recipes.put(recipe.getId(), recipe);
 
-        // 按多方块结构分类
         recipesByMultiblock.computeIfAbsent(recipe.getMultiblockId(), k -> new ArrayList<>())
                 .add(recipe);
 

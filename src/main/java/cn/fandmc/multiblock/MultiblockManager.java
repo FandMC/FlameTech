@@ -54,12 +54,11 @@ public class MultiblockManager implements Listener {
         Player player = event.getPlayer();
         Location location = event.getClickedBlock().getLocation();
 
-        // 检查所有注册的多方块结构
         for (MultiblockStructure structure : structures.values()) {
             if (structure.checkStructure(location)) {
-                event.setCancelled(true); // 取消原有事件
+                event.setCancelled(true);
                 structure.onActivate(player, location);
-                return; // 找到匹配的结构后立即返回
+                return;
             }
         }
     }

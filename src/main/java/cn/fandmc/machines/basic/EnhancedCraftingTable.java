@@ -25,10 +25,7 @@ public class EnhancedCraftingTable extends MultiblockStructure {
     private static Map<BlockOffset, Material> createStructure() {
         Map<BlockOffset, Material> structure = new HashMap<>();
 
-        // 上层 (Y = 0) - 工作台
         structure.put(new BlockOffset(0, 0, 0), Material.CRAFTING_TABLE);
-
-        // 下层 (Y = -1) - 发射器
         structure.put(new BlockOffset(0, -1, 0), Material.DISPENSER);
 
         return structure;
@@ -36,7 +33,6 @@ public class EnhancedCraftingTable extends MultiblockStructure {
 
     @Override
     public void onActivate(Player player, Location location) {
-        // 获取发射器
         Block dispenserBlock = location.clone().add(0, -1, 0).getBlock();
 
         if (dispenserBlock.getType() != Material.DISPENSER) {
@@ -48,7 +44,6 @@ public class EnhancedCraftingTable extends MultiblockStructure {
         Dispenser dispenser = (Dispenser) dispenserBlock.getState();
         Inventory dispenserInv = dispenser.getInventory();
 
-        // 检查发射器是否有物品
         boolean hasItems = false;
         for (ItemStack item : dispenserInv.getContents()) {
             if (item != null && item.getType() != Material.AIR) {
@@ -58,13 +53,11 @@ public class EnhancedCraftingTable extends MultiblockStructure {
         }
 
         if (!hasItems) {
-            // 发射器为空，提示玩家
             player.sendMessage(Main.getInstance().getConfigManager()
                     .getLang("multiblock.enhanced_crafting_table.created"));
             player.sendMessage(Main.getInstance().getConfigManager()
                     .getLang("multiblock.enhanced_crafting_table.hint"));
         } else {
-            // 打开增强型工作台GUI
             EnhancedCraftingGUI gui = new EnhancedCraftingGUI(Main.getInstance(), dispenserInv);
             gui.open(player);
         }
@@ -72,7 +65,6 @@ public class EnhancedCraftingTable extends MultiblockStructure {
 
     @Override
     public boolean canCraft(String recipeId) {
-        // 这里可以添加配方权限检查
         return true;
     }
 }

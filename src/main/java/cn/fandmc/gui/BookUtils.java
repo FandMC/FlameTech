@@ -27,7 +27,7 @@ public class BookUtils {
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
         meta.setLore(lore);
         meta.getPersistentDataContainer().set(
-                new NamespacedKey(Main.getInstance(), "guiitem"),
+                GUIDE_BOOK_KEY,
                 PersistentDataType.STRING,
                 "main"
         );

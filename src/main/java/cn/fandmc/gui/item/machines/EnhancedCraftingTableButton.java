@@ -2,7 +2,7 @@ package cn.fandmc.gui.item.machines;
 
 import cn.fandmc.Main;
 import cn.fandmc.gui.GUIComponent;
-import cn.fandmc.gui.RecipeViewerGUI;
+import cn.fandmc.gui.impl.RecipeViewerGUI;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,8 +37,7 @@ public class EnhancedCraftingTableButton implements GUIComponent {
 
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
-        // 打开配方查看器
-        RecipeViewerGUI viewerGUI = new RecipeViewerGUI(Main.getInstance(), "enhanced_crafting_table");
+        RecipeViewerGUI viewerGUI = RecipeViewerGUI.getInstance(Main.getInstance(), "enhanced_crafting_table");
         viewerGUI.open(player);
     }
 }

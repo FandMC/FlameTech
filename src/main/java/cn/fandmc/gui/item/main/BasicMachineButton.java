@@ -42,7 +42,6 @@ public class BasicMachineButton implements GUIComponent {
 
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
-        // 跳转到基础机器页面
         GUIManager.openGUI(player, "basic_machines");
     }
 }

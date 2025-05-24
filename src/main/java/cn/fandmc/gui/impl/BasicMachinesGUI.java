@@ -1,6 +1,8 @@
-package cn.fandmc.gui;
+package cn.fandmc.gui.impl;
 
 import cn.fandmc.Main;
+import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.gui.GUIManager;
 import cn.fandmc.gui.item.machines.EnhancedCraftingTableButton;
 import cn.fandmc.gui.templates.SimpleGUI;
 import org.bukkit.Material;
@@ -8,8 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Arrays;
 
 public class BasicMachinesGUI extends SimpleGUI {
 
@@ -22,7 +22,6 @@ public class BasicMachinesGUI extends SimpleGUI {
     protected void buildGUI() {
         setBorder(Material.GRAY_STAINED_GLASS_PANE);
 
-        // 返回按钮
         setComponent(45, new GUIComponent() {
             @Override
             public ItemStack item() {
@@ -35,18 +34,11 @@ public class BasicMachinesGUI extends SimpleGUI {
             }
         });
 
-        // 添加基础机器
         addBasicMachines();
     }
 
     private void addBasicMachines() {
-        // 增强型工作台
-        setCenterItem(0, new EnhancedCraftingTableButton());
-
-        // TODO: 添加其他基础机器
-        // setCenterItem(1, new FurnaceButton());
-        // setCenterItem(2, new CrusherButton());
-        // setCenterItem(3, new CompressorButton());
+        setCenterItem(new EnhancedCraftingTableButton());
     }
 
     private ItemStack createBackButton() {

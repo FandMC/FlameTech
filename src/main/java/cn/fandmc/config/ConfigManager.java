@@ -93,13 +93,11 @@ public class ConfigManager {
             langFolder.mkdirs();
         }
 
-        // 如果 lang.yml 不存在，就复制一份
         File langFile = new File(plugin.getDataFolder(), "lang/" + langName + ".yml");
         if (!langFile.exists()) {
             plugin.saveResource("lang/" + langName + ".yml", false);
         }
 
-        // 确保 lang 被加载
         lang = YamlConfiguration.loadConfiguration(langFile);
     }
 }

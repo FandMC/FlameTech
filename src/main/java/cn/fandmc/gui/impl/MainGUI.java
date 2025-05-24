@@ -1,6 +1,7 @@
-package cn.fandmc.gui;
+package cn.fandmc.gui.impl;
 
 import cn.fandmc.Main;
+import cn.fandmc.gui.GUIManager;
 import cn.fandmc.gui.item.main.BasicMachineButton;
 import cn.fandmc.gui.templates.PaginatedGUI;
 

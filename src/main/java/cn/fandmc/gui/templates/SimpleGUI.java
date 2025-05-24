@@ -8,7 +8,12 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public abstract class SimpleGUI extends GUI {
+    private int nextAutoSlot = 0;
+    private final Set<Integer> manuallySetSlots = new HashSet<>();
 
     public SimpleGUI(Main plugin, String name, int size, String title) {
         super(plugin, name, size, title);
@@ -35,13 +40,22 @@ public abstract class SimpleGUI extends GUI {
         }
     }
 
+    protected void setCenterItem(GUIComponent component) {
+        int slot = findNextAvailableCenterSlot();
+        if (slot != -1) {
+            setCenterItem(slot, component);
+        }
+    }
+
     protected void setCenterItem(int relativeSlot, GUIComponent component) {
-        if (size == 27) { // 3行GUI
+        if (size == 27) {
             int[] centerSlots = {10, 11, 12, 13, 14, 15, 16};
             if (relativeSlot >= 0 && relativeSlot < centerSlots.length) {
-                setComponent(centerSlots[relativeSlot], component);
+                int actualSlot = centerSlots[relativeSlot];
+                setComponent(actualSlot, component);
+                manuallySetSlots.add(relativeSlot);
             }
-        } else if (size == 54) { // 6行GUI
+        } else if (size == 54) {
             int[] centerSlots = {
                     10, 11, 12, 13, 14, 15, 16,
                     19, 20, 21, 22, 23, 24, 25,
@@ -49,8 +63,32 @@ public abstract class SimpleGUI extends GUI {
                     37, 38, 39, 40, 41, 42, 43
             };
             if (relativeSlot >= 0 && relativeSlot < centerSlots.length) {
-                setComponent(centerSlots[relativeSlot], component);
+                int actualSlot = centerSlots[relativeSlot];
+                setComponent(actualSlot, component);
+                manuallySetSlots.add(relativeSlot);
             }
         }
+    }
+
+    private int findNextAvailableCenterSlot() {
+        int maxSlots = (size == 27) ? 7 : 28;
+
+        while (nextAutoSlot < maxSlots) {
+            if (!manuallySetSlots.contains(nextAutoSlot)) {
+                int slot = nextAutoSlot;
+                nextAutoSlot++;
+                return slot;
+            }
+            nextAutoSlot++;
+        }
+
+        return -1;
+    }
+
+    @Override
+    public void clearComponents() {
+        super.clearComponents();
+        manuallySetSlots.clear();
+        nextAutoSlot = 0;
     }
 }

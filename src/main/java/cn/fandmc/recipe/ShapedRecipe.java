@@ -18,7 +18,6 @@ public class ShapedRecipe extends Recipe {
 
     @Override
     public boolean matches(Map<Integer, ItemStack> inputs) {
-        // 3x3 工作台匹配逻辑
         for (int startRow = 0; startRow <= 3 - pattern.length; startRow++) {
             for (int startCol = 0; startCol <= 3 - pattern[0].length(); startCol++) {
                 if (matchesAt(inputs, startRow, startCol)) {
@@ -30,7 +29,6 @@ public class ShapedRecipe extends Recipe {
     }
 
     private boolean matchesAt(Map<Integer, ItemStack> inputs, int startRow, int startCol) {
-        // 检查pattern外是否有多余物品
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 int slot = row * 3 + col;

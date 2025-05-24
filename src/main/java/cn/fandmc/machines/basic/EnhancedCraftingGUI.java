@@ -28,7 +28,6 @@ public class EnhancedCraftingGUI extends GUI {
         GUIManager.registerGUI(this);
     }
 
-    // 用于实际打开GUI时使用的构造函数
     public EnhancedCraftingGUI(Main plugin, Inventory dispenserInventory) {
         super(plugin, "enhanced_crafting_instance", 54,
                 plugin.getConfigManager().getLang("gui.enhanced_crafting.title"));
@@ -37,7 +36,6 @@ public class EnhancedCraftingGUI extends GUI {
 
     @Override
     protected void buildGUI() {
-        // 设置边框
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         if (borderMeta != null) {
@@ -45,42 +43,33 @@ public class EnhancedCraftingGUI extends GUI {
             border.setItemMeta(borderMeta);
         }
 
-        // 顶部和底部边框
         for (int i = 0; i < 9; i++) {
             setComponent(i, new StaticItem(border));
             setComponent(45 + i, new StaticItem(border));
         }
 
-        // 左右边框
         for (int i = 1; i < 5; i++) {
             setComponent(i * 9, new StaticItem(border));
             setComponent(i * 9 + 8, new StaticItem(border));
         }
 
-        // 如果有发射器物品，显示在工作台槽位
         if (dispenserInventory != null) {
             displayDispenserItems();
         }
 
-        // 输出槽位
         setComponent(24, new GUIComponent() {
             @Override
             public ItemStack item() {
-                return null; // 输出槽位初始为空
+                return null;
             }
 
             @Override
             public void onClick(Player player, InventoryClickEvent event) {
-                // 处理输出物品的点击
                 ItemStack output = event.getCurrentItem();
                 if (output != null && output.getType() != Material.AIR) {
-                    // 检查是否可以取出
                     if (consumeIngredients()) {
-                        // 给予物品
                         if (player.getInventory().addItem(output).isEmpty()) {
-                            // 清空输出槽
                             event.getClickedInventory().setItem(24, null);
-                            // 刷新GUI
                             refresh();
                             player.sendMessage(plugin.getConfigManager()
                                     .getLang("gui.enhanced_crafting.craft_success"));
@@ -93,10 +82,8 @@ public class EnhancedCraftingGUI extends GUI {
             }
         });
 
-        // 合成提示
         setComponent(23, new StaticItem(createCraftInfoItem()));
 
-        // 返回按钮
         setComponent(49, new GUIComponent() {
             @Override
             public ItemStack item() {
@@ -109,21 +96,18 @@ public class EnhancedCraftingGUI extends GUI {
             }
         });
 
-        // 检查配方
         updateOutput();
     }
 
     private void displayDispenserItems() {
         if (dispenserInventory == null) return;
 
-        // 3x3 显示槽位
         int[] displaySlots = {
                 10, 11, 12,
                 19, 20, 21,
                 28, 29, 30
         };
 
-        // 显示发射器中的物品
         for (int i = 0; i < 9 && i < dispenserInventory.getSize(); i++) {
             ItemStack item = dispenserInventory.getItem(i);
             if (item != null && item.getType() != Material.AIR) {
@@ -170,7 +154,6 @@ public class EnhancedCraftingGUI extends GUI {
 
         if (recipe == null) return false;
 
-        // 消耗材料
         Map<Integer, ItemStack> required = recipe.getIngredients();
 
         for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {

@@ -1,6 +1,9 @@
-package cn.fandmc.gui;
+package cn.fandmc.gui.impl;
 
 import cn.fandmc.Main;
+import cn.fandmc.gui.GUI;
+import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.gui.StaticItem;
 import cn.fandmc.recipe.Recipe;
 import cn.fandmc.recipe.ShapedRecipe;
 import cn.fandmc.recipe.ShapelessRecipe;
@@ -10,7 +13,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class RecipeDetailGUI extends GUI {
@@ -25,7 +27,6 @@ public class RecipeDetailGUI extends GUI {
 
     @Override
     protected void buildGUI() {
-        // 设置边框
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         if (borderMeta != null) {
@@ -38,17 +39,14 @@ public class RecipeDetailGUI extends GUI {
             setComponent(45 + i, new StaticItem(border));
         }
 
-        // 显示配方
         if (recipe instanceof ShapedRecipe) {
             displayShapedRecipe((ShapedRecipe) recipe);
         } else if (recipe instanceof ShapelessRecipe) {
             displayShapelessRecipe((ShapelessRecipe) recipe);
         }
 
-        // 显示结果
         setComponent(24, new StaticItem(recipe.getResult()));
 
-        // 箭头指示
         ItemStack arrow = new ItemStack(Material.ARROW);
         ItemMeta arrowMeta = arrow.getItemMeta();
         if (arrowMeta != null) {
@@ -57,7 +55,6 @@ public class RecipeDetailGUI extends GUI {
         }
         setComponent(23, new StaticItem(arrow));
 
-        // 返回按钮
         setComponent(49, new GUIComponent() {
             @Override
             public ItemStack item() {
@@ -72,7 +69,7 @@ public class RecipeDetailGUI extends GUI {
 
             @Override
             public void onClick(Player player, InventoryClickEvent event) {
-                RecipeViewerGUI viewerGUI = new RecipeViewerGUI(plugin, recipe.getMultiblockId());
+                RecipeViewerGUI viewerGUI = RecipeViewerGUI.getInstance(plugin, recipe.getMultiblockId());
                 viewerGUI.open(player);
             }
         });
@@ -82,7 +79,6 @@ public class RecipeDetailGUI extends GUI {
         String[] pattern = shapedRecipe.getPattern();
         Map<Character, ItemStack> ingredients = shapedRecipe.getIngredientMap();
 
-        // 3x3 工作台槽位
         int[] slots = {
                 10, 11, 12,
                 19, 20, 21,
@@ -101,7 +97,6 @@ public class RecipeDetailGUI extends GUI {
     }
 
     private void displayShapelessRecipe(ShapelessRecipe shapelessRecipe) {
-        // 无序配方显示在前几个槽位
         int[] slots = {
                 10, 11, 12,
                 19, 20, 21,

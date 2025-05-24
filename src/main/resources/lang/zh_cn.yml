@@ -1,4 +1,3 @@
-# FlameTech 中文语言文件
 command:
   help:
     title: "&e&l----&eFlameTech 帮助&l----"
@@ -8,7 +7,6 @@ command:
     line4: "&2/flame reload &3- &b重新加载插件配置"
   reload:
     success: "&a配置已成功重载！"
-    fail: "&c重载失败，请检查配置文件格式"
   guide:
     success: "&a已发放%book%"
     only_player: "&c只能由玩家执行此操作。"
@@ -19,7 +17,6 @@ guide_book:
     - "&3右键点击以打开主界面"
     - "&c&l[FlameTech Gui]"
 
-# 多方块结构
 multiblock:
   enhanced_crafting_table:
     name: "&6增强型工作台"
@@ -27,9 +24,7 @@ multiblock:
     hint: "&7将物品放入下方的发射器中，再次点击工作台即可合成！"
     error: "&c错误：无法找到发射器！"
 
-# GUI 界面
 gui:
-  # 基础机器GUI
   basic_machines:
     title: "&e基础机器"
     enhanced_crafting:
@@ -46,7 +41,6 @@ gui:
         - ""
         - "&c[基础机器]"
 
-  # 增强型工作台GUI
   enhanced_crafting:
     title: "&6增强型工作台"
     back: "&c← 返回"
@@ -61,7 +55,6 @@ gui:
         - "&e点击输出物品即可合成"
         - "&7合成会消耗发射器中的材料"
 
-  # 通用
   common:
     back: "&a← 返回"
     next_page: "&a下一页 →"
@@ -70,8 +63,19 @@ gui:
     no_previous_page: "&7没有上一页"
     page_info: "&e页面信息"
     current_page: "&7当前页: &e%current%&7/&e%total%"
-  # 配方查看器
   recipe_viewer:
+    structure_type: "&7结构类型: &e多方块结构"
+    structure_type_lore:
+      - "&7查看此结构的所有配方"
+    view_recipes: "&e查看配方"
+    view_recipes_lore:
+      - "&7显示该结构的所有配方"
+    structure_recipes:
+      title: "&6%machine% 配方列表"
+      no_recipes: "&c该结构暂无配方"
+      no_recipes_lore:
+        - "&7请添加一些配方"
+      click_view_recipe: "&a点击查看配方详情"
     title: "&6%machine% 配方列表"
     recipe_type: "&7配方类型: &e%type%"
     click_to_view: "&a点击查看配方详情"
@@ -82,61 +86,10 @@ gui:
         - ""
         - "&a点击打开"
 
-  # 配方详情
   recipe_detail:
     title: "&6配方: %recipe%"
     crafting: "&e→ 合成 →"
 
-# 物品
-items:
-  # 材料
-  materials:
-    compressed_diamond:
-      name: "&b压缩钻石"
-      lore:
-        - "&7极度压缩的钻石"
-        - "&7用于高级合成"
-
-    reinforced_iron:
-      name: "&7强化铁锭"
-      lore:
-        - "&7强化过的铁锭"
-        - "&7更加坚固耐用"
-
-    energy_core:
-      name: "&e能量核心"
-      lore:
-        - "&7储存能量的核心"
-        - "&7机器的动力源"
-
-    energy_cell:
-      name: "&c能量电池"
-      lore:
-        - "&7储存大量能量"
-        - "&7可为机器供能"
-        - ""
-        - "&e容量: 10000 RF"
-
-    machine_frame:
-      name: "&8机器框架"
-      lore:
-        - "&7基础的机器框架"
-        - "&7用于制造各种机器"
-
-  # 工具/武器
-  tools:
-    quantum_sword:
-      name: "&d量子剑"
-      lore:
-        - "&7蕴含量子能量的神剑"
-        - "&7能够切割一切物质"
-        - ""
-        - "&6特殊能力："
-        - "&e▸ 锋利 X"
-        - "&e▸ 耐久 V"
-        - "&e▸ 抢夺 III"
-
-# 配方相关
 recipes:
   types:
     shaped: "有序合成"
