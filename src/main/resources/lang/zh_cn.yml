@@ -1,3 +1,4 @@
+# FlameTech 中文语言文件
 command:
   help:
     title: "&e&l----&eFlameTech 帮助&l----"
@@ -17,3 +18,136 @@ guide_book:
   lore:
     - "&3右键点击以打开主界面"
     - "&c&l[FlameTech Gui]"
+
+# 多方块结构
+multiblock:
+  enhanced_crafting_table:
+    name: "&6增强型工作台"
+    created: "&a✔ &e你成功创建了一个增强型工作台！"
+    hint: "&7将物品放入下方的发射器中，再次点击工作台即可合成！"
+    error: "&c错误：无法找到发射器！"
+
+# GUI 界面
+gui:
+  # 基础机器GUI
+  basic_machines:
+    title: "&e基础机器"
+    enhanced_crafting:
+      name: "&6增强型工作台"
+      lore:
+        - "&7一个增强版的工作台"
+        - "&7可以合成特殊物品"
+        - ""
+        - "&e多方块结构："
+        - "&7上层：工作台"
+        - "&7下层：发射器"
+        - ""
+        - "&a点击查看配方"
+        - ""
+        - "&c[基础机器]"
+
+  # 增强型工作台GUI
+  enhanced_crafting:
+    title: "&6增强型工作台"
+    back: "&c← 返回"
+    craft_success: "&a✔ 合成成功！"
+    inventory_full: "&c背包已满，无法合成！"
+    info:
+      name: "&a合成信息"
+      lore:
+        - "&7左侧显示发射器中的物品"
+        - "&7右侧显示合成结果"
+        - ""
+        - "&e点击输出物品即可合成"
+        - "&7合成会消耗发射器中的材料"
+
+  # 通用
+  common:
+    back: "&a← 返回"
+    next_page: "&a下一页 →"
+    previous_page: "&a← 上一页"
+    no_next_page: "&7没有下一页"
+    no_previous_page: "&7没有上一页"
+    page_info: "&e页面信息"
+    current_page: "&7当前页: &e%current%&7/&e%total%"
+  # 配方查看器
+  recipe_viewer:
+    title: "&6%machine% 配方列表"
+    recipe_type: "&7配方类型: &e%type%"
+    click_to_view: "&a点击查看配方详情"
+    button:
+      name: "&e查看配方"
+      lore:
+        - "&7查看此机器的所有配方"
+        - ""
+        - "&a点击打开"
+
+  # 配方详情
+  recipe_detail:
+    title: "&6配方: %recipe%"
+    crafting: "&e→ 合成 →"
+
+# 物品
+items:
+  # 材料
+  materials:
+    compressed_diamond:
+      name: "&b压缩钻石"
+      lore:
+        - "&7极度压缩的钻石"
+        - "&7用于高级合成"
+
+    reinforced_iron:
+      name: "&7强化铁锭"
+      lore:
+        - "&7强化过的铁锭"
+        - "&7更加坚固耐用"
+
+    energy_core:
+      name: "&e能量核心"
+      lore:
+        - "&7储存能量的核心"
+        - "&7机器的动力源"
+
+    energy_cell:
+      name: "&c能量电池"
+      lore:
+        - "&7储存大量能量"
+        - "&7可为机器供能"
+        - ""
+        - "&e容量: 10000 RF"
+
+    machine_frame:
+      name: "&8机器框架"
+      lore:
+        - "&7基础的机器框架"
+        - "&7用于制造各种机器"
+
+  # 工具/武器
+  tools:
+    quantum_sword:
+      name: "&d量子剑"
+      lore:
+        - "&7蕴含量子能量的神剑"
+        - "&7能够切割一切物质"
+        - ""
+        - "&6特殊能力："
+        - "&e▸ 锋利 X"
+        - "&e▸ 耐久 V"
+        - "&e▸ 抢夺 III"
+
+# 配方相关
+recipes:
+  types:
+    shaped: "有序合成"
+    shapeless: "无序合成"
+    smelting: "熔炼"
+    crushing: "粉碎"
+    compressing: "压缩"
+
+  categories:
+    basic: "基础配方"
+    advanced: "高级配方"
+    machines: "机器配方"
+    tools: "工具配方"
+    materials: "材料配方"

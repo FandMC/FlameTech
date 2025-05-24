@@ -1,0 +1,1153 @@
+==================================================
+路径：.\生成此代码的脚本.py
+==================================================
+import os
+
+def combine_files(output_file='combined_files.txt'):
+    current_dir = os.path.abspath('.')
+    output_path = os.path.abspath(output_file)
+    
+    with open(output_file, 'w', encoding='utf-8') as outfile:
+        for root, dirs, files in os.walk('.'):
+            if os.path.abspath(root) == os.path.dirname(output_path):
+                if output_file in files:
+                    files.remove(output_file)
+
+            for file in sorted(files):
+                file_path = os.path.join(root, file)
+                abs_path = os.path.abspath(file_path)
+
+                if abs_path == output_path:
+                    continue
+
+                outfile.write(f'{"="*50}\n')
+                outfile.write(f'路径：{file_path}\n')
+                outfile.write(f'{"="*50}\n')
+                
+                try:
+                    with open(file_path, 'r', encoding='utf-8', errors='replace') as infile:
+                        content = infile.read()
+                        outfile.write(content)
+                        if not content.endswith('\n'):
+                            outfile.write('\n')
+                except Exception as e:
+                    outfile.write(f'!!! 读取失败：{str(e)}\n')
+                outfile.write('\n\n')
+    
+    print(f'GG：{output_file}')
+
+if __name__ == '__main__':
+    combine_files()
+
+
+==================================================
+路径：.\java\cn\fandmc\Main.java
+==================================================
+package cn.fandmc;
+
+import cn.fandmc.config.ConfigManager;
+import cn.fandmc.commands.*;
+import cn.fandmc.gui.BookClickListener;
+import cn.fandmc.gui.GUIListener;
+import cn.fandmc.gui.GUIManager;
+import cn.fandmc.gui.MainGUI;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Objects;
+
+public class Main extends JavaPlugin {
+
+    private String serverName = Bukkit.getServer().getName();
+    private static Main instance;
+    private ConfigManager configManager;
+    @Override
+    public void onEnable() {
+        getLogger().info("""
+                
+                  ______ _                   _______        _    \s
+                 |  ____| |                 |__   __|      | |   \s
+                 | |__  | | __ _ _ __ ___   ___| | ___  ___| |__ \s
+                 |  __| | |/ _` | '_ ` _ \\ / _ \\ |/ _ \\/ __| '_ \\\s
+                 | |    | | (_| | | | | | |  __/ |  __/ (__| | | |
+                 |_|    |_|\\__,_|_| |_| |_|\\___|_|\\___|\\___|_| |_|
+                """
+        );
+        getLogger().info(
+            String.format("热力科技 - %s [%s]",
+            getDescription().getVersion(),
+            serverName
+        ));
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+        instance = this;
+        Objects.requireNonNull(getCommand("FlameTech")).setExecutor(new FlameTechCommand(this));
+        Objects.requireNonNull(getCommand("FlameTech")).setTabCompleter(new FlameTechTabCompleter());
+        try {
+            this.configManager = new ConfigManager(this);
+            GUIManager.init(this);
+            new MainGUI(this);
+        } catch (Exception e) {
+            getLogger().severe("配置初始化失败: " + e.getMessage());
+            return;
+        }
+    }
+
+    @Override
+    public void onDisable() {
+    }
+
+    public static Main getInstance() {
+        return instance;
+    }
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+    public void reloadLang() {
+        configManager.reloadConfig();
+    }
+}
+
+
+
+==================================================
+路径：.\java\cn\fandmc\commands\FlameTechCommand.java
+==================================================
+package cn.fandmc.commands;
+
+import cn.fandmc.Main;
+import cn.fandmc.gui.BookUtils;
+import cn.fandmc.gui.GUIManager;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiFunction;
+
+public class FlameTechCommand implements CommandExecutor {
+    private final Main plugin;
+    private final Map<String, BiFunction<CommandSender, String[], Boolean>> commands = new HashMap<>();
+
+    public FlameTechCommand(Main plugin) {
+        this.plugin = plugin;
+        commands.put("help", this::handleHelp);
+        commands.put("guide", this::handleGuide);
+        commands.put("open", this::handleOpen);
+        commands.put("reload", this::handleReload);
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (args.length == 0) {
+            sendHelp(sender);
+            return true;
+        }
+
+        String subCommand = args[0].toLowerCase();
+        BiFunction<CommandSender, String[], Boolean> handler = commands.get(subCommand);
+
+        if (handler != null) {
+            return handler.apply(sender, args);
+        } else {
+            sendHelp(sender);
+            return true;
+        }
+    }
+
+
+    private Boolean handleHelp(CommandSender sender, String[] args) {
+        sendHelp(sender);
+        return true;
+    }
+
+    private Boolean handleGuide(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(plugin.getConfigManager().getLang("command.guide.only_player"));
+            return true;
+        }
+
+        player.getInventory().addItem(BookUtils.createGuideBook());
+        player.sendMessage(plugin.getConfigManager().getLang("command.guide.success")
+                .replace("%book%", plugin.getConfigManager().getLang("guide_book.display_name")));
+        return true;
+    }
+
+
+    private Boolean handleOpen(CommandSender sender, String[] args) {
+        if (sender instanceof Player player) {
+            String guiName = args.length > 1 ? args[1] : "main";
+            GUIManager.openGUI(player, guiName);
+        } else {
+            sender.sendMessage("只能对玩家执行此操作");
+        }
+        return true;
+    }
+
+    private Boolean handleReload(CommandSender sender, String[] args) {
+        plugin.reloadLang();
+        sender.sendMessage(plugin.getConfigManager().getLang("command.reload.success"));
+        return true;
+    }
+
+    private void sendHelp(CommandSender sender) {
+        sender.sendMessage(plugin.getConfigManager().getLang("command.help.title"));
+        sender.sendMessage(plugin.getConfigManager().getLang("command.help.line1"));
+        sender.sendMessage(plugin.getConfigManager().getLang("command.help.line2"));
+        sender.sendMessage(plugin.getConfigManager().getLang("command.help.line3"));
+        sender.sendMessage(plugin.getConfigManager().getLang("command.help.line4"));
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\commands\FlameTechTabCompleter.java
+==================================================
+package cn.fandmc.commands;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.util.StringUtil;
+import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FlameTechTabCompleter implements TabCompleter {
+
+    private static final List<String> MAIN_COMMANDS = List.of("help", "guide", "open", "reload");
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (args.length == 1) {
+            StringUtil.copyPartialMatches(args[0], MAIN_COMMANDS, completions);
+        }
+
+        return completions;
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\config\ConfigManager.java
+==================================================
+package cn.fandmc.config;
+
+import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+public class ConfigManager {
+    private final JavaPlugin plugin;
+    private FileConfiguration config;
+    private File configFile;
+
+    private FileConfiguration lang;
+    private String langName;
+
+    public ConfigManager(JavaPlugin plugin) {
+        this.plugin = plugin;
+        this.configFile = new File(plugin.getDataFolder(), "config.yml");
+        this.langName = "zh_cn";
+
+        if (!configFile.exists()) {
+            plugin.saveResource("config.yml", false);
+        }
+        this.config = YamlConfiguration.loadConfiguration(configFile);
+
+        String langFileName = this.config.getString("language");
+        this.langName = langFileName;
+        File langFile = new File(plugin.getDataFolder(), "lang/" + langFileName + ".yml");
+
+        if (!langFile.exists()) {
+            plugin.saveResource("lang/" + langFileName + ".yml", false);
+        }
+
+        this.lang = YamlConfiguration.loadConfiguration(langFile);
+    }
+
+    public void reloadConfig() {
+        try {
+            if (configFile.exists()) {
+                config = YamlConfiguration.loadConfiguration(configFile);
+            }
+
+            reloadLang();
+        } catch (Exception e) {
+            plugin.getLogger().severe("配置文件重载失败: " + e.getMessage());
+        }
+    }
+
+    private void reloadLang() {
+        File langFile = new File(plugin.getDataFolder(), "lang/" + langName + ".yml");
+        if (langFile.exists()) {
+            lang = YamlConfiguration.loadConfiguration(langFile);
+        }
+    }
+
+    public FileConfiguration getLangConfig() {
+        return lang;
+    }
+
+    public List<String> getStringList(String path) {
+        List<String> result = new ArrayList<>();
+        if (lang == null) return result;
+
+        List<?> list = lang.getList(path);
+        if (list == null) return result;
+
+        for (Object obj : list) {
+            if (obj instanceof String str) {
+                result.add(ChatColor.translateAlternateColorCodes('&', str));
+            }
+        }
+
+        return result;
+    }
+
+    public String getLang(String path) {
+        if (lang == null) {
+            return ChatColor.translateAlternateColorCodes('&', "&c未找到语言配置项: " + path);
+        }
+
+        String message = lang.getString(path, "&c未找到语言键: " + path);
+        return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    public void saveDefaultLang() {
+        File langFolder = new File(plugin.getDataFolder(), "lang");
+        if (!langFolder.exists()) {
+            langFolder.mkdirs();
+        }
+
+        // 如果 lang.yml 不存在，就复制一份
+        File langFile = new File(plugin.getDataFolder(), "lang/" + langName + ".yml");
+        if (!langFile.exists()) {
+            plugin.saveResource("lang/" + langName + ".yml", false);
+        }
+
+        // 确保 lang 被加载
+        lang = YamlConfiguration.loadConfiguration(langFile);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\BasicMachinesGUI.java
+==================================================
+package cn.fandmc.gui;
+
+import cn.fandmc.Main;
+import cn.fandmc.gui.templates.SimpleGUI;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Arrays;
+
+public class BasicMachinesGUI extends SimpleGUI {
+
+    public BasicMachinesGUI(Main plugin) {
+        super(plugin, "basic_machines", 54, "§e基础机器");
+        GUIManager.registerGUI(this);
+    }
+
+    @Override
+    protected void buildGUI() {
+        setBorder(Material.GRAY_STAINED_GLASS_PANE);
+
+        setComponent(45, new GUIComponent() {
+            @Override
+            public ItemStack item() {
+                return createBackButton();
+            }
+
+            @Override
+            public void onClick(Player player, InventoryClickEvent event) {
+                GUIManager.openGUI(player, "main");
+            }
+        });
+
+        addBasicMachines();
+    }
+
+    private void addBasicMachines() {
+    }
+
+    private ItemStack createBackButton() {
+        ItemStack item = new ItemStack(Material.ARROW);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§a← 返回主页");
+            meta.setLore(Arrays.asList(
+                    "§7点击返回主界面"
+            ));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\BookClickListener.java
+==================================================
+package cn.fandmc.gui;
+
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
+
+public class BookClickListener implements Listener {
+    @EventHandler
+    public void onBookRightClick(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (BookUtils.isGuideBook(item)) {
+            event.setCancelled(true);
+            String action = BookUtils.getBookAction(item);
+            GUIManager.openGUI(player, action);
+        }
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\BookUtils.java
+==================================================
+package cn.fandmc.gui;
+
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.ChatColor;
+import org.bukkit.inventory.EquipmentSlot;
+import cn.fandmc.Main;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class BookUtils {
+    private static final NamespacedKey GUIDE_BOOK_KEY = new NamespacedKey(Main.getInstance(), "flame_tech_guide");
+
+    public static ItemStack createGuideBook() {
+        ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta meta = book.getItemMeta();
+        if (meta == null) return book;
+
+        String displayName = Main.getInstance().getConfigManager().getLang("guide_book.display_name");
+        List<String> lore = Main.getInstance().getConfigManager().getStringList("guide_book.lore");
+
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+        meta.setLore(lore);
+        meta.getPersistentDataContainer().set(
+                new NamespacedKey(Main.getInstance(), "guiitem"),
+                PersistentDataType.STRING,
+                "main"
+        );
+        book.setItemMeta(meta);
+        return book;
+    }
+
+
+    public static boolean isGuideBook(ItemStack item) {
+        if (item == null || item.getType() != Material.ENCHANTED_BOOK) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        return meta != null && meta.getPersistentDataContainer().has(GUIDE_BOOK_KEY, PersistentDataType.STRING);
+    }
+
+    public static String getBookAction(ItemStack book) {
+        ItemMeta meta = book.getItemMeta();
+        if (meta == null) return "main";
+
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        String action = container.get(GUIDE_BOOK_KEY, PersistentDataType.STRING);
+
+        return action != null ? action : "main";
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\GUI.java
+==================================================
+package cn.fandmc.gui;
+
+import cn.fandmc.Main;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public abstract class GUI implements org.bukkit.inventory.InventoryHolder {
+    protected final String name;
+    protected final String title;
+    protected final int size;
+    protected final Main plugin;
+    protected Inventory inventory;
+    protected final Map<Integer, GUIComponent> components = new HashMap<>();
+
+    public GUI(Main plugin, String name, int size, String title) {
+        this.plugin = plugin;
+        this.name = name;
+        this.size = size;
+        this.title = title;
+        this.inventory = Bukkit.createInventory(this, size, title);
+        GUIRegistry.register(name, size, title);
+    }
+
+    public void setComponent(int slot, GUIComponent component) {
+        if (slot >= 0 && slot < size) {
+            components.put(slot, component);
+            inventory.setItem(slot, component.item());
+        }
+    }
+
+    public void removeComponent(int slot) {
+        components.remove(slot);
+        inventory.clear(slot);
+    }
+
+    public void clearComponents() {
+        components.clear();
+        inventory.clear();
+    }
+
+    public void refresh() {
+        inventory.clear();
+        for (Map.Entry<Integer, GUIComponent> entry : components.entrySet()) {
+            inventory.setItem(entry.getKey(), entry.getValue().item());
+        }
+    }
+
+    public void open(Player player) {
+        if (player == null) return;
+        buildGUI();
+        refresh();
+        player.openInventory(inventory);
+    }
+
+    protected abstract void buildGUI();
+
+    public void onItemClick(InventoryClickEvent event) {
+        int slot = event.getRawSlot();
+        GUIComponent component = components.get(slot);
+        if (component != null) {
+            component.onClick((Player) event.getWhoClicked(), event);
+        }
+    }
+
+    public String getName() { return name; }
+    public String getTitle() { return title; }
+    public int getSize() { return size; }
+    public Main getPlugin() { return plugin; }
+
+    @Override
+    public Inventory getInventory() { return inventory; }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\GUIComponent.java
+==================================================
+package cn.fandmc.gui;
+
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+public interface GUIComponent {
+    ItemStack item();
+    void onClick(Player player, InventoryClickEvent event);
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\GUIListener.java
+==================================================
+package cn.fandmc.gui;
+
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+public class GUIListener implements Listener {
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof GUI gui)) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        if (event.getRawSlot() >= 0 && event.getRawSlot() < event.getInventory().getSize()) {
+            gui.onItemClick(event);
+        }
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\GUIManager.java
+==================================================
+package cn.fandmc.gui;
+
+import cn.fandmc.Main;
+import org.bukkit.entity.Player;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class GUIManager {
+    private static final Map<String, GUI> registeredGUIs = new HashMap<>();
+
+    public static void init(Main plugin) {
+        plugin.getServer().getPluginManager().registerEvents(new GUIListener(), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new BookClickListener(), plugin);
+
+    }
+
+    public static void registerGUI(GUI gui) {
+        if (gui != null && gui.getName() != null) {
+            registeredGUIs.put(gui.getName().toLowerCase(), gui);
+            gui.getPlugin().getLogger().info("已注册GUI: " + gui.getName());
+        }
+    }
+
+    public static void openGUI(Player player, String guiName) {
+        if (player == null || guiName == null) {
+            return;
+        }
+
+        GUI gui = registeredGUIs.get(guiName.toLowerCase());
+        if (gui != null) {
+            gui.open(player);
+        } else {
+            player.sendMessage("§c未找到GUI: " + guiName);
+            player.sendMessage("§7可用的GUI: " + String.join(", ", registeredGUIs.keySet()));
+        }
+    }
+
+    public static GUI getGUI(String name) {
+        return registeredGUIs.get(name.toLowerCase());
+    }
+
+    public static boolean hasGUI(String name) {
+        return registeredGUIs.containsKey(name.toLowerCase());
+    }
+
+    public static void unregisterGUI(String name) {
+        registeredGUIs.remove(name.toLowerCase());
+    }
+
+    public static void clearAllGUIs() {
+        registeredGUIs.clear();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\GUIRegistry.java
+==================================================
+package cn.fandmc.gui;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class GUIRegistry {
+    private static final Map<String, GUIConfig> registry = new HashMap<>();
+
+    public static void register(String name, int size, String title) {
+        registry.put(name.toLowerCase(), new GUIConfig(size, title));
+    }
+
+    public static GUIConfig getConfig(String name) {
+        return registry.get(name.toLowerCase());
+    }
+
+    public static boolean exists(String name) {
+        return registry.containsKey(name.toLowerCase());
+    }
+
+    public static class GUIConfig {
+        private final int size;
+        private final String title;
+
+        public GUIConfig(int size, String title) {
+            this.size = size;
+            this.title = title;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\MainGUI.java
+==================================================
+package cn.fandmc.gui;
+
+import cn.fandmc.Main;
+import cn.fandmc.gui.item.main.BasicMachineButton;
+import cn.fandmc.gui.templates.PaginatedGUI;
+
+public class MainGUI extends PaginatedGUI {
+    public MainGUI(Main plugin) {
+        super(plugin, "main", plugin.getConfigManager().getLang("guide_book.display_name"));
+
+        initializeItems();
+
+        GUIManager.registerGUI(this);
+        new BasicMachinesGUI(plugin);
+    }
+
+    private void initializeItems() {
+        addPageItem(new BasicMachineButton());
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\StaticItem.java
+==================================================
+package cn.fandmc.gui;
+
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+public record StaticItem(ItemStack item) implements GUIComponent {
+
+    @Override
+    public void onClick(Player player, InventoryClickEvent event) {
+        // 默认不执行任何操作
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\item\main\BasicMachineButton.java
+==================================================
+package cn.fandmc.gui.item.main;
+
+import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.gui.GUIManager;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+import java.util.Arrays;
+
+public class BasicMachineButton implements GUIComponent {
+    private final ItemStack item;
+
+    public BasicMachineButton() {
+        this.item = createItem();
+    }
+
+    private ItemStack createItem() {
+        ItemStack item = new ItemStack(Material.FURNACE);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§6基础机器");
+            meta.setLore(Arrays.asList(
+                    "§7查看所有基础机器的配方和信息",
+                    "§7包含：熔炉、压缩机、粉碎机等",
+                    "",
+                    "§e点击查看基础机器列表",
+                    "",
+                    "§c[FlameTech]"
+            ));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    @Override
+    public ItemStack item() {
+        return item.clone();
+    }
+
+    @Override
+    public void onClick(Player player, InventoryClickEvent event) {
+        // 跳转到基础机器页面
+        GUIManager.openGUI(player, "basic_machines");
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\templates\PaginatedGUI.java
+==================================================
+package cn.fandmc.gui.templates;
+
+import cn.fandmc.Main;
+import cn.fandmc.gui.GUI;
+import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.gui.StaticItem;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public abstract class PaginatedGUI extends GUI {
+    protected final List<GUIComponent> pageItems = new ArrayList<>();
+    protected int currentPage = 0;
+
+    protected final int[] contentSlots = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25,
+            28, 29, 30, 31, 32, 33, 34
+    };
+
+    protected final int itemsPerPage = contentSlots.length;
+
+    public PaginatedGUI(Main plugin, String name, String title) {
+        super(plugin, name, 54, title);
+    }
+
+    @Override
+    protected void buildGUI() {
+        clearComponents();
+
+        setupBorder();
+
+        setupControlButtons();
+
+        displayCurrentPage();
+    }
+
+    @Override
+    public void refresh() {
+        buildGUI();
+        super.refresh();
+    }
+
+    protected void setupBorder() {
+        ItemStack borderItem = createBorderItem();
+
+        for (int i = 0; i < 9; i++) {
+            setComponent(i, new StaticItem(borderItem));
+        }
+
+        for (int i = 45; i < 54; i++) {
+            if (i != 48 && i != 49 && i != 50) {
+                setComponent(i, new StaticItem(borderItem));
+            }
+        }
+
+        setComponent(9, new StaticItem(borderItem));
+        setComponent(17, new StaticItem(borderItem));
+        setComponent(18, new StaticItem(borderItem));
+        setComponent(26, new StaticItem(borderItem));
+        setComponent(27, new StaticItem(borderItem));
+        setComponent(35, new StaticItem(borderItem));
+        setComponent(36, new StaticItem(borderItem));
+        setComponent(44, new StaticItem(borderItem));
+    }
+
+    protected void setupControlButtons() {
+        setComponent(48, new GUIComponent() {
+            @Override
+            public ItemStack item() {
+                return createPreviousPageButton();
+            }
+
+            @Override
+            public void onClick(Player player, InventoryClickEvent event) {
+                previousPage(player);
+            }
+        });
+
+        setComponent(49, new StaticItem(createPageInfoItem()));
+
+        setComponent(50, new GUIComponent() {
+            @Override
+            public ItemStack item() {
+                return createNextPageButton();
+            }
+
+            @Override
+            public void onClick(Player player, InventoryClickEvent event) {
+                nextPage(player);
+            }
+        });
+    }
+
+    protected void displayCurrentPage() {
+        int totalPages = getTotalPages();
+        if (totalPages == 0) return;
+
+        int startIndex = currentPage * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, pageItems.size());
+
+        for (int slot : contentSlots) {
+            removeComponent(slot);
+        }
+
+        for (int i = 0; i < itemsPerPage; i++) {
+            int slot = contentSlots[i];
+            int itemIndex = startIndex + i;
+
+            if (itemIndex < endIndex) {
+                setComponent(slot, pageItems.get(itemIndex));
+            }
+        }
+    }
+
+    public void nextPage(Player player) {
+        if (currentPage < getTotalPages() - 1) {
+            currentPage++;
+            refresh();
+        }
+    }
+
+    public void previousPage(Player player) {
+        if (currentPage > 0) {
+            currentPage--;
+            refresh();
+        }
+    }
+
+    public void addPageItem(GUIComponent item) {
+        pageItems.add(item);
+    }
+
+    public void removePageItem(int index) {
+        if (index >= 0 && index < pageItems.size()) {
+            pageItems.remove(index);
+            if (pageItems.isEmpty()) {
+                currentPage = 0;
+            } else if (currentPage >= getTotalPages()) {
+                currentPage = getTotalPages() - 1;
+            }
+        }
+    }
+
+    public void clearPageItems() {
+        pageItems.clear();
+        currentPage = 0;
+    }
+
+    protected int getTotalPages() {
+        return pageItems.isEmpty() ? 1 : (int) Math.ceil((double) pageItems.size() / itemsPerPage);
+    }
+
+    protected ItemStack createBorderItem() {
+        ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(" ");
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    protected ItemStack createPreviousPageButton() {
+        Material material = currentPage > 0 ? Material.ARROW : Material.GRAY_STAINED_GLASS_PANE;
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(currentPage > 0 ? "§a← 上一页" : "§7没有上一页");
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    protected ItemStack createNextPageButton() {
+        Material material = currentPage < getTotalPages() - 1 ? Material.ARROW : Material.GRAY_STAINED_GLASS_PANE;
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(currentPage < getTotalPages() - 1 ? "§a下一页 →" : "§7没有下一页");
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    protected ItemStack createPageInfoItem() {
+        ItemStack item = new ItemStack(Material.BOOK);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§e页面信息");
+            meta.setLore(Arrays.asList(
+                    "§7当前页: §e" + (currentPage + 1) + "§7/§e" + getTotalPages(),
+                    "§7物品总数: §e" + pageItems.size()
+            ));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\gui\templates\SimpleGUI.java
+==================================================
+package cn.fandmc.gui.templates;
+
+import cn.fandmc.Main;
+import cn.fandmc.gui.GUI;
+import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.gui.StaticItem;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+public abstract class SimpleGUI extends GUI {
+
+    public SimpleGUI(Main plugin, String name, int size, String title) {
+        super(plugin, name, size, title);
+    }
+
+    protected void setBorder(Material material) {
+        ItemStack borderItem = new ItemStack(material);
+        ItemMeta meta = borderItem.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(" ");
+            borderItem.setItemMeta(meta);
+        }
+
+        for (int i = 0; i < 9; i++) {
+            setComponent(i, new StaticItem(borderItem));
+            if (size > 9) {
+                setComponent(size - 9 + i, new StaticItem(borderItem));
+            }
+        }
+
+        for (int row = 1; row < (size / 9) - 1; row++) {
+            setComponent(row * 9, new StaticItem(borderItem));
+            setComponent(row * 9 + 8, new StaticItem(borderItem));
+        }
+    }
+
+    protected void setCenterItem(int relativeSlot, GUIComponent component) {
+        if (size == 27) { // 3行GUI
+            int[] centerSlots = {10, 11, 12, 13, 14, 15, 16};
+            if (relativeSlot >= 0 && relativeSlot < centerSlots.length) {
+                setComponent(centerSlots[relativeSlot], component);
+            }
+        } else if (size == 54) { // 6行GUI
+            int[] centerSlots = {
+                    10, 11, 12, 13, 14, 15, 16,
+                    19, 20, 21, 22, 23, 24, 25,
+                    28, 29, 30, 31, 32, 33, 34,
+                    37, 38, 39, 40, 41, 42, 43
+            };
+            if (relativeSlot >= 0 && relativeSlot < centerSlots.length) {
+                setComponent(centerSlots[relativeSlot], component);
+            }
+        }
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\util\IsFolia.java
+==================================================
+package cn.fandmc.util;
+
+public class IsFolia {
+    public Boolean get() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+}
+
+
+==================================================
+路径：.\resources\config.yml
+==================================================
+language: zh_cn
+update-checker:
+  enabled: true
+
+
+==================================================
+路径：.\resources\plugin.yml
+==================================================
+name: FlameTech
+version: '0.0.3'
+main: cn.fandmc.Main
+api-version: '1.21'
+folia-supported: true
+commands:
+  flametech:
+    description: 主命令
+    usage: /flametech <二级命令>
+    aliases: [ft]
+
+
+==================================================
+路径：.\resources\lang\zh_cn.yml
+==================================================
+command:
+  help:
+    title: "&e&l----&eFlameTech 帮助&l----"
+    line1: "&2/flame help &3- &b显示此帮助信息"
+    line2: "&2/flame guide &3- &b显示插件使用指南"
+    line3: "&2/flame open &3- &b打开主交互界面"
+    line4: "&2/flame reload &3- &b重新加载插件配置"
+  reload:
+    success: "&a配置已成功重载！"
+    fail: "&c重载失败，请检查配置文件格式"
+  guide:
+    success: "&a已发放%book%"
+    only_player: "&c只能由玩家执行此操作。"
+
+guide_book:
+  display_name: "&a热力科技指南&7(箱子页面)"
+  lore:
+    - "&3右键点击以打开主界面"
+    - "&c&l[FlameTech Gui]"
+
+
