@@ -1,5 +1,6 @@
 package cn.fandmc;
 
+import cn.fandmc.config.Config;
 import cn.fandmc.config.ConfigManager;
 import cn.fandmc.commands.*;
 import cn.fandmc.gui.BookClickListener;
@@ -35,7 +36,7 @@ public class Main extends JavaPlugin {
         );
         getLogger().info(
                 String.format("热力科技 - %s [%s]",
-                        getDescription().getVersion(),
+                        Config.getversion,
                         serverName
                 ));
 
