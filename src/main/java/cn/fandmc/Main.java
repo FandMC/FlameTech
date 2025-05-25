@@ -16,6 +16,8 @@ import cn.fandmc.recipe.RecipeManager;
 import cn.fandmc.recipe.Recipe;
 import cn.fandmc.recipe.ShapedRecipe;
 import cn.fandmc.recipes.tool.*;
+import cn.fandmc.tools.ToolManager;
+import cn.fandmc.tools.ToolListener;
 import cn.fandmc.unlock.UnlockManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -61,6 +63,11 @@ public class Main extends JavaPlugin {
 
         try {
             this.configManager = new ConfigManager(this);
+
+            saveDefaultConfig();
+
+            ToolManager.init(this);
+
             UnlockManager.init(this);
 
             GUIManager.init(this);
@@ -75,7 +82,7 @@ public class Main extends JavaPlugin {
             registerRecipes();
 
             registerMachineGUIs();
-
+            registerListeners();
             registerUnlockables();
 
         } catch (Exception e) {
@@ -103,7 +110,6 @@ public class Main extends JavaPlugin {
         RecipeManager manager = RecipeManager.getInstance();
 
         manager.registerRecipe(ExplosivePickaxeRecipe.create());
-
         manager.registerRecipe(SmeltingPickaxeRecipe.create());
     }
 
@@ -111,11 +117,14 @@ public class Main extends JavaPlugin {
         new EnhancedCraftingGUI(this);
     }
 
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new ToolListener(this), this);
+    }
+
     private void registerUnlockables() {
         UnlockManager manager = UnlockManager.getInstance();
 
         manager.registerUnlockable(new UnlockManager.UnlockableItem("multiblock.enhanced_crafting_table", 10));
-
         manager.registerUnlockable(new UnlockManager.UnlockableItem("recipe.explosive_pickaxe", 15));
         manager.registerUnlockable(new UnlockManager.UnlockableItem("recipe.smelting_pickaxe", 20));
     }

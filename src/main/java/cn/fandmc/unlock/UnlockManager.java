@@ -47,11 +47,7 @@ public class UnlockManager {
     }
 
     private void loadUnlockableItems() {
-        // 注册多方块结构解锁需求
         registerUnlockable(new UnlockableItem("multiblock.enhanced_crafting_table", 10));
-
-        // 注册配方解锁需求
-        // 这里可以从配置文件加载
     }
 
     public void registerUnlockable(UnlockableItem item) {
@@ -88,10 +84,8 @@ public class UnlockManager {
             return new UnlockResult(false, "insufficient_exp", item.getRequiredExp());
         }
 
-        // 扣除经验等级
         player.setLevel(player.getLevel() - item.getRequiredExp());
 
-        // 记录解锁
         PlayerUnlocks unlocks = playerUnlocks.get(player.getUniqueId());
         if (unlocks == null) {
             unlocks = new PlayerUnlocks(player.getUniqueId());
@@ -99,7 +93,6 @@ public class UnlockManager {
         }
         unlocks.unlock(itemId);
 
-        // 保存数据
         savePlayerData(player.getUniqueId());
 
         return new UnlockResult(true, "success");
@@ -140,7 +133,6 @@ public class UnlockManager {
         }
     }
 
-    // 内部类
     public static class UnlockableItem {
         private final String id;
         private final int requiredExp;

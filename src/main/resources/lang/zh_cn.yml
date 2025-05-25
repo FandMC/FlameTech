@@ -23,6 +23,11 @@ multiblock:
     created: "&a✔ &e你成功创建了一个增强型工作台！"
     hint: "&7将物品放入下方的发射器中，再次点击工作台即可合成！"
     error: "&c错误：无法找到发射器！"
+    no_recipe: "&c发射器中的物品无法合成任何配方！请检查摆放是否正确。"
+    inventory_full: "&c发射器已满！无法放入合成结果，请清理一些空间。"
+    consume_failed: "&c材料不足或摆放错误！"
+    craft_success: "&a✔ 成功合成了 %item%！"
+    craft_partial: "&e合成完成，但部分物品可能掉落在地上。"
   not_unlocked: "&c你还未解锁 %machine%！"
 
 gui:
@@ -51,6 +56,11 @@ gui:
         - "&7能够炸毁大片区域的方块"
         - "&c小心使用！"
         - ""
+        - "&e功能:"
+        - "&7• 破坏2格半径内的方块"
+        - "&7• 产生爆炸效果和音效"
+        - "&7• 消耗额外耐久度"
+        - ""
         - "&e配方:"
         - "&7铁锭 TNT 铁锭"
         - "&7 空  木棍  空"
@@ -65,6 +75,12 @@ gui:
         - "&7一把能够自动熔炼的镐子"
         - "&7挖掘矿物时自动熔炼成锭"
         - "&6节省熔炉燃料！"
+        - ""
+        - "&e功能:"
+        - "&7• 矿石直接掉落锭"
+        - "&7• 石头变成平滑石头"
+        - "&7• 沙子变成玻璃"
+        - "&7• 播放熔炼音效和粒子"
         - ""
         - "&e配方:"
         - "&7铁锭 熔炉 铁锭"
@@ -157,3 +173,11 @@ unlock:
   success: "&a✔ 成功解锁: &e%item%"
   insufficient_exp: "&c经验不足！需要 &e%required% &c级经验"
   already_unlocked: "&e该项目已经解锁"
+
+tools:
+  explosive_pickaxe:
+    name: "&c&l爆炸镐"
+    explosion_message: "&e轰！爆炸范围内破坏了 %blocks% 个方块！"
+  smelting_pickaxe:
+    name: "&6&l熔炼镐"
+    smelting_message: "&6叮！%material% 已自动熔炼！"

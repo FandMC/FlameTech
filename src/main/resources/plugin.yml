@@ -1,5 +1,5 @@
 name: FlameTech
-version: '0.0.5'
+version: '0.0.6'
 main: cn.fandmc.Main
 api-version: '1.21'
 folia-supported: true

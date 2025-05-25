@@ -1,50 +1,28 @@
 package cn.fandmc.gui.item.machines;
 
 import cn.fandmc.Main;
-import cn.fandmc.gui.GUIComponent;
+import cn.fandmc.gui.components.UnlockableButton;
 import cn.fandmc.gui.impl.RecipeViewerGUI;
-import cn.fandmc.unlock.UnlockManager;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class EnhancedCraftingTableButton implements GUIComponent {
+public class EnhancedCraftingTableButton extends UnlockableButton {
     private final String multiblockId = "enhanced_crafting_table";
-    private final String unlockId = "multiblock." + multiblockId;
+
+    public EnhancedCraftingTableButton() {
+        super("multiblock.enhanced_crafting_table", "gui.basic_machines.enhanced_crafting.name");
+    }
 
     @Override
-    public ItemStack item() {
-        return createLockedDisplay();
-    }
-
-    private ItemStack createLockedDisplay() {
-        ItemStack locked = new ItemStack(Material.BARRIER);
-        ItemMeta meta = locked.getItemMeta();
-        if (meta != null) {
-            Main plugin = Main.getInstance();
-            meta.setDisplayName("§c" + plugin.getConfigManager().getLang("gui.basic_machines.enhanced_crafting.name") + " §7(未解锁)");
-
-            List<String> lore = new ArrayList<>();
-            lore.add("§7需要经验等级: §e" + UnlockManager.getInstance().getRequiredExp(unlockId));
-            lore.add("");
-            lore.add("§e点击解锁");
-            meta.setLore(lore);
-            locked.setItemMeta(meta);
-        }
-        return locked;
-    }
-
-    private ItemStack createUnlockedDisplay() {
+    protected ItemStack createUnlockedDisplay() {
         ItemStack item = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             Main plugin = Main.getInstance();
-            meta.setDisplayName(plugin.getConfigManager().getLang("gui.basic_machines.enhanced_crafting.name"));
+            meta.setDisplayName(plugin.getConfigManager().getLang(getDisplayNameKey()));
             meta.setLore(plugin.getConfigManager().getStringList("gui.basic_machines.enhanced_crafting.lore"));
             item.setItemMeta(meta);
         }
@@ -52,37 +30,9 @@ public class EnhancedCraftingTableButton implements GUIComponent {
     }
 
     @Override
-    public void onClick(Player player, InventoryClickEvent event) {
-        if (!UnlockManager.getInstance().isUnlocked(player, unlockId)) {
-            UnlockManager.UnlockResult result = UnlockManager.getInstance().unlock(player, unlockId);
-
-            if (result.isSuccess()) {
-                player.sendMessage(Main.getInstance().getConfigManager().getLang("unlock.success")
-                        .replace("%item%", Main.getInstance().getConfigManager().getLang("gui.basic_machines.enhanced_crafting.name")));
-                event.getInventory().setItem(event.getSlot(), createUnlockedDisplay());
-            } else {
-                switch (result.getMessage()) {
-                    case "insufficient_exp":
-                        player.sendMessage(Main.getInstance().getConfigManager().getLang("unlock.insufficient_exp")
-                                .replace("%required%", String.valueOf(result.getRequiredExp())));
-                        break;
-                    default:
-                        player.sendMessage("§c解锁失败: " + result.getMessage());
-                        break;
-                }
-            }
-        } else {
-            event.getInventory().setItem(event.getSlot(), createUnlockedDisplay());
-            RecipeViewerGUI viewerGUI = RecipeViewerGUI.getInstance(Main.getInstance(), multiblockId);
-            viewerGUI.open(player);
-        }
-    }
-
-    public ItemStack getItemForPlayer(Player player) {
-        if (UnlockManager.getInstance().isUnlocked(player, unlockId)) {
-            return createUnlockedDisplay();
-        } else {
-            return createLockedDisplay();
-        }
+    protected void onAlreadyUnlocked(Player player, InventoryClickEvent event) {
+        // 已解锁时打开配方查看界面
+        RecipeViewerGUI viewerGUI = RecipeViewerGUI.getInstance(Main.getInstance(), multiblockId);
+        viewerGUI.open(player);
     }
 }

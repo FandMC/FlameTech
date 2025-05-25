@@ -29,15 +29,15 @@ public class ToolsGUI extends SimpleGUI {
         // 设置返回按钮
         setupBackButton(45);
 
-        // 添加工具配方按钮
+        // 添加工具配方按钮 - 模板会自动处理解锁状态和位置
         addTools();
     }
 
     private void addTools() {
-        // 添加爆炸镐按钮
+        // 添加爆炸镐按钮 - 自动处理解锁状态和位置
         setCenterItem(new ExplosivePickaxeButton());
 
-        // 添加熔炼镐按钮
+        // 添加熔炼镐按钮 - 自动处理解锁状态和位置
         setCenterItem(new SmeltingPickaxeButton());
     }
 

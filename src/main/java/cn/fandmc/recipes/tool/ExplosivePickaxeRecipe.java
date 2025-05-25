@@ -1,31 +1,18 @@
 package cn.fandmc.recipes.tool;
 
 import cn.fandmc.recipe.ShapedRecipe;
+import cn.fandmc.tools.ToolManager;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ExplosivePickaxeRecipe {
 
     public static ShapedRecipe create() {
-        // 创建爆炸镐物品
-        ItemStack explosivePickaxe = new ItemStack(Material.IRON_PICKAXE);
-        ItemMeta meta = explosivePickaxe.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName("§c§l爆炸镐");
-            meta.setLore(Arrays.asList(
-                    "§7一把充满破坏力的镐子",
-                    "§7能够炸毁大片区域的方块",
-                    "§c小心使用！",
-                    "",
-                    "§e[FlameTech 工具]"
-            ));
-            explosivePickaxe.setItemMeta(meta);
-        }
+        // 使用ToolManager创建真正的爆炸镐物品
+        ItemStack explosivePickaxe = ToolManager.getInstance().createExplosivePickaxe();
 
         // 定义配方图案
         String[] pattern = {

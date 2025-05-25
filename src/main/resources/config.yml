@@ -1,3 +1,23 @@
 language: zh_cn
 update-checker:
   enabled: true
+
+# 工具配置
+tools:
+  explosive_pickaxe:
+    enabled: true
+    explosion_radius: 2
+    max_blocks: 50
+    max_durability_damage: 10
+    permission_check: true
+
+  smelting_pickaxe:
+    enabled: true
+    particle_effects: true
+    sound_effects: true
+    success_rate: 100
+
+# 调试选项
+debug:
+  enabled: false
+  log_tool_usage: false

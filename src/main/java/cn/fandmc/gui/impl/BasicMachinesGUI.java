@@ -30,6 +30,7 @@ public class BasicMachinesGUI extends SimpleGUI {
     }
 
     private void addBasicMachines() {
+        // 添加增强工作台按钮 - 模板会自动处理解锁状态和位置
         setCenterItem(new EnhancedCraftingTableButton());
     }
 
