@@ -88,6 +88,14 @@ public class EnhancedCraftingTable extends MultiblockStructure {
             return;
         }
 
+        String recipeUnlockId = "recipe." + recipe.getId();
+        if (!UnlockManager.getInstance().isUnlocked(player, recipeUnlockId)) {
+            player.sendMessage(Main.getInstance().getConfigManager()
+                    .getLang("recipe.not_unlocked")
+                    .replace("%recipe%", recipe.getDisplayName()));
+            return;
+        }
+
         // 检查发射器是否有空位放置结果
         ItemStack result = recipe.getResult();
         if (!canAddItemToInventory(dispenserInv, result)) {

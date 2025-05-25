@@ -181,3 +181,5 @@ tools:
   smelting_pickaxe:
     name: "&6&l熔炼镐"
     smelting_message: "&6叮！%material% 已自动熔炼！"
+recipe:
+  not_unlocked: "&c你还未解锁配方: %recipe%！"
