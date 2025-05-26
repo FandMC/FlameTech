@@ -69,21 +69,20 @@ public class UnlockManager {
     /**
      * 注册可解锁物品
      */
-    public boolean registerUnlockable(UnlockableItem item) {
+    public void registerUnlockable(UnlockableItem item) {
         if (item == null) {
             MessageUtils.logWarning("尝试注册空可解锁物品");
-            return false;
+            return;
         }
 
         String itemId = item.getItemId();
         if (unlockableItems.containsKey(itemId)) {
             MessageUtils.logWarning("ID为 '" + itemId + "' 的可解锁物品已存在");
-            return false;
+            return;
         }
 
         unlockableItems.put(itemId, item);
-        MessageUtils.logInfo("注册可解锁物品: " + itemId + " (经验: " + item.getRequiredExp() + ")");
-        return true;
+        //MessageUtils.logInfo("注册可解锁物品: " + itemId + " (经验: " + item.getRequiredExp() + ")");
     }
 
     /**
@@ -198,7 +197,7 @@ public class UnlockManager {
                 playerUnlocks.put(uuid, unlocks);
             }
 
-            MessageUtils.logInfo("Loaded unlock data for " + playerUnlocks.size() + " players");
+            MessageUtils.logInfo("加载了 " + playerUnlocks.size() + " 个玩家的数据");
 
         } catch (Exception e) {
             MessageUtils.logError("Error loading player unlock data: " + e.getMessage());

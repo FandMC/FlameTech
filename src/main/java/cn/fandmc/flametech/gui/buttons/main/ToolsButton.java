@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.gui.buttons.main;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.components.GUIComponent;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import org.bukkit.Material;
@@ -15,16 +16,11 @@ public class ToolsButton implements GUIComponent {
 
     @Override
     public ItemStack getDisplayItem() {
+        Main plugin = Main.getInstance();
+
         return new ItemBuilder(Material.DIAMOND_PICKAXE)
-                .displayName("&b工具")
-                .lore(
-                        "&7查看所有特殊工具的配方",
-                        "&7包含：爆炸镐、熔炼镐等",
-                        "",
-                        "&e点击查看工具列表",
-                        "",
-                        "&c[FlameTech]"
-                )
+                .displayName(plugin.getConfigManager().getLang(Messages.GUI_BUTTONS_TOOLS_NAME))
+                .lore(plugin.getConfigManager().getStringList(Messages.GUI_BUTTONS_TOOLS_LORE))
                 .build();
     }
 

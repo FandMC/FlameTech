@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.gui.base;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.components.GUIComponent;
 import cn.fandmc.flametech.gui.components.NavigationComponent;
 import cn.fandmc.flametech.gui.components.StaticComponent;
@@ -92,7 +93,7 @@ public abstract class PaginatedGUI extends BaseGUI {
                 return currentPage > 0 ?
                         ItemBuilder.createPreviousPageButton() :
                         new ItemBuilder(org.bukkit.Material.GRAY_STAINED_GLASS_PANE)
-                                .displayName("&7没有上一页")
+                                .displayName(plugin.getConfigManager().getLang(Messages.GUI_COMMON_NO_PREVIOUS_PAGE))
                                 .build();
             }
 
@@ -121,7 +122,7 @@ public abstract class PaginatedGUI extends BaseGUI {
                 return currentPage < getTotalPages() - 1 ?
                         ItemBuilder.createNextPageButton() :
                         new ItemBuilder(org.bukkit.Material.GRAY_STAINED_GLASS_PANE)
-                                .displayName("&7没有下一页")
+                                .displayName(plugin.getConfigManager().getLang(Messages.GUI_COMMON_NO_NEXT_PAGE))
                                 .build();
             }
 

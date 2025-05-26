@@ -66,19 +66,16 @@ public class RecipeManager {
             MessageUtils.logWarning("ID为 " + recipeId + " 的配方绑定了无效的多方快结构ID: " + recipe.getMultiblockId());
         }
 
-        // 注册配方
         recipes.put(recipeId, recipe);
 
-        // 按多方块分组
         recipesByMultiblock.computeIfAbsent(recipe.getMultiblockId(), k -> new ArrayList<>())
                 .add(recipe);
 
-        // 按类型分组
         recipesByType.computeIfAbsent(recipe.getType(), k -> new ArrayList<>())
                 .add(recipe);
 
-        MessageUtils.logInfo("注册配方: " + recipe.getDisplayName() +
-                " (ID: " + recipeId + ", 多方块结构: " + recipe.getMultiblockId() + ")");
+        //MessageUtils.logInfo("注册配方: " + recipe.getDisplayName() +
+               // " (ID: " + recipeId + ", 多方块结构: " + recipe.getMultiblockId() + ")");
         return true;
     }
 

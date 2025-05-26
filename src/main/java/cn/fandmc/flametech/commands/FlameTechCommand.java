@@ -57,11 +57,8 @@ public class FlameTechCommand implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender sender) {
-        MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_HELP_TITLE);
-        MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_HELP_LINE1);
-        MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_HELP_LINE2);
-        MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_HELP_LINE3);
-        MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_HELP_LINE4);
+        // 使用列表格式发送帮助消息
+        MessageUtils.sendLocalizedMessageList(sender, Messages.COMMAND_HELP_MESSAGES);
     }
 
     // 内部接口
@@ -74,7 +71,7 @@ public class FlameTechCommand implements CommandExecutor {
         @Override
         public boolean execute(CommandSender sender, String[] args) {
             if (!sender.hasPermission(Permissions.COMMAND_HELP)) {
-                MessageUtils.sendMessage(sender, "&c你没有权限执行此命令");
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_ERROR_NO_PERMISSION);
                 return true;
             }
 
@@ -88,7 +85,7 @@ public class FlameTechCommand implements CommandExecutor {
         @Override
         public boolean execute(CommandSender sender, String[] args) {
             if (!sender.hasPermission(Permissions.COMMAND_GUIDE)) {
-                MessageUtils.sendMessage(sender, "&c你没有权限执行此命令");
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_ERROR_NO_PERMISSION);
                 return true;
             }
 
@@ -100,14 +97,14 @@ public class FlameTechCommand implements CommandExecutor {
             try {
                 player.getInventory().addItem(BookUtils.createGuideBook());
 
-                String bookName = plugin.getConfigManager().getLang("guide_book.display_name");
+                String bookName = plugin.getConfigManager().getLang(Messages.GUIDE_BOOK_DISPLAY_NAME);
                 MessageUtils.sendLocalizedMessage(player, Messages.COMMAND_GUIDE_SUCCESS,
                         "%book%", bookName);
 
                 return true;
             } catch (Exception e) {
                 MessageUtils.logError("Error giving guide book: " + e.getMessage());
-                MessageUtils.sendMessage(player, "&c发放指南书时发生错误");
+                MessageUtils.sendLocalizedMessage(player, Messages.COMMAND_ERROR_GENERIC);
                 return true;
             }
         }
@@ -118,12 +115,12 @@ public class FlameTechCommand implements CommandExecutor {
         @Override
         public boolean execute(CommandSender sender, String[] args) {
             if (!sender.hasPermission(Permissions.COMMAND_OPEN)) {
-                MessageUtils.sendMessage(sender, "&c你没有权限执行此命令");
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_ERROR_NO_PERMISSION);
                 return true;
             }
 
             if (!(sender instanceof Player player)) {
-                MessageUtils.sendMessage(sender, "&c只能对玩家执行此操作");
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_GUIDE_ONLY_PLAYER);
                 return true;
             }
 
@@ -132,12 +129,13 @@ public class FlameTechCommand implements CommandExecutor {
             try {
                 boolean success = plugin.getGuiManager().openGUI(player, guiName);
                 if (!success) {
-                    MessageUtils.sendMessage(player, "&c无法打开指定的界面: " + guiName);
+                    MessageUtils.sendLocalizedMessage(player, Messages.COMMAND_OPEN_INVALID_GUI,
+                            "%gui%", guiName);
                 }
                 return true;
             } catch (Exception e) {
                 MessageUtils.logError("Error opening GUI: " + e.getMessage());
-                MessageUtils.sendMessage(player, "&c打开界面时发生错误");
+                MessageUtils.sendLocalizedMessage(player, Messages.COMMAND_OPEN_ERROR);
                 return true;
             }
         }
@@ -148,7 +146,7 @@ public class FlameTechCommand implements CommandExecutor {
         @Override
         public boolean execute(CommandSender sender, String[] args) {
             if (!sender.hasPermission(Permissions.COMMAND_RELOAD)) {
-                MessageUtils.sendMessage(sender, "&c你没有权限执行此命令");
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_ERROR_NO_PERMISSION);
                 return true;
             }
 
@@ -158,6 +156,7 @@ public class FlameTechCommand implements CommandExecutor {
                 return true;
             } catch (Exception e) {
                 MessageUtils.logError("Error reloading plugin: " + e.getMessage());
+                // 对于包含异常信息的错误，我们暂时保持原样，或者可以创建一个专门的错误消息
                 MessageUtils.sendMessage(sender, "&c重载插件时发生错误: " + e.getMessage());
                 return true;
             }
@@ -168,35 +167,54 @@ public class FlameTechCommand implements CommandExecutor {
         @Override
         public boolean execute(CommandSender sender, String[] args) {
             if (!sender.hasPermission(Permissions.ADMIN)) {
+                // 非管理员只显示解锁进度
                 if (sender instanceof Player player) {
                     Map<String, Object> playerStats = plugin.getUnlockManager().getPlayerStatistics(player);
-                    MessageUtils.sendMessage(sender, "&7解锁进度: &e" +
-                            playerStats.getOrDefault("total_unlocked", 0) + "/" +
-                            playerStats.getOrDefault("total_available", 0));
+                    MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_PLAYER_PROGRESS,
+                            "%unlocked%", String.valueOf(playerStats.getOrDefault("total_unlocked", 0)),
+                            "%total%", String.valueOf(playerStats.getOrDefault("total_available", 0)));
                 }
                 return true;
             }
 
             try {
-                MessageUtils.sendMessage(sender, "&e&l=== FlameTech 插件信息 ===");
-                MessageUtils.sendMessage(sender, "&7版本: &e" + plugin.getPluginVersion());
-                MessageUtils.sendMessage(sender, "&7已注册物品: &e" + plugin.getItemManager().getRegisteredItemCount());
-                MessageUtils.sendMessage(sender, "&7已注册配方: &e" + plugin.getRecipeManager().getRecipeCount());
-                MessageUtils.sendMessage(sender, "&7已注册多方块: &e" + plugin.getMultiblockManager().getRegisteredStructureCount());
-                MessageUtils.sendMessage(sender, "&7已注册GUI: &e" + plugin.getGuiManager().getRegisteredGUICount());
-                MessageUtils.sendMessage(sender, "&7调试模式: &e" + (plugin.isDebugMode() ? "启用" : "禁用"));
+                // 管理员信息
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_TITLE);
 
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_VERSION,
+                        "%version%", plugin.getPluginVersion());
+
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_ITEMS,
+                        "%count%", String.valueOf(plugin.getItemManager().getRegisteredItemCount()));
+
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_RECIPES,
+                        "%count%", String.valueOf(plugin.getRecipeManager().getRecipeCount()));
+
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_MULTIBLOCKS,
+                        "%count%", String.valueOf(plugin.getMultiblockManager().getRegisteredStructureCount()));
+
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_GUIS,
+                        "%count%", String.valueOf(plugin.getGuiManager().getRegisteredGUICount()));
+
+                String debugStatus = plugin.isDebugMode() ?
+                        plugin.getConfigManager().getLang(Messages.COMMON_STATUS_ENABLED) :
+                        plugin.getConfigManager().getLang(Messages.COMMON_STATUS_DISABLED);
+
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_DEBUG,
+                        "%status%", debugStatus);
+
+                // 如果是玩家，显示解锁进度
                 if (sender instanceof Player player) {
                     Map<String, Object> playerStats = plugin.getUnlockManager().getPlayerStatistics(player);
-                    MessageUtils.sendMessage(sender, "&7解锁进度: &e" +
-                            playerStats.getOrDefault("total_unlocked", 0) + "/" +
-                            playerStats.getOrDefault("total_available", 0));
+                    MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_PLAYER_PROGRESS,
+                            "%unlocked%", String.valueOf(playerStats.getOrDefault("total_unlocked", 0)),
+                            "%total%", String.valueOf(playerStats.getOrDefault("total_available", 0)));
                 }
 
                 return true;
             } catch (Exception e) {
                 MessageUtils.logError("Error showing plugin info: " + e.getMessage());
-                MessageUtils.sendMessage(sender, "&c获取插件信息时发生错误");
+                MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_ERROR_GENERIC);
                 return true;
             }
         }

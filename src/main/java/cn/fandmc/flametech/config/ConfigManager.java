@@ -1,6 +1,8 @@
 package cn.fandmc.flametech.config;
 
 import cn.fandmc.flametech.constants.ConfigKeys;
+import cn.fandmc.flametech.constants.FileConstants;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -41,23 +43,22 @@ public class ConfigManager {
     }
 
     private void initializeConfig() {
-        this.configFile = new File(plugin.getDataFolder(), "config.yml");
+        this.configFile = new File(plugin.getDataFolder(), FileConstants.CONFIG_FILE);
 
         // 创建默认配置文件
         if (!configFile.exists()) {
-            plugin.saveResource("config.yml", false);
+            plugin.saveResource(FileConstants.CONFIG_FILE, false);
         }
 
         this.config = YamlConfiguration.loadConfiguration(configFile);
-        MessageUtils.logInfo("Configuration file loaded successfully");
     }
 
     private void initializeLanguage() {
         // 获取语言设置
-        this.currentLanguage = config.getString(ConfigKeys.LANGUAGE, "zh_cn");
+        this.currentLanguage = config.getString(ConfigKeys.LANGUAGE, FileConstants.DEFAULT_LANGUAGE);
 
         // 创建语言文件夹
-        File langFolder = new File(plugin.getDataFolder(), "lang");
+        File langFolder = new File(plugin.getDataFolder(), FileConstants.LANG_FOLDER);
         if (!langFolder.exists()) {
             langFolder.mkdirs();
         }
@@ -67,11 +68,11 @@ public class ConfigManager {
     }
 
     private void loadLanguageFile() {
-        this.langFile = new File(plugin.getDataFolder(), "lang/" + currentLanguage + ".yml");
+        this.langFile = new File(plugin.getDataFolder(), FileConstants.getLangFilePath(currentLanguage));
 
         // 创建默认语言文件
         if (!langFile.exists()) {
-            plugin.saveResource("lang/" + currentLanguage + ".yml", false);
+            plugin.saveResource(FileConstants.getLangFilePath(currentLanguage), false);
         }
 
         this.langConfig = YamlConfiguration.loadConfiguration(langFile);
@@ -79,7 +80,7 @@ public class ConfigManager {
         // 清空缓存
         clearCache();
 
-        MessageUtils.logInfo("Language file loaded: " + currentLanguage);
+        MessageUtils.logInfo("加载语言文件: " + currentLanguage);
     }
 
     /**
@@ -93,7 +94,7 @@ public class ConfigManager {
             }
 
             // 检查语言是否变更
-            String newLanguage = config.getString(ConfigKeys.LANGUAGE, "zh_cn");
+            String newLanguage = config.getString(ConfigKeys.LANGUAGE, FileConstants.DEFAULT_LANGUAGE);
             if (!newLanguage.equals(currentLanguage)) {
                 this.currentLanguage = newLanguage;
                 loadLanguageFile();
@@ -103,7 +104,7 @@ public class ConfigManager {
             }
 
             lastReloadTime = System.currentTimeMillis();
-            MessageUtils.logInfo("重载完成");
+            MessageUtils.logInfo("Configuration reloaded successfully");
 
         } catch (Exception e) {
             MessageUtils.logError("Failed to reload configuration: " + e.getMessage());
@@ -177,7 +178,8 @@ public class ConfigManager {
 
         // 如果没有找到，返回默认值
         if (result.isEmpty()) {
-            result.add(ChatColor.translateAlternateColorCodes('&', "&c未找到语言列表: " + path));
+            String errorMessage = "&cLanguage list not found: " + path;
+            result.add(ChatColor.translateAlternateColorCodes('&', errorMessage));
         }
 
         // 存入缓存
@@ -188,12 +190,12 @@ public class ConfigManager {
 
     private String getLanguageString(String path) {
         if (langConfig == null) {
-            return ChatColor.translateAlternateColorCodes('&', "&c未找到语言配置文件");
+            return "&cLanguage configuration not found";
         }
 
         String message = langConfig.getString(path);
         if (message == null) {
-            return ChatColor.translateAlternateColorCodes('&', "&c未找到语言键: " + path);
+            return "&cLanguage key not found: " + path;
         }
 
         return message;
@@ -216,6 +218,26 @@ public class ConfigManager {
     }
 
     /**
+     * 安全地获取本地化字符串，如果语言文件未加载则返回默认消息
+     * 主要用于初始化阶段和错误处理
+     */
+    public String getSafeLang(String path, String defaultMessage, String... replacements) {
+        if (langConfig == null) {
+            // 语言文件还未加载，使用默认消息
+            String message = defaultMessage;
+            for (int i = 0; i < replacements.length; i += 2) {
+                if (i + 1 < replacements.length) {
+                    message = message.replace(replacements[i], replacements[i + 1]);
+                }
+            }
+            return ChatColor.translateAlternateColorCodes('&', message);
+        }
+
+        // 语言文件已加载，使用正常的获取方法
+        return getLang(path, replacements);
+    }
+
+    /**
      * 清空缓存
      */
     private void clearCache() {
@@ -227,14 +249,14 @@ public class ConfigManager {
      * 保存默认语言文件
      */
     public void saveDefaultLanguage() {
-        File langFolder = new File(plugin.getDataFolder(), "lang");
+        File langFolder = new File(plugin.getDataFolder(), FileConstants.LANG_FOLDER);
         if (!langFolder.exists()) {
             langFolder.mkdirs();
         }
 
-        File defaultLangFile = new File(langFolder, currentLanguage + ".yml");
+        File defaultLangFile = new File(langFolder, currentLanguage + FileConstants.LANG_FILE_EXTENSION);
         if (!defaultLangFile.exists()) {
-            plugin.saveResource("lang/" + currentLanguage + ".yml", false);
+            plugin.saveResource(FileConstants.getLangFilePath(currentLanguage), false);
         }
 
         loadLanguageFile();

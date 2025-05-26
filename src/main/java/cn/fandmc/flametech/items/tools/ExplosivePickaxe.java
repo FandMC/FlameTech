@@ -3,6 +3,7 @@ package cn.fandmc.flametech.items.tools;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ConfigKeys;
 import cn.fandmc.flametech.constants.ItemKeys;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.items.base.SpecialTool;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import cn.fandmc.flametech.utils.FoliaUtils;
@@ -29,26 +30,27 @@ public class ExplosivePickaxe extends SpecialTool {
     private final AtomicBoolean isProcessing = new AtomicBoolean(false);
 
     public ExplosivePickaxe(Main plugin) {
-        super(plugin, ItemKeys.ID_EXPLOSIVE_PICKAXE, "爆炸镐");
+        super(plugin, ItemKeys.ID_EXPLOSIVE_PICKAXE,
+                plugin.getConfigManager().getSafeLang(Messages.ITEMS_EXPLOSIVE_PICKAXE_NAME, "爆炸镐"));
     }
 
     @Override
     public ItemStack createItem() {
+        String displayName = plugin.getConfigManager().getLang(Messages.ITEMS_EXPLOSIVE_PICKAXE_NAME);
+
+        List<String> lore = plugin.getConfigManager().getStringList(Messages.ITEMS_EXPLOSIVE_PICKAXE_LORE);
+        List<String> processedLore = new ArrayList<>();
+
+        int radius = getExplosionRadius();
+
+        for (String line : lore) {
+            String processedLine = line.replace("%radius%", String.valueOf(radius));
+            processedLore.add(processedLine);
+        }
+
         return new ItemBuilder(Material.IRON_PICKAXE)
-                .displayName("&c&l爆炸镐")
-                .lore(
-                        "&7一把充满破坏力的镐子",
-                        "&7能够炸毁大片区域的方块",
-                        "&c小心使用！",
-                        "",
-                        "&e功能:",
-                        "&7• 破坏" + getExplosionRadius() + "格半径内的方块",
-                        "&7• 可以破坏任何可破坏的方块",
-                        "&7• 产生爆炸效果和音效",
-                        "&7• 消耗额外耐久度",
-                        "",
-                        "&c[FlameTech 工具]"
-                )
+                .displayName(displayName)
+                .lore(processedLore)
                 .nbt(nbtKey, "true")
                 .build();
     }
@@ -309,13 +311,6 @@ public class ExplosivePickaxe extends SpecialTool {
         // 损坏工具
         int damageAmount = Math.min(brokenCount + 1, getMaxDurabilityDamage());
         ItemUtils.damageItem(tool, damageAmount);
-
-        // 发送消息
-        if (brokenCount > 0) {
-            MessageUtils.sendLocalizedMessage(player,
-                    cn.fandmc.flametech.constants.Messages.TOOLS_EXPLOSIVE_EXPLOSION,
-                    "%blocks%", String.valueOf(brokenCount));
-        }
     }
 
     private void playExplosionEffects(Location center) {

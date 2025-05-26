@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.gui.impl;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.base.BaseGUI;
 import cn.fandmc.flametech.gui.components.GUIComponent;
 import cn.fandmc.flametech.gui.components.StaticComponent;
@@ -130,7 +131,8 @@ public class ItemRecipeGUI extends BaseGUI {
             if (lore == null) lore = new ArrayList<>();
 
             lore.add("");
-            lore.add("&7需要数量: x" + ingredient.getAmount());
+            lore.add(plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_INGREDIENT_AMOUNT,
+                    "%amount%", String.valueOf(ingredient.getAmount())));
 
             meta.setLore(lore);
             ingredient.setItemMeta(meta);
@@ -142,13 +144,15 @@ public class ItemRecipeGUI extends BaseGUI {
         String multiblockDisplayName = getMultiblockDisplayName(fromMultiblock);
 
         return new ItemBuilder(Material.CRAFTING_TABLE)
-                .displayName("&e配方信息")
+                .displayName(plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_TYPE_INDICATOR_NAME))
                 .lore(
-                        "&7配方类型: &e" + recipe.getType().getDisplayName(),
-                        "&7合成来源: &e" + multiblockDisplayName,
+                        plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_TYPE_INDICATOR_TYPE,
+                                "%type%", recipe.getType().getDisplayName()),
+                        plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_TYPE_INDICATOR_SOURCE,
+                                "%source%", multiblockDisplayName),
                         "",
-                        "&7在指定结构中使用此配方",
-                        "&7来合成所需物品"
+                        plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_TYPE_INDICATOR_USAGE_LINE1),
+                        plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_TYPE_INDICATOR_USAGE_LINE2)
                 )
                 .build();
     }
@@ -185,11 +189,12 @@ public class ItemRecipeGUI extends BaseGUI {
      */
     private String formatMultiblockId(String multiblockId) {
         if (multiblockId == null || multiblockId.isEmpty()) {
-            return "未知结构";
+            return plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_UNKNOWN_STRUCTURE);
         }
 
         // 移除前缀并格式化
-        String formatted = multiblockId.replace("enhanced_crafting_table", "增强工作台")
+        String formatted = multiblockId.replace("enhanced_crafting_table",
+                        plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_ENHANCED_CRAFTING_TABLE))
                 .replace("_", " ");
 
         // 首字母大写
@@ -208,11 +213,13 @@ public class ItemRecipeGUI extends BaseGUI {
             if (lore == null) lore = new ArrayList<>();
 
             lore.add("");
-            lore.add("&e&l合成结果");
-            lore.add("&7数量: &ax" + resultItem.getAmount());
+            lore.add(plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_RESULT_TITLE));
+            lore.add(plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_RESULT_AMOUNT,
+                    "%amount%", String.valueOf(resultItem.getAmount())));
             lore.add("");
-            lore.add("&7将上方材料按图案摆放");
-            lore.add("&7在 &e" + getMultiblockDisplayName(fromMultiblock) + " &7中合成");
+            lore.add(plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_RESULT_INSTRUCTION_LINE1));
+            lore.add(plugin.getConfigManager().getLang(Messages.GUI_ITEM_RECIPE_RESULT_INSTRUCTION_LINE2,
+                    "%machine%", getMultiblockDisplayName(fromMultiblock)));
 
             meta.setLore(lore);
             resultItem.setItemMeta(meta);

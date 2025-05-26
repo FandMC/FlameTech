@@ -3,6 +3,7 @@ package cn.fandmc.flametech.items.tools;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ConfigKeys;
 import cn.fandmc.flametech.constants.ItemKeys;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.items.base.SpecialTool;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import cn.fandmc.flametech.utils.ItemUtils;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,26 +50,20 @@ public class SmeltingPickaxe extends SpecialTool {
     }
 
     public SmeltingPickaxe(Main plugin) {
-        super(plugin, ItemKeys.ID_SMELTING_PICKAXE, "熔炼镐");
+        super(plugin, ItemKeys.ID_SMELTING_PICKAXE,
+                plugin.getConfigManager().getSafeLang(Messages.ITEMS_SMELTING_PICKAXE_NAME, "熔炼镐"));
     }
 
     @Override
     public ItemStack createItem() {
+        String displayName = plugin.getConfigManager().getLang(Messages.ITEMS_SMELTING_PICKAXE_NAME);
+
+        // 获取 lore 列表
+        List<String> lore = plugin.getConfigManager().getStringList(Messages.ITEMS_SMELTING_PICKAXE_LORE);
+
         return new ItemBuilder(Material.IRON_PICKAXE)
-                .displayName("&6&l熔炼镐")
-                .lore(
-                        "&7一把能够自动熔炼的镐子",
-                        "&7挖掘矿物时自动熔炼成锭",
-                        "&6节省熔炉燃料！",
-                        "",
-                        "&e功能:",
-                        "&7• 矿石直接掉落锭",
-                        "&7• 石头变成平滑石头",
-                        "&7• 沙子变成玻璃",
-                        "&7• 播放熔炼音效和粒子",
-                        "",
-                        "&c[FlameTech 工具]"
-                )
+                .displayName(displayName)
+                .lore(lore)
                 .nbt(nbtKey, "true")
                 .build();
     }

@@ -1,7 +1,8 @@
 name: FlameTech
-version: '0.0.7'
+version: '0.0.8'
 main: cn.fandmc.flametech.Main
 api-version: '1.21'
+authors: [20018]
 folia-supported: true
 commands:
   flametech:

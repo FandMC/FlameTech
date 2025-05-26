@@ -33,19 +33,14 @@ public class Main extends JavaPlugin {
         try {
             printStartupBanner();
 
-            // 初始化FoliaUtils（必须在最早期初始化）
             FoliaUtils.initialize(this);
 
-            // 初始化管理器
             initializeManagers();
 
-            // 注册命令
             registerCommands();
 
-            // 注册监听器
             registerListeners();
 
-            // 注册默认内容
             registerDefaultContent();
         } catch (Exception e) {
             MessageUtils.logError("Failed to enable FlameTech plugin: " + e.getMessage());
@@ -77,24 +72,22 @@ public class Main extends JavaPlugin {
                  |  __| | |/ _` | '_ ` _ \\ / _ \\ |/ _ \\/ __| '_ \\\s
                  | |    | | (_| | | | | | |  __/ |  __/ (__| | | |
                  |_|    |_|\\__,_|_| |_| |_|\\___|_|\\___|\\___|_| |_|
+                 热力科技
                 """);
 
         MessageUtils.logInfo("FlameTech v" + getDescription().getVersion() + " by " +
                 String.join(", ", getDescription().getAuthors()));
-        MessageUtils.logInfo("Server: " + getServer().getName() + " " + getServer().getVersion());
+        MessageUtils.logInfo("运行于: " + getServer().getName() + " " + getServer().getVersion());
     }
 
     private void initializeManagers() {
-        // 确保数据文件夹存在
         if (!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
 
-        // 初始化配置管理器
         this.configManager = new ConfigManager(this);
         saveDefaultConfig();
 
-        // 初始化各个管理器
         this.itemManager = new ItemManager(this);
         this.unlockManager = new UnlockManager(this);
         this.multiblockManager = new MultiblockManager(this);
@@ -113,19 +106,14 @@ public class Main extends JavaPlugin {
     }
 
     private void registerDefaultContent() {
-        // 注册默认物品
         itemManager.registerDefaultItems();
 
-        // 注册默认多方块结构
         multiblockManager.registerDefaultStructures();
 
-        // 注册默认配方
         recipeManager.registerDefaultRecipes();
 
-        // 注册默认解锁项
         unlockManager.registerDefaultUnlockables();
 
-        // 注册默认GUI
         guiManager.registerDefaultGUIs();
     }
 

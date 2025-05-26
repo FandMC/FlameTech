@@ -1,7 +1,10 @@
 package cn.fandmc.flametech.listeners;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.ItemKeys;
 import cn.fandmc.flametech.gui.manager.GUIManager;
+import cn.fandmc.flametech.items.base.CustomItem;
+import cn.fandmc.flametech.items.tools.MagnetTool;
 import cn.fandmc.flametech.multiblock.manager.MultiblockManager;
 import cn.fandmc.flametech.utils.BookUtils;
 import cn.fandmc.flametech.utils.MessageUtils;
@@ -9,15 +12,15 @@ import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-/**
- * 玩家交互事件监听器
- */
+import java.util.Optional;
+
 public class PlayerInteractListener implements Listener {
 
     private final Main plugin;
@@ -30,18 +33,26 @@ public class PlayerInteractListener implements Listener {
         this.guiManager = plugin.getGuiManager();
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getHand() != EquipmentSlot.HAND) {
-            return;
-        }
 
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
 
         try {
+            if (plugin.isDebugMode()) {
+                MessageUtils.logInfo("PlayerInteract: " + event.getAction() +
+                        ", Item: " + (item != null ? item.getType() : "null") +
+                        ", Player: " + player.getName());
+            }
+
             // 处理指南书点击
             if (handleGuideBookClick(event, player, item)) {
+                return;
+            }
+
+            // 处理吸铁石右键点击 - 放在多方块处理之前
+            if (handleMagnetClick(event, player, item)) {
                 return;
             }
 
@@ -69,9 +80,56 @@ public class PlayerInteractListener implements Listener {
         }
 
         event.setCancelled(true);
-        String action = BookUtils.getBookAction(item);
-        guiManager.openGUI(player, action);
+        guiManager.openGUI(player, "main");
         return true;
+    }
+
+    /**
+     * 处理吸铁石点击
+     */
+    private boolean handleMagnetClick(PlayerInteractEvent event, Player player, ItemStack item) {
+
+        // 调试信息
+        if (plugin.isDebugMode()) {
+            MessageUtils.logInfo("Checking magnet click for item: " +
+                    (item != null ? item.getType() : "null"));
+        }
+
+        // 检查是否是吸铁石
+        if (!plugin.getItemManager().isMagnet(item)) {
+            return false;
+        }
+
+        // 调试信息
+        if (plugin.isDebugMode()) {
+            MessageUtils.logInfo("Magnet detected! Processing click...");
+        }
+
+        // 取消事件，防止其他处理
+        event.setCancelled(true);
+
+        try {
+            // 获取吸铁石工具实例并处理点击
+            Optional<CustomItem> magnetOpt = plugin.getItemManager().getCustomItem(ItemKeys.ID_MAGNET);
+            if (magnetOpt.isPresent() && magnetOpt.get() instanceof MagnetTool magnetTool) {
+                // 调试信息
+                if (plugin.isDebugMode()) {
+                    MessageUtils.logInfo("Calling magnet handleRightClick...");
+                }
+
+                magnetTool.handleRightClick(event, player, item);
+                return true;
+            } else {
+                // 调试信息
+                MessageUtils.logError("Magnet tool not found or wrong type!");
+                MessageUtils.sendMessage(player, "&c吸铁石工具未正确注册！");
+                return false;
+            }
+        } catch (Exception e) {
+            MessageUtils.logError("Error handling magnet click: " + e.getMessage());
+            MessageUtils.sendMessage(player, "&c使用吸铁石时发生错误: " + e.getMessage());
+            return false;
+        }
     }
 
     private boolean handleMultiblockInteraction(PlayerInteractEvent event, Player player) {

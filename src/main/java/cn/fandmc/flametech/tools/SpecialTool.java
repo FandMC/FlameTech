@@ -1,6 +1,8 @@
 package cn.fandmc.flametech.tools;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
+import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -9,6 +11,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class SpecialTool {
     protected final Main plugin;
@@ -68,19 +73,50 @@ public abstract class SpecialTool {
      * 获取格式化的显示名称
      */
     protected String getFormattedDisplayName() {
-        return "§6§l" + displayName;
+        try {
+            // 从配置文件获取显示名称格式
+            String format = plugin.getConfigManager().getLang(Messages.TOOLS_SPECIAL_TOOL_DISPLAY_NAME_FORMAT);
+
+            // 替换 %name% 参数
+            String formattedName = format.replace("%name%", displayName);
+
+            // 应用颜色代码
+            return MessageUtils.colorize(formattedName);
+
+        } catch (Exception e) {
+            // 如果配置加载失败，使用默认格式
+            MessageUtils.logWarning("Failed to load special tool display name format, using default: " + e.getMessage());
+            return MessageUtils.colorize("&6&l" + displayName);
+        }
     }
 
     /**
      * 获取工具描述
      */
-    protected java.util.List<String> getToolLore() {
-        return java.util.Arrays.asList(
-                "§7特殊工具",
-                "§7具有独特的功能",
-                "",
-                "§e[FlameTech 工具]"
-        );
+    protected List<String> getToolLore() {
+       List<String> lore = plugin.getConfigManager().getStringList(Messages.TOOLS_SPECIAL_TOOL_DEFAULT_LORE);
+       return MessageUtils.colorize(lore);
+
+    }
+
+    /**
+     * 获取本地化的工具描述（供子类重写）
+     */
+    protected List<String> getLocalizedToolLore() {
+        return getToolLore();
+    }
+
+    /**
+     * 获取工具信息
+     */
+    public java.util.Map<String, Object> getToolInfo() {
+        java.util.Map<String, Object> info = new java.util.HashMap<>();
+        info.put("id", toolId);
+        info.put("display_name", displayName);
+        info.put("formatted_display_name", getFormattedDisplayName());
+        info.put("enabled", isEnabled());
+        info.put("lore_lines", getToolLore().size());
+        return info;
     }
 
     public String getToolId() {
@@ -89,5 +125,13 @@ public abstract class SpecialTool {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public Main getPlugin() {
+        return plugin;
+    }
+
+    public NamespacedKey getToolKey() {
+        return toolKey;
     }
 }

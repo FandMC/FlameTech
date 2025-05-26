@@ -3,8 +3,7 @@ package cn.fandmc.flametech.items.manager;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ItemKeys;
 import cn.fandmc.flametech.items.base.CustomItem;
-import cn.fandmc.flametech.items.tools.ExplosivePickaxe;
-import cn.fandmc.flametech.items.tools.SmeltingPickaxe;
+import cn.fandmc.flametech.items.tools.*;
 import cn.fandmc.flametech.utils.ItemUtils;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
@@ -33,6 +32,7 @@ public class ItemManager {
             // 注册工具
             registerItem(new ExplosivePickaxe(plugin));
             registerItem(new SmeltingPickaxe(plugin));
+            registerItem(new MagnetTool(plugin));
 
             MessageUtils.logInfo("注册了 " + customItems.size() + " 个自定义物品");
 
@@ -58,7 +58,6 @@ public class ItemManager {
         }
 
         customItems.put(itemId, item);
-        MessageUtils.logInfo("成功注册自定义物品：" + itemId);
     }
 
     /**
@@ -127,6 +126,14 @@ public class ItemManager {
     }
 
     /**
+     * 创建吸铁石
+     */
+    public ItemStack createMagnet() {
+        return createItem(ItemKeys.ID_MAGNET)
+                .orElseThrow(() -> new IllegalStateException("Magnet not registered"));
+    }
+
+    /**
      * 检查是否为爆炸镐
      */
     public boolean isExplosivePickaxe(ItemStack item) {
@@ -140,6 +147,15 @@ public class ItemManager {
      */
     public boolean isSmeltingPickaxe(ItemStack item) {
         return getCustomItem(ItemKeys.ID_SMELTING_PICKAXE)
+                .map(customItem -> customItem.isCustomItem(item))
+                .orElse(false);
+    }
+
+    /**
+     * 检查是否为吸铁石
+     */
+    public boolean isMagnet(ItemStack item) {
+        return getCustomItem(ItemKeys.ID_MAGNET)
                 .map(customItem -> customItem.isCustomItem(item))
                 .orElse(false);
     }

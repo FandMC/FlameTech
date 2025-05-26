@@ -56,8 +56,8 @@ public class MultiblockManager {
         }
 
         structures.put(structureId, structure);
-        MessageUtils.logInfo("注册多方块结构: " + structure.getDisplayName() +
-                " (ID: " + structureId + ")");
+        //MessageUtils.logInfo("注册多方块结构: " + structure.getDisplayName() +
+                //" (ID: " + structureId + ")");
         return true;
     }
 

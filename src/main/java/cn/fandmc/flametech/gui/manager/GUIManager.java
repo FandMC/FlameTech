@@ -23,7 +23,6 @@ public class GUIManager {
     private final Map<String, BaseGUI> registeredGUIs = new HashMap<>();
     private final Map<Player, BaseGUI> openGUIs = new HashMap<>();
 
-    // 添加正在关闭的GUI集合，防止递归
     private final Set<Player> closingGUIs = ConcurrentHashMap.newKeySet();
 
     private static GUIManager instance;
@@ -41,10 +40,8 @@ public class GUIManager {
      */
     public void registerDefaultGUIs() {
         try {
-            // 注册主GUI
             registerGUI(new MainGUI(plugin));
 
-            // 注册分类GUI
             registerGUI(new BasicMachinesGUI(plugin));
             registerGUI(new ToolsGUI(plugin));
 
@@ -72,7 +69,7 @@ public class GUIManager {
         }
 
         registeredGUIs.put(guiId, gui);
-        MessageUtils.logInfo("注册GUI: " + guiId);
+        //MessageUtils.logInfo("注册GUI: " + guiId);
     }
 
     /**

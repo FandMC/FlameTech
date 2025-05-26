@@ -2,8 +2,7 @@ package cn.fandmc.flametech.gui.impl;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.gui.base.PaginatedGUI;
-import cn.fandmc.flametech.gui.buttons.tools.ExplosivePickaxeButton;
-import cn.fandmc.flametech.gui.buttons.tools.SmeltingPickaxeButton;
+import cn.fandmc.flametech.gui.buttons.tools.*;
 import cn.fandmc.flametech.gui.components.NavigationComponent;
 import org.bukkit.entity.Player;
 
@@ -26,6 +25,7 @@ public class ToolsGUI extends PaginatedGUI {
         // 添加工具按钮
         addPageItem(new ExplosivePickaxeButton());
         addPageItem(new SmeltingPickaxeButton());
+        addPageItem(new MagnetButton());
 
         // 调用父类方法构建GUI
         super.buildGUI(player);

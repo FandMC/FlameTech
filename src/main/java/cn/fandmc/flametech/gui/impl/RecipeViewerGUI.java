@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.gui.impl;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.base.BaseGUI;
 import cn.fandmc.flametech.gui.components.GUIComponent;
 import cn.fandmc.flametech.gui.components.StaticComponent;
@@ -13,6 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -42,7 +44,7 @@ public class RecipeViewerGUI extends BaseGUI {
         String displayName = plugin.getConfigManager().getLang(langKey);
 
         // 如果没有找到配置，尝试从结构获取
-        if (displayName.contains("未找到语言键")) {
+        if (displayName.contains(plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_LANGUAGE_KEY_NOT_FOUND))) {
             Optional<MultiblockStructure> structureOpt = plugin.getMultiblockManager().getStructure(multiblockId);
             if (structureOpt.isPresent()) {
                 return structureOpt.get().getDisplayName();
@@ -84,16 +86,16 @@ public class RecipeViewerGUI extends BaseGUI {
                                 StructureLayoutGUI layoutGUI = new StructureLayoutGUI(plugin, structureOpt.get(), multiblockId);
                                 layoutGUI.open(player);
                             } else {
-                                MessageUtils.sendMessage(player, "&c无法找到结构定义");
+                                MessageUtils.sendMessage(player, plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_STRUCTURE_NOT_FOUND));
                             }
                         } catch (Exception e) {
                             MessageUtils.logError("Failed to open structure layout GUI: " + e.getMessage());
-                            MessageUtils.sendMessage(player, "&c打开结构布局时发生错误");
+                            MessageUtils.sendMessage(player, plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_STRUCTURE_LAYOUT_ERROR));
                         }
                     });
                 } catch (Exception e) {
                     MessageUtils.logError("Error in structure info button: " + e.getMessage());
-                    MessageUtils.sendMessage(player, "&c操作失败，请稍后重试");
+                    MessageUtils.sendMessage(player, plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_OPERATION_FAILED));
                 }
             }
         });
@@ -103,13 +105,8 @@ public class RecipeViewerGUI extends BaseGUI {
             @Override
             public ItemStack getDisplayItem() {
                 return new ItemBuilder(Material.CRAFTING_TABLE)
-                        .displayName("&a查看配方")
-                        .lore(
-                                "&7查看此结构的所有配方",
-                                "&7包含合成材料和产出物",
-                                "",
-                                "&e点击打开配方列表"
-                        )
+                        .displayName(plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_VIEW_RECIPES_NAME))
+                        .lore(plugin.getConfigManager().getStringList(Messages.GUI_RECIPE_VIEWER_VIEW_RECIPES_LORE))
                         .build();
             }
 
@@ -123,12 +120,12 @@ public class RecipeViewerGUI extends BaseGUI {
                             recipesGUI.open(player);
                         } catch (Exception e) {
                             MessageUtils.logError("Failed to open structure recipes GUI: " + e.getMessage());
-                            MessageUtils.sendMessage(player, "&c打开配方列表时发生错误");
+                            MessageUtils.sendMessage(player, plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_RECIPES_LIST_ERROR));
                         }
                     });
                 } catch (Exception e) {
                     MessageUtils.logError("Error in view recipes button: " + e.getMessage());
-                    MessageUtils.sendMessage(player, "&c操作失败，请稍后重试");
+                    MessageUtils.sendMessage(player, plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_OPERATION_FAILED));
                 }
             }
         });
@@ -175,40 +172,37 @@ public class RecipeViewerGUI extends BaseGUI {
         Optional<MultiblockStructure> structureOpt = plugin.getMultiblockManager().getStructure(multiblockId);
 
         if (structureOpt.isEmpty()) {
+            List<String> failedLore = plugin.getConfigManager().getStringList(Messages.GUI_RECIPE_VIEWER_STRUCTURE_LOAD_FAILED_LORE);
+            // 替换参数
+            for (int i = 0; i < failedLore.size(); i++) {
+                failedLore.set(i, failedLore.get(i).replace("%id%", multiblockId));
+            }
+
             return new ItemBuilder(Material.BARRIER)
-                    .displayName("&c结构加载失败")
-                    .lore(
-                            "&7无法找到结构定义",
-                            "&7结构ID: &e" + multiblockId,
-                            "",
-                            "&c请联系管理员检查插件配置"
-                    )
+                    .displayName(plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_STRUCTURE_LOAD_FAILED))
+                    .lore(failedLore)
                     .build();
         }
 
         MultiblockStructure structure = structureOpt.get();
         String displayName = getMultiblockDisplayName(plugin, multiblockId);
 
+        // 获取结构信息lore并替换参数
+        List<String> structureLore = plugin.getConfigManager().getStringList(Messages.GUI_RECIPE_VIEWER_STRUCTURE_INFO_LORE);
+        for (int i = 0; i < structureLore.size(); i++) {
+            String line = structureLore.get(i);
+            line = line.replace("%name%", displayName);
+            line = line.replace("%blocks%", String.valueOf(structure.getBlockCount()));
+            line = line.replace("%dimensions%",
+                    structure.getBoundingBox().getWidth() + "x" +
+                            structure.getBoundingBox().getHeight() + "x" +
+                            structure.getBoundingBox().getDepth());
+            structureLore.set(i, line);
+        }
+
         return new ItemBuilder(Material.STRUCTURE_BLOCK)
-                .displayName("&6&l结构布局图")
-                .lore(
-                        "&7结构名称: &e" + displayName,
-                        "&7方块数量: &e" + structure.getBlockCount(),
-                        "&7结构尺寸: &e" +
-                                structure.getBoundingBox().getWidth() + "x" +
-                                structure.getBoundingBox().getHeight() + "x" +
-                                structure.getBoundingBox().getDepth(),
-                        "",
-                        "&7搭建说明:",
-                        "&7• 按照指定布局搭建",
-                        "&7• 搭建完成后右键主方块",
-                        "&7• 严格按照层级和位置摆放",
-                        "",
-                        "&a&l▶ 点击查看详细搭建图",
-                        "&7查看每一层的具体摆放方式",
-                        "",
-                        "&e[结构布局]"
-                )
+                .displayName(plugin.getConfigManager().getLang(Messages.GUI_RECIPE_VIEWER_STRUCTURE_INFO_NAME))
+                .lore(structureLore)
                 .glow()
                 .build();
     }

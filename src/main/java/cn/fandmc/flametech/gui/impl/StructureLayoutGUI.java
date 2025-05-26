@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.gui.impl;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.base.BaseGUI;
 import cn.fandmc.flametech.gui.components.GUIComponent;
 import cn.fandmc.flametech.gui.components.StaticComponent;
@@ -40,7 +41,8 @@ public class StructureLayoutGUI extends BaseGUI {
 
     public StructureLayoutGUI(Main plugin, MultiblockStructure structure, String multiblockId) {
         super(plugin, "structure_layout_" + multiblockId, 54,
-                "&6结构布局: " + structure.getDisplayName());
+                plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_TITLE,
+                        "%name%", structure.getDisplayName()));
         this.structure = structure;
         this.multiblockId = multiblockId;
 
@@ -124,15 +126,15 @@ public class StructureLayoutGUI extends BaseGUI {
         Map<BlockOffset, Material> currentLayerBlocks = layerStructure.get(currentLayer);
         if (currentLayerBlocks == null || currentLayerBlocks.isEmpty()) {
             // 显示空层级提示
+            List<String> emptyLore = new ArrayList<>(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_EMPTY_LAYER_LORE));
+            for (int i = 0; i < emptyLore.size(); i++) {
+                emptyLore.set(i, emptyLore.get(i).replace("%layer%", String.valueOf(currentLayer)));
+            }
+
             setComponent(22, new StaticComponent(
                     new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS)
-                            .displayName("&7空层级")
-                            .lore(
-                                    "&7此层级没有方块",
-                                    "&7Y = " + currentLayer,
-                                    "",
-                                    "&7使用上下按钮切换到有方块的层级"
-                            )
+                            .displayName(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_EMPTY_LAYER_NAME))
+                            .lore(emptyLore)
                             .build()
             ));
             return;
@@ -150,16 +152,17 @@ public class StructureLayoutGUI extends BaseGUI {
 
         // 如果结构太大，显示警告
         if ((maxX - minX) > 6 || (maxZ - minZ) > 2) {
+            List<String> oversizedLore = new ArrayList<>(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_OVERSIZED_LORE));
+            for (int i = 0; i < oversizedLore.size(); i++) {
+                String line = oversizedLore.get(i);
+                line = line.replace("%size%", (maxX - minX + 1) + "x" + (maxZ - minZ + 1));
+                oversizedLore.set(i, line);
+            }
+
             setComponent(13, new StaticComponent(
                     new ItemBuilder(Material.YELLOW_STAINED_GLASS)
-                            .displayName("&e结构过大")
-                            .lore(
-                                    "&7此层级的结构超过了显示范围",
-                                    "&7尺寸: " + (maxX - minX + 1) + "x" + (maxZ - minZ + 1),
-                                    "&7显示限制: 7x3",
-                                    "",
-                                    "&7请参考坐标信息进行搭建"
-                            )
+                            .displayName(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_OVERSIZED_NAME))
+                            .lore(oversizedLore)
                             .build()
             ));
         }
@@ -203,29 +206,31 @@ public class StructureLayoutGUI extends BaseGUI {
         String displayName;
         List<String> lore = new ArrayList<>();
 
-        // 根据材料类型设置显示名称
+        // 根据材料类型设置显示名称和lore
         switch (material) {
             case CRAFTING_TABLE:
-                displayName = "&6工作台 &7(主方块)";
-                lore.add("&7这是结构的主方块");
-                lore.add("&7右键点击此方块来激活结构");
+                displayName = plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_CRAFTING_TABLE_NAME);
+                lore.addAll(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_CRAFTING_TABLE_LORE));
                 break;
             case DISPENSER:
-                displayName = "&e发射器";
-                lore.add("&7用于存放合成材料");
-                lore.add("&7将物品放入其中进行合成");
+                displayName = plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_DISPENSER_NAME);
+                lore.addAll(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_DISPENSER_LORE));
                 break;
             default:
-                displayName = "&f" + formatMaterialName(material);
-                lore.add("&7结构组成方块");
+                displayName = plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_GENERIC_NAME,
+                        "%material%", formatMaterialName(material));
+                lore.addAll(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_GENERIC_LORE));
         }
 
         lore.add("");
-        lore.add("&7坐标: &e(" + offset.getX() + ", " + offset.getY() + ", " + offset.getZ() + ")");
+        lore.add(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_COORDINATES,
+                "%x%", String.valueOf(offset.getX()),
+                "%y%", String.valueOf(offset.getY()),
+                "%z%", String.valueOf(offset.getZ())));
 
         // 如果是主方块（原点），特别标记
         if (offset.getX() == 0 && offset.getY() == 0 && offset.getZ() == 0) {
-            lore.add("&6⭐ 主方块位置");
+            lore.add(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_BLOCK_MAIN_MARKER));
         }
 
         return new ItemBuilder(material)
@@ -244,11 +249,26 @@ public class StructureLayoutGUI extends BaseGUI {
             @Override
             public ItemStack getDisplayItem() {
                 boolean canGoUp = currentLayer < maxY;
+                String displayName = plugin.getConfigManager().getLang(canGoUp ?
+                        Messages.GUI_STRUCTURE_LAYOUT_LAYER_UP_ENABLED :
+                        Messages.GUI_STRUCTURE_LAYOUT_LAYER_UP_DISABLED);
+
+                List<String> lore;
+                if (canGoUp) {
+                    lore = new ArrayList<>(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_LAYER_UP_ENABLED_LORE));
+                    for (int i = 0; i < lore.size(); i++) {
+                        String line = lore.get(i);
+                        line = line.replace("%current%", String.valueOf(currentLayer));
+                        line = line.replace("%next%", String.valueOf(currentLayer + 1));
+                        lore.set(i, line);
+                    }
+                } else {
+                    lore = new ArrayList<>(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_LAYER_UP_DISABLED_LORE));
+                }
+
                 return new ItemBuilder(canGoUp ? Material.LIME_STAINED_GLASS : Material.GRAY_STAINED_GLASS)
-                        .displayName(canGoUp ? "&a▲ 上一层" : "&7▲ 已是最高层")
-                        .lore(canGoUp ?
-                                Arrays.asList("&7点击查看上一层", "&7当前: Y=" + currentLayer, "&7上层: Y=" + (currentLayer + 1)) :
-                                Arrays.asList("&7已经是最高层了"))
+                        .displayName(displayName)
+                        .lore(lore)
                         .build();
             }
 
@@ -271,11 +291,26 @@ public class StructureLayoutGUI extends BaseGUI {
             @Override
             public ItemStack getDisplayItem() {
                 boolean canGoDown = currentLayer > minY;
+                String displayName = plugin.getConfigManager().getLang(canGoDown ?
+                        Messages.GUI_STRUCTURE_LAYOUT_LAYER_DOWN_ENABLED :
+                        Messages.GUI_STRUCTURE_LAYOUT_LAYER_DOWN_DISABLED);
+
+                List<String> lore;
+                if (canGoDown) {
+                    lore = plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_LAYER_DOWN_ENABLED_LORE);
+                    for (int i = 0; i < lore.size(); i++) {
+                        String line = lore.get(i);
+                        line = line.replace("%current%", String.valueOf(currentLayer));
+                        line = line.replace("%next%", String.valueOf(currentLayer - 1));
+                        lore.set(i, line);
+                    }
+                } else {
+                    lore = plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_LAYER_DOWN_DISABLED_LORE);
+                }
+
                 return new ItemBuilder(canGoDown ? Material.RED_STAINED_GLASS : Material.GRAY_STAINED_GLASS)
-                        .displayName(canGoDown ? "&c▼ 下一层" : "&7▼ 已是最底层")
-                        .lore(canGoDown ?
-                                Arrays.asList("&7点击查看下一层", "&7当前: Y=" + currentLayer, "&7下层: Y=" + (currentLayer - 1)) :
-                                Arrays.asList("&7已经是最底层了"))
+                        .displayName(displayName)
+                        .lore(lore)
                         .build();
             }
 
@@ -294,16 +329,20 @@ public class StructureLayoutGUI extends BaseGUI {
         });
 
         // 层级信息
+        List<String> layerInfoLore = plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_LAYER_INFO_LORE);
+        for (int i = 0; i < layerInfoLore.size(); i++) {
+            String line = layerInfoLore.get(i);
+            line = line.replace("%current%", String.valueOf(currentLayer));
+            line = line.replace("%min%", String.valueOf(minY));
+            line = line.replace("%max%", String.valueOf(maxY));
+            line = line.replace("%total%", String.valueOf(maxY - minY + 1));
+            layerInfoLore.set(i, line);
+        }
+
         setComponent(LAYER_INFO_SLOT, new StaticComponent(
                 new ItemBuilder(Material.PAPER)
-                        .displayName("&e当前层级信息")
-                        .lore(
-                                "&7当前层级: &eY = " + currentLayer,
-                                "&7结构范围: &eY " + minY + " ~ " + maxY,
-                                "&7总层数: &e" + (maxY - minY + 1),
-                                "",
-                                "&7使用上下按钮切换层级"
-                        )
+                        .displayName(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_LAYER_INFO_NAME))
+                        .lore(layerInfoLore)
                         .build()
         ));
 
@@ -334,22 +373,22 @@ public class StructureLayoutGUI extends BaseGUI {
 
     private void setupInfoDisplay() {
         // 结构总体信息
+        List<String> structureInfoLore = plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_LAYOUT_STRUCTURE_INFO_LORE);
+        for (int i = 0; i < structureInfoLore.size(); i++) {
+            String line = structureInfoLore.get(i);
+            line = line.replace("%name%", structure.getDisplayName());
+            line = line.replace("%blocks%", String.valueOf(structure.getBlockCount()));
+            line = line.replace("%dimensions%",
+                    structure.getBoundingBox().getWidth() + "x" +
+                            structure.getBoundingBox().getHeight() + "x" +
+                            structure.getBoundingBox().getDepth());
+            structureInfoLore.set(i, line);
+        }
+
         setComponent(INFO_SLOT, new StaticComponent(
                 new ItemBuilder(Material.BOOK)
-                        .displayName("&6结构信息")
-                        .lore(
-                                "&7结构名称: &e" + structure.getDisplayName(),
-                                "&7总方块数: &e" + structure.getBlockCount(),
-                                "&7结构尺寸: &e" +
-                                        (structure.getBoundingBox().getWidth()) + "x" +
-                                        (structure.getBoundingBox().getHeight()) + "x" +
-                                        (structure.getBoundingBox().getDepth()),
-                                "",
-                                "&7搭建提示:",
-                                "&e• 严格按照层级从下往上搭建",
-                                "&e• 确保每个方块位置正确",
-                                "&e• 主方块(0,0,0)为激活点"
-                        )
+                        .displayName(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_LAYOUT_STRUCTURE_INFO_NAME))
+                        .lore(structureInfoLore)
                         .build()
         ));
     }

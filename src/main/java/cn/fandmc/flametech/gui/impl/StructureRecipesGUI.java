@@ -1,9 +1,9 @@
 package cn.fandmc.flametech.gui.impl;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.base.PaginatedGUI;
 import cn.fandmc.flametech.gui.components.GUIComponent;
-import cn.fandmc.flametech.gui.components.NavigationComponent;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.unlock.data.UnlockResult;
@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,17 @@ public class StructureRecipesGUI extends PaginatedGUI {
 
     private StructureRecipesGUI(Main plugin, String multiblockId) {
         super(plugin, "structure_recipes_" + multiblockId,
-                plugin.getConfigManager().getLang("gui.structure_recipes.title")
-                        .replace("%machine%", plugin.getConfigManager().getLang("multiblock." + multiblockId + ".name")));
+                plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_RECIPES_TITLE)
+                        .replace("%machine%", getMultiblockDisplayName(plugin, multiblockId)));
         this.multiblockId = multiblockId;
+    }
+
+    /**
+     * 获取多方块结构的显示名称
+     */
+    private static String getMultiblockDisplayName(Main plugin, String multiblockId) {
+        String langKey = "multiblock." + multiblockId + ".name";
+        return plugin.getConfigManager().getLang(langKey);
     }
 
     public static StructureRecipesGUI getInstance(Main plugin, String multiblockId) {
@@ -91,8 +100,8 @@ public class StructureRecipesGUI extends PaginatedGUI {
         @Override
         public ItemStack getDisplayItem() {
             return new ItemBuilder(Material.BARRIER)
-                    .displayName(plugin.getConfigManager().getLang("gui.structure_recipes.no_recipes"))
-                    .lore(plugin.getConfigManager().getStringList("gui.structure_recipes.no_recipes_lore"))
+                    .displayName(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_RECIPES_NO_RECIPES))
+                    .lore(plugin.getConfigManager().getStringList(Messages.GUI_STRUCTURE_RECIPES_NO_RECIPES_LORE))
                     .build();
         }
 
@@ -121,13 +130,20 @@ public class StructureRecipesGUI extends PaginatedGUI {
 
             if (!isUnlocked) {
                 // 未解锁状态
+                int requiredExp = plugin.getUnlockManager().getRequiredExp(recipeUnlockId);
+
+                String displayName = plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_RECIPES_RECIPE_LOCKED_NAME)
+                        .replace("%recipe%", recipe.getDisplayName());
+
+                List<String> lore = new ArrayList<>();
+                lore.add(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_RECIPES_RECIPE_LOCKED_LORE_EXP)
+                        .replace("%required%", String.valueOf(requiredExp)));
+                lore.add("");
+                lore.add(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_RECIPES_RECIPE_LOCKED_LORE_CLICK));
+
                 return new ItemBuilder(Material.BARRIER)
-                        .displayName("&c" + recipe.getDisplayName() + " &7(未解锁)")
-                        .lore(
-                                "&7需要经验等级: &e" + plugin.getUnlockManager().getRequiredExp(recipeUnlockId),
-                                "",
-                                "&e点击解锁"
-                        )
+                        .displayName(displayName)
+                        .lore(lore)
                         .build();
             } else {
                 // 已解锁状态
@@ -135,10 +151,10 @@ public class StructureRecipesGUI extends PaginatedGUI {
                 if (display.hasItemMeta()) {
                     var meta = display.getItemMeta();
                     var lore = meta.getLore();
-                    if (lore == null) lore = new java.util.ArrayList<>();
+                    if (lore == null) lore = new ArrayList<>();
 
                     lore.add("");
-                    lore.add(plugin.getConfigManager().getLang("gui.structure_recipes.click_view_recipe"));
+                    lore.add(plugin.getConfigManager().getLang(Messages.GUI_STRUCTURE_RECIPES_CLICK_VIEW_RECIPE));
 
                     meta.setLore(lore);
                     display.setItemMeta(meta);
@@ -157,8 +173,8 @@ public class StructureRecipesGUI extends PaginatedGUI {
                     UnlockResult result = plugin.getUnlockManager().unlock(player, recipeUnlockId);
 
                     if (result.isSuccess()) {
-                        player.sendMessage(plugin.getConfigManager().getLang("unlock.success")
-                                .replace("%item%", recipe.getDisplayName()));
+                        MessageUtils.sendLocalizedMessage(player, Messages.UNLOCK_SUCCESS,
+                                "%item%", recipe.getDisplayName());
 
                         // 刷新界面
                         plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -166,18 +182,7 @@ public class StructureRecipesGUI extends PaginatedGUI {
                         });
                     } else {
                         // 处理解锁失败
-                        switch (result.getStatus()) {
-                            case INSUFFICIENT_EXP:
-                                player.sendMessage(plugin.getConfigManager().getLang("unlock.insufficient_exp")
-                                        .replace("%required%", String.valueOf(result.getRequiredExp())));
-                                break;
-                            case ALREADY_UNLOCKED:
-                                player.sendMessage(plugin.getConfigManager().getLang("unlock.already_unlocked"));
-                                break;
-                            default:
-                                player.sendMessage("§c解锁失败: " + result.getMessage());
-                                break;
-                        }
+                        handleUnlockFailure(player, result);
                     }
                 } else {
                     // 已解锁，打开配方详情
@@ -187,13 +192,32 @@ public class StructureRecipesGUI extends PaginatedGUI {
                             recipeGUI.open(player);
                         } catch (Exception e) {
                             MessageUtils.logError("Failed to open recipe GUI: " + e.getMessage());
-                            MessageUtils.sendMessage(player, "&c打开配方详情时发生错误");
+                            MessageUtils.sendLocalizedMessage(player, Messages.GUI_STRUCTURE_RECIPES_ERROR_OPEN_RECIPE);
                         }
                     });
                 }
             } catch (Exception e) {
                 MessageUtils.logError("Error in RecipeComponent onClick: " + e.getMessage());
-                MessageUtils.sendMessage(player, "&c处理点击事件时发生错误");
+                MessageUtils.sendLocalizedMessage(player, Messages.GUI_STRUCTURE_RECIPES_ERROR_CLICK_EVENT);
+            }
+        }
+
+        /**
+         * 处理解锁失败的情况
+         */
+        private void handleUnlockFailure(Player player, UnlockResult result) {
+            switch (result.getStatus()) {
+                case INSUFFICIENT_EXP:
+                    MessageUtils.sendLocalizedMessage(player, Messages.UNLOCK_INSUFFICIENT_EXP,
+                            "%required%", String.valueOf(result.getRequiredExp()));
+                    break;
+                case ALREADY_UNLOCKED:
+                    MessageUtils.sendLocalizedMessage(player, Messages.UNLOCK_ALREADY_UNLOCKED);
+                    break;
+                default:
+                    MessageUtils.sendLocalizedMessage(player, Messages.GUI_STRUCTURE_RECIPES_UNLOCK_FAILED_DEFAULT,
+                            "%message%", result.getMessage());
+                    break;
             }
         }
     }

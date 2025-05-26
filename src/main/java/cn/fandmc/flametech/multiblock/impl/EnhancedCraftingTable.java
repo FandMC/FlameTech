@@ -1,3 +1,4 @@
+// ============= 优化后的 EnhancedCraftingTable.java =============
 package cn.fandmc.flametech.multiblock.impl;
 
 import cn.fandmc.flametech.Main;
@@ -22,9 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * 增强工作台多方块结构
- */
 public class EnhancedCraftingTable extends MultiblockStructure {
 
     public EnhancedCraftingTable(Main plugin) {
@@ -36,13 +34,8 @@ public class EnhancedCraftingTable extends MultiblockStructure {
 
     private static Map<BlockOffset, Material> createStructure() {
         Map<BlockOffset, Material> structure = new HashMap<>();
-
-        // 主方块：工作台
         structure.put(new BlockOffset(0, 0, 0), Material.CRAFTING_TABLE);
-
-        // 下方：发射器
         structure.put(new BlockOffset(0, -1, 0), Material.DISPENSER);
-
         return structure;
     }
 
@@ -114,66 +107,144 @@ public class EnhancedCraftingTable extends MultiblockStructure {
             return;
         }
 
-        // 检查空间
         ItemStack result = recipe.getResult();
-        if (!canAddItemToInventory(dispenserInv, result)) {
+
+        if (!canCraftWithCurrentInventory(dispenserInv, recipe, result)) {
             MessageUtils.sendLocalizedMessage(player, Messages.MULTIBLOCK_ENHANCED_CRAFTING_INVENTORY_FULL);
             return;
         }
 
-        // 消耗材料
-        if (!consumeIngredients(dispenserInv, recipe)) {
-            MessageUtils.sendMessage(player, "&c材料不足或消耗失败！");
-            return;
-        }
-
-        // 添加结果
-        Map<Integer, ItemStack> leftover = dispenserInv.addItem(result);
-
-        if (leftover.isEmpty()) {
+        // 执行合成
+        if (performCrafting(dispenserInv, recipe, result)) {
             MessageUtils.sendLocalizedMessage(player, Messages.MULTIBLOCK_ENHANCED_CRAFTING_CRAFT_SUCCESS,
                     "%item%", recipe.getDisplayName());
         } else {
-            MessageUtils.sendMessage(player, "&e合成完成，但部分物品可能掉落在地上。");
+            MessageUtils.sendMessage(player, "&c合成失败，请稍后重试");
         }
     }
 
-    private Map<Integer, ItemStack> getInputsFromDispenser(Inventory dispenserInv) {
-        Map<Integer, ItemStack> inputs = new HashMap<>();
+    /**
+     * 优化后的空间检测：考虑合成后材料消耗和结果物品的空间需求
+     */
+    private boolean canCraftWithCurrentInventory(Inventory inventory, Recipe recipe, ItemStack result) {
+        try {
+            // 创建库存副本进行模拟
+            Inventory simulatedInv = createInventorySnapshot(inventory);
 
-        // 将发射器的9个槽位映射到3x3网格
-        for (int i = 0; i < Math.min(9, dispenserInv.getSize()); i++) {
-            ItemStack item = dispenserInv.getItem(i);
-            if (!ItemUtils.isAirOrNull(item)) {
-                inputs.put(i, item.clone());
+            // 模拟消耗材料
+            if (!simulateConsumeIngredients(simulatedInv, recipe)) {
+                return false; // 材料不足
+            }
+
+            // 尝试添加合成结果
+            Map<Integer, ItemStack> leftover = simulatedInv.addItem(result.clone());
+
+            // 如果没有剩余物品，说明可以完全放入
+            return leftover.isEmpty();
+
+        } catch (Exception e) {
+            MessageUtils.logError("Error checking crafting space: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 创建库存快照用于模拟
+     */
+    private Inventory createInventorySnapshot(Inventory original) {
+        Inventory snapshot = org.bukkit.Bukkit.createInventory(null, original.getSize());
+
+        for (int i = 0; i < original.getSize(); i++) {
+            ItemStack item = original.getItem(i);
+            if (item != null) {
+                snapshot.setItem(i, item.clone());
             }
         }
 
-        return inputs;
+        return snapshot;
     }
 
-    private boolean canAddItemToInventory(Inventory inventory, ItemStack item) {
-        if (ItemUtils.isAirOrNull(item)) {
+    /**
+     * 模拟消耗配方材料，不实际修改库存
+     */
+    private boolean simulateConsumeIngredients(Inventory simulatedInv, Recipe recipe) {
+        Map<Integer, ItemStack> required = recipe.getIngredients();
+
+        // 首先验证是否有足够材料
+        for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {
+            int slot = entry.getKey();
+            ItemStack requiredItem = entry.getValue();
+
+            if (slot >= simulatedInv.getSize()) {
+                return false;
+            }
+
+            ItemStack current = simulatedInv.getItem(slot);
+            if (!hasEnoughMaterial(current, requiredItem)) {
+                return false;
+            }
+        }
+
+        // 模拟消耗材料
+        for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {
+            int slot = entry.getKey();
+            ItemStack requiredItem = entry.getValue();
+
+            ItemStack current = simulatedInv.getItem(slot);
+            if (current != null) {
+                int newAmount = current.getAmount() - requiredItem.getAmount();
+                if (newAmount <= 0) {
+                    simulatedInv.setItem(slot, null);
+                } else {
+                    ItemStack newStack = current.clone();
+                    newStack.setAmount(newAmount);
+                    simulatedInv.setItem(slot, newStack);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 执行实际的合成操作
+     */
+    private boolean performCrafting(Inventory dispenserInv, Recipe recipe, ItemStack result) {
+        try {
+            // 消耗材料
+            if (!consumeIngredients(dispenserInv, recipe)) {
+                return false;
+            }
+
+            // 添加结果物品
+            Map<Integer, ItemStack> leftover = dispenserInv.addItem(result.clone());
+
+            // 处理溢出物品（掉落到地面）
+            if (!leftover.isEmpty()) {
+                Location dropLocation = ((Dispenser) dispenserInv.getHolder()).getLocation().add(0.5, 1.5, 0.5);
+                for (ItemStack overflow : leftover.values()) {
+                    if (dropLocation.getWorld() != null) {
+                        dropLocation.getWorld().dropItemNaturally(dropLocation, overflow);
+                    }
+                }
+                MessageUtils.sendLocalizedMessage(null, Messages.MULTIBLOCK_ENHANCED_CRAFTING_CRAFT_PARTIAL);
+            }
+
             return true;
-        }
 
-        // 创建临时库存副本来测试
-        Inventory tempInv = org.bukkit.Bukkit.createInventory(null, inventory.getSize());
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack existing = inventory.getItem(i);
-            if (existing != null) {
-                tempInv.setItem(i, existing.clone());
-            }
+        } catch (Exception e) {
+            MessageUtils.logError("Error performing crafting: " + e.getMessage());
+            return false;
         }
-
-        Map<Integer, ItemStack> leftover = tempInv.addItem(item.clone());
-        return leftover.isEmpty();
     }
 
+    /**
+     * 实际消耗配方材料
+     */
     private boolean consumeIngredients(Inventory dispenserInv, Recipe recipe) {
         Map<Integer, ItemStack> required = recipe.getIngredients();
 
-        // 验证材料是否足够
+        // 验证材料是否足够（防御性检查）
         for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {
             int slot = entry.getKey();
             ItemStack requiredItem = entry.getValue();
@@ -205,6 +276,9 @@ public class EnhancedCraftingTable extends MultiblockStructure {
         return true;
     }
 
+    /**
+     * 检查是否有足够的材料
+     */
     private boolean hasEnoughMaterial(ItemStack current, ItemStack required) {
         if (ItemUtils.isAirOrNull(required)) {
             return true;
@@ -219,10 +293,74 @@ public class EnhancedCraftingTable extends MultiblockStructure {
                 ItemUtils.isSimilar(current, required);
     }
 
+    /**
+     * 获取发射器中的输入物品映射
+     */
+    private Map<Integer, ItemStack> getInputsFromDispenser(Inventory dispenserInv) {
+        Map<Integer, ItemStack> inputs = new HashMap<>();
+
+        // 将发射器的9个槽位映射到3x3网格
+        for (int i = 0; i < Math.min(9, dispenserInv.getSize()); i++) {
+            ItemStack item = dispenserInv.getItem(i);
+            if (!ItemUtils.isAirOrNull(item)) {
+                inputs.put(i, item.clone());
+            }
+        }
+
+        return inputs;
+    }
+
+    /**
+     * 获取发射器当前的空间统计信息（调试用）
+     */
+    private InventorySpaceInfo analyzeInventorySpace(Inventory inventory) {
+        int emptySlots = 0;
+        int partialSlots = 0;
+        int fullSlots = 0;
+
+        for (int i = 0; i < inventory.getSize(); i++) {
+            ItemStack item = inventory.getItem(i);
+            if (ItemUtils.isAirOrNull(item)) {
+                emptySlots++;
+            } else if (item.getAmount() < item.getMaxStackSize()) {
+                partialSlots++;
+            } else {
+                fullSlots++;
+            }
+        }
+
+        return new InventorySpaceInfo(emptySlots, partialSlots, fullSlots);
+    }
+
     @Override
     public boolean canCraft(String recipeId) {
         return plugin.getRecipeManager().getRecipe(recipeId)
                 .map(recipe -> getStructureId().equals(recipe.getMultiblockId()))
                 .orElse(false);
+    }
+
+    /**
+     * 库存空间信息类（用于调试和优化）
+     */
+    private static class InventorySpaceInfo {
+        final int emptySlots;
+        final int partialSlots;
+        final int fullSlots;
+
+        InventorySpaceInfo(int emptySlots, int partialSlots, int fullSlots) {
+            this.emptySlots = emptySlots;
+            this.partialSlots = partialSlots;
+            this.fullSlots = fullSlots;
+        }
+
+        boolean hasSpace() {
+            return emptySlots > 0 || partialSlots > 0;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("InventorySpace{empty=%d, partial=%d, full=%d}",
+                    emptySlots, partialSlots, fullSlots);
+        }
     }
 }

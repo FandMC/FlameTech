@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.items.builders;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -223,48 +224,114 @@ public class ItemBuilder {
      * 创建边框物品
      */
     public static ItemStack createBorderItem() {
-        return new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
-                .displayName(" ")
-                .build();
+        try {
+            String displayName = Main.getInstance().getConfigManager().getLang(Messages.ITEM_BUILDER_BORDER_ITEM_NAME);
+            return new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
+                    .displayName(displayName)
+                    .build();
+        } catch (Exception e) {
+            // 如果配置加载失败，使用默认值
+            return new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
+                    .displayName(" ")
+                    .build();
+        }
     }
 
     /**
      * 创建返回按钮
      */
     public static ItemStack createBackButton() {
-        return new ItemBuilder(Material.ARROW)
-                .displayName("&a← 返回")
-                .build();
+        try {
+            String displayName = Main.getInstance().getConfigManager().getLang(Messages.ITEM_BUILDER_BACK_BUTTON_NAME);
+            return new ItemBuilder(Material.ARROW)
+                    .displayName(displayName)
+                    .build();
+        } catch (Exception e) {
+            // 如果配置加载失败，使用默认值
+            return new ItemBuilder(Material.ARROW)
+                    .displayName("&a← 返回")
+                    .build();
+        }
     }
 
     /**
      * 创建下一页按钮
      */
     public static ItemStack createNextPageButton() {
-        return new ItemBuilder(Material.ARROW)
-                .displayName("&a下一页 →")
-                .build();
+        try {
+            String displayName = Main.getInstance().getConfigManager().getLang(Messages.ITEM_BUILDER_NEXT_PAGE_BUTTON_NAME);
+            return new ItemBuilder(Material.ARROW)
+                    .displayName(displayName)
+                    .build();
+        } catch (Exception e) {
+            // 如果配置加载失败，使用默认值
+            return new ItemBuilder(Material.ARROW)
+                    .displayName("&a下一页 →")
+                    .build();
+        }
     }
 
     /**
      * 创建上一页按钮
      */
     public static ItemStack createPreviousPageButton() {
-        return new ItemBuilder(Material.ARROW)
-                .displayName("&a← 上一页")
-                .build();
+        try {
+            String displayName = Main.getInstance().getConfigManager().getLang(Messages.ITEM_BUILDER_PREVIOUS_PAGE_BUTTON_NAME);
+            return new ItemBuilder(Material.ARROW)
+                    .displayName(displayName)
+                    .build();
+        } catch (Exception e) {
+            // 如果配置加载失败，使用默认值
+            return new ItemBuilder(Material.ARROW)
+                    .displayName("&a← 上一页")
+                    .build();
+        }
     }
 
     /**
      * 创建页面信息物品
      */
     public static ItemStack createPageInfoItem(int currentPage, int totalPages, int totalItems) {
-        return new ItemBuilder(Material.BOOK)
-                .displayName("&e页面信息")
-                .lore(
-                        "&7当前页: &e" + currentPage + "&7/&e" + totalPages,
-                        "&7物品总数: &e" + totalItems
-                )
-                .build();
+        try {
+            String displayName = Main.getInstance().getConfigManager().getLang(Messages.ITEM_BUILDER_PAGE_INFO_NAME);
+
+            // 获取lore列表并替换参数
+            List<String> lore = Main.getInstance().getConfigManager().getStringList("items.buttons.page_info.lore");
+            List<String> processedLore = new ArrayList<>();
+
+            for (String line : lore) {
+                String processedLine = line
+                        .replace("%current%", String.valueOf(currentPage))
+                        .replace("%total%", String.valueOf(totalPages))
+                        .replace("%items%", String.valueOf(totalItems));
+                processedLore.add(processedLine);
+            }
+
+            return new ItemBuilder(Material.BOOK)
+                    .displayName(displayName)
+                    .lore(processedLore)
+                    .build();
+        } catch (Exception e) {
+            // 如果配置加载失败，使用默认值
+            return new ItemBuilder(Material.BOOK)
+                    .displayName("&e页面信息")
+                    .lore(
+                            "&7当前页: &e" + currentPage + "&7/&e" + totalPages,
+                            "&7物品总数: &e" + totalItems
+                    )
+                    .build();
+        }
+    }
+
+    /**
+     * 安全获取配置管理器的工具方法
+     */
+    private static String getSafeConfig(String key, String defaultValue) {
+        try {
+            return Main.getInstance().getConfigManager().getLang(key);
+        } catch (Exception e) {
+            MessageUtils.logWarning("Failed to load config for key: " + key + ", using default value");
+            return defaultValue;
+        }
     }
 }

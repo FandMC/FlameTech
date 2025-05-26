@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.gui.buttons.main;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.gui.components.GUIComponent;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import org.bukkit.Material;
@@ -15,16 +16,11 @@ public class BasicMachinesButton implements GUIComponent {
 
     @Override
     public ItemStack getDisplayItem() {
+        Main plugin = Main.getInstance();
+
         return new ItemBuilder(Material.FURNACE)
-                .displayName("&6基础机器")
-                .lore(
-                        "&7查看所有基础机器的配方和信息",
-                        "&7包含：熔炉、压缩机、粉碎机等",
-                        "",
-                        "&e点击查看基础机器列表",
-                        "",
-                        "&c[FlameTech]"
-                )
+                .displayName(plugin.getConfigManager().getLang(Messages.GUI_BUTTONS_BASIC_MACHINES_NAME))
+                .lore(plugin.getConfigManager().getStringList(Messages.GUI_BUTTONS_BASIC_MACHINES_LORE))
                 .build();
     }
 
