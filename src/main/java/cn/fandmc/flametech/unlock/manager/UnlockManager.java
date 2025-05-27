@@ -2,6 +2,8 @@ package cn.fandmc.flametech.unlock.manager;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ItemKeys;
+import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
+import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.unlock.data.PlayerUnlocks;
 import cn.fandmc.flametech.unlock.data.UnlockResult;
 import cn.fandmc.flametech.unlock.data.UnlockableItem;
@@ -48,21 +50,74 @@ public class UnlockManager {
 
     /**
      * 注册默认可解锁物品
+     * 现在改为从已注册的配方和多方块结构中动态加载
      */
     public void registerDefaultUnlockables() {
         try {
-            // 注册多方块解锁
-            registerUnlockable(new UnlockableItem(ItemKeys.MULTIBLOCK_ENHANCED_CRAFTING_TABLE, 10, "multiblock", "增强工作台"));
+            unlockableItems.clear();
 
-            // 注册配方解锁
-            registerUnlockable(new UnlockableItem(ItemKeys.RECIPE_EXPLOSIVE_PICKAXE, 15, "recipe", "爆炸镐配方"));
-            registerUnlockable(new UnlockableItem(ItemKeys.RECIPE_SMELTING_PICKAXE, 20, "recipe", "熔炼镐配方"));
+            // 从配方管理器加载所有配方的解锁信息
+            loadRecipeUnlockables();
 
-            MessageUtils.logInfo("注册了 " + unlockableItems.size() + " 个可解锁物品");
+            // 从多方块管理器加载所有结构的解锁信息
+            loadMultiblockUnlockables();
+
+            MessageUtils.logInfo("动态加载了 " + unlockableItems.size() + " 个可解锁物品");
 
         } catch (Exception e) {
             MessageUtils.logError("注册默认可解锁物品失败: " + e.getMessage());
             throw e;
+        }
+    }
+
+    /**
+     * 从配方管理器加载配方解锁项
+     */
+    private void loadRecipeUnlockables() {
+        Collection<Recipe> allRecipes = plugin.getRecipeManager().getAllRecipes();
+
+        for (Recipe recipe : allRecipes) {
+            if (recipe.getUnlockLevel() > 0) {
+                String unlockId = "recipe." + recipe.getRecipeId();
+                UnlockableItem unlockable = new UnlockableItem(
+                        unlockId,
+                        recipe.getUnlockLevel(),
+                        "recipe",
+                        recipe.getDisplayName() + " 配方"
+                );
+
+                registerUnlockable(unlockable);
+
+                if (plugin.isDebugMode()) {
+                    MessageUtils.logInfo("注册配方解锁: " + unlockId + " (等级: " + recipe.getUnlockLevel() + ")");
+                }
+            }
+        }
+    }
+
+    /**
+     * 从多方块管理器加载结构解锁项
+     */
+    private void loadMultiblockUnlockables() {
+        Map<String, MultiblockStructure> allStructures = plugin.getMultiblockManager().getAllStructures();
+
+        for (Map.Entry<String, MultiblockStructure> entry : allStructures.entrySet()) {
+            MultiblockStructure structure = entry.getValue();
+            if (structure.getUnlockLevel() > 0) {
+                String unlockId = "multiblock." + structure.getStructureId();
+                UnlockableItem unlockable = new UnlockableItem(
+                        unlockId,
+                        structure.getUnlockLevel(),
+                        "multiblock",
+                        structure.getDisplayName()
+                );
+
+                registerUnlockable(unlockable);
+
+                if (plugin.isDebugMode()) {
+                    MessageUtils.logInfo("注册多方块解锁: " + unlockId + " (等级: " + structure.getUnlockLevel() + ")");
+                }
+            }
         }
     }
 
@@ -82,7 +137,6 @@ public class UnlockManager {
         }
 
         unlockableItems.put(itemId, item);
-        //MessageUtils.logInfo("注册可解锁物品: " + itemId + " (经验: " + item.getRequiredExp() + ")");
     }
 
     /**
@@ -250,20 +304,38 @@ public class UnlockManager {
 
         PlayerUnlocks unlocks = playerUnlocks.get(player.getUniqueId());
         if (unlocks == null) {
-            return new HashMap<>();
+            unlocks = new PlayerUnlocks(player.getUniqueId());
         }
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("total_unlocked", unlocks.getUnlockedCount());
         stats.put("total_available", unlockableItems.size());
 
-        // 按类别统计
-        Map<String, Integer> categoryStats = new HashMap<>();
+        // 计算每个类别的解锁进度
+        Map<String, Map<String, Integer>> categoryProgress = new HashMap<>();
+        Map<String, Integer> categoryTotals = new HashMap<>();
+        Map<String, Integer> categoryUnlocked = new HashMap<>();
+
+        // 统计每个类别的总数
         for (UnlockableItem item : unlockableItems.values()) {
             String category = item.getCategory();
-            categoryStats.put(category, categoryStats.getOrDefault(category, 0) + 1);
+            categoryTotals.put(category, categoryTotals.getOrDefault(category, 0) + 1);
+
+            // 如果玩家已解锁，增加解锁计数
+            if (unlocks.isUnlocked(item.getItemId())) {
+                categoryUnlocked.put(category, categoryUnlocked.getOrDefault(category, 0) + 1);
+            }
         }
-        stats.put("by_category", categoryStats);
+
+        // 组合统计数据
+        for (String category : categoryTotals.keySet()) {
+            Map<String, Integer> progress = new HashMap<>();
+            progress.put("total", categoryTotals.get(category));
+            progress.put("unlocked", categoryUnlocked.getOrDefault(category, 0));
+            categoryProgress.put(category, progress);
+        }
+
+        stats.put("by_category", categoryProgress);
 
         return stats;
     }
@@ -292,12 +364,25 @@ public class UnlockManager {
      * 重新加载解锁管理器
      */
     public void reload() {
+        // 保存当前数据
+        saveAllData();
+
+        // 清空缓存
         playerUnlocks.clear();
         unlockableItems.clear();
 
+        // 重新加载
         initializeDataFile();
         registerDefaultUnlockables();
 
         MessageUtils.logInfo("Reloaded unlock manager");
+    }
+
+    /**
+     * 刷新解锁项（当配方或多方块结构变化时调用）
+     */
+    public void refreshUnlockables() {
+        unlockableItems.clear();
+        registerDefaultUnlockables();
     }
 }

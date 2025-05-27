@@ -6,7 +6,8 @@ import cn.fandmc.flametech.config.ConfigManager;
 import cn.fandmc.flametech.constants.ConfigKeys;
 import cn.fandmc.flametech.gui.manager.GUIManager;
 import cn.fandmc.flametech.items.manager.ItemManager;
-import cn.fandmc.flametech.listeners.*;
+import cn.fandmc.flametech.listeners.BlockBreakListener;
+import cn.fandmc.flametech.listeners.PlayerInteractListener;
 import cn.fandmc.flametech.multiblock.manager.MultiblockManager;
 import cn.fandmc.flametech.recipes.manager.RecipeManager;
 import cn.fandmc.flametech.unlock.manager.UnlockManager;
@@ -89,9 +90,13 @@ public class Main extends JavaPlugin {
         saveDefaultConfig();
 
         this.itemManager = new ItemManager(this);
-        this.unlockManager = new UnlockManager(this);
         this.multiblockManager = new MultiblockManager(this);
         this.recipeManager = new RecipeManager(this);
+
+        // UnlockManager 必须在 RecipeManager 和 MultiblockManager 之后初始化
+        // 因为它需要从这些管理器中加载解锁信息
+        this.unlockManager = new UnlockManager(this);
+
         this.guiManager = new GUIManager(this);
     }
 
@@ -106,14 +111,20 @@ public class Main extends JavaPlugin {
     }
 
     private void registerDefaultContent() {
+        // 注册顺序很重要
+        // 1. 先注册物品
         itemManager.registerDefaultItems();
 
+        // 2. 再注册多方块结构
         multiblockManager.registerDefaultStructures();
 
+        // 3. 然后注册配方
         recipeManager.registerDefaultRecipes();
 
+        // 4. 最后注册解锁项（依赖于上面的内容）
         unlockManager.registerDefaultUnlockables();
 
+        // 5. 注册GUI
         guiManager.registerDefaultGUIs();
     }
 
@@ -124,6 +135,18 @@ public class Main extends JavaPlugin {
         try {
             reloadConfig();
             configManager.reloadConfig();
+
+            // 重载各个管理器
+            itemManager.reload();
+            multiblockManager.reload();
+            recipeManager.reload();
+
+            // UnlockManager 的重载必须在其他管理器之后
+            // 因为它需要重新加载解锁信息
+            unlockManager.reload();
+
+            guiManager.reload();
+
         } catch (Exception e) {
             MessageUtils.logError("Failed to reload configuration: " + e.getMessage());
             throw e;
