@@ -151,7 +151,7 @@ public class MultiblockManager {
      */
     public void clearAllStructures() {
         structures.clear();
-        MessageUtils.logInfo("Cleared all multiblock structures");
+        MessageUtils.logDebug("Cleared all multiblock structures");
     }
 
     /**
@@ -160,7 +160,7 @@ public class MultiblockManager {
     public void reload() {
         clearAllStructures();
         registerDefaultStructures();
-        MessageUtils.logInfo("Reloaded multiblock manager");
+        MessageUtils.logDebug("Reloaded multiblock manager");
     }
 
     /**
