@@ -74,7 +74,6 @@ public class BlockBreakListener implements Listener {
             return;
         }
 
-        // 委托给特殊工具处理
         specialTool.handleBlockBreak(event, player, block, tool);
     }
 }

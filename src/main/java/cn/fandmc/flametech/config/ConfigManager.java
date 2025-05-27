@@ -104,7 +104,7 @@ public class ConfigManager {
             }
 
             lastReloadTime = System.currentTimeMillis();
-            MessageUtils.logInfo("Configuration reloaded successfully");
+            MessageUtils.logInfo("已重载");
 
         } catch (Exception e) {
             MessageUtils.logError("Failed to reload configuration: " + e.getMessage());

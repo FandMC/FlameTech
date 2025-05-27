@@ -57,7 +57,7 @@ public class MagnetRecipe implements RecipeRegistrar {
         try {
             return Main.getInstance().getConfigManager().getLang(Messages.RECIPES_MAGNET_NAME);
         } catch (Exception e) {
-            return "吸铁石"; // 默认名称
+            return "吸铁石";
         }
     }
 

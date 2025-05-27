@@ -244,7 +244,7 @@ public class EnhancedCraftingTable extends MultiblockStructure {
     private boolean consumeIngredients(Inventory dispenserInv, Recipe recipe) {
         Map<Integer, ItemStack> required = recipe.getIngredients();
 
-        // 验证材料是否足够（防御性检查）
+        // 验证材料是否足够
         for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {
             int slot = entry.getKey();
             ItemStack requiredItem = entry.getValue();

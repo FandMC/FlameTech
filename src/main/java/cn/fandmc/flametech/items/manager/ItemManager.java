@@ -179,7 +179,7 @@ public class ItemManager {
      */
     public void clearAllItems() {
         customItems.clear();
-        MessageUtils.logInfo("Cleared all registered custom items");
+        MessageUtils.logDebug("Cleared all registered custom items");
     }
 
     /**
@@ -188,6 +188,6 @@ public class ItemManager {
     public void reload() {
         clearAllItems();
         registerDefaultItems();
-        MessageUtils.logInfo("Reloaded item manager");
+        MessageUtils.logDebug("Reloaded item manager");
     }
 }

@@ -40,18 +40,17 @@ public class PlayerInteractListener implements Listener {
         ItemStack item = player.getInventory().getItemInMainHand();
 
         try {
-            if (plugin.isDebugMode()) {
-                MessageUtils.logInfo("PlayerInteract: " + event.getAction() +
-                        ", Item: " + (item != null ? item.getType() : "null") +
-                        ", Player: " + player.getName());
-            }
+            MessageUtils.logDebug("PlayerInteract: " + event.getAction() +
+                    ", Item: " + (item != null ? item.getType() : "null") +
+                    ", Player: " + player.getName());
+
 
             // 处理指南书点击
             if (handleGuideBookClick(event, player, item)) {
                 return;
             }
 
-            // 处理吸铁石右键点击 - 放在多方块处理之前
+            // 处理吸铁石右键点击
             if (handleMagnetClick(event, player, item)) {
                 return;
             }
@@ -89,23 +88,16 @@ public class PlayerInteractListener implements Listener {
      */
     private boolean handleMagnetClick(PlayerInteractEvent event, Player player, ItemStack item) {
 
-        // 调试信息
-        if (plugin.isDebugMode()) {
-            MessageUtils.logInfo("Checking magnet click for item: " +
-                    (item != null ? item.getType() : "null"));
-        }
+        MessageUtils.logDebug("Checking magnet click for item: " +
+                (item != null ? item.getType() : "null"));
 
-        // 检查是否是吸铁石
+
         if (!plugin.getItemManager().isMagnet(item)) {
             return false;
         }
 
-        // 调试信息
-        if (plugin.isDebugMode()) {
-            MessageUtils.logInfo("Magnet detected! Processing click...");
-        }
+        MessageUtils.logDebug("Magnet detected! Processing click...");
 
-        // 取消事件，防止其他处理
         event.setCancelled(true);
 
         try {
@@ -120,7 +112,6 @@ public class PlayerInteractListener implements Listener {
                 magnetTool.handleRightClick(event, player, item);
                 return true;
             } else {
-                // 调试信息
                 MessageUtils.logError("Magnet tool not found or wrong type!");
                 MessageUtils.sendMessage(player, "&c吸铁石工具未正确注册！");
                 return false;

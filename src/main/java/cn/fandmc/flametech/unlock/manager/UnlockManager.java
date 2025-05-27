@@ -87,10 +87,7 @@ public class UnlockManager {
                 );
 
                 registerUnlockable(unlockable);
-
-                if (plugin.isDebugMode()) {
-                    MessageUtils.logInfo("注册配方解锁: " + unlockId + " (等级: " + recipe.getUnlockLevel() + ")");
-                }
+                MessageUtils.logDebug("注册配方解锁: " + unlockId + " (等级: " + recipe.getUnlockLevel() + ")");
             }
         }
     }
@@ -114,9 +111,8 @@ public class UnlockManager {
 
                 registerUnlockable(unlockable);
 
-                if (plugin.isDebugMode()) {
-                    MessageUtils.logInfo("注册多方块解锁: " + unlockId + " (等级: " + structure.getUnlockLevel() + ")");
-                }
+                MessageUtils.logDebug("注册多方块解锁: " + unlockId + " (等级: " + structure.getUnlockLevel() + ")");
+
             }
         }
     }
@@ -288,7 +284,7 @@ public class UnlockManager {
             for (UUID playerId : playerUnlocks.keySet()) {
                 savePlayerData(playerId);
             }
-            MessageUtils.logInfo("Saved unlock data for all players");
+            MessageUtils.logInfo("已储存所有玩家数据");
         } catch (Exception e) {
             MessageUtils.logError("Error saving all player unlock data: " + e.getMessage());
         }

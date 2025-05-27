@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.utils;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.gui.buttons.tools.MagnetButton;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class MessageUtils {
-
+    private static final Main plugin = Main.getInstance();
     /**
      * 发送带颜色代码的消息
      */
@@ -32,7 +33,7 @@ public final class MessageUtils {
      * 发送国际化消息
      */
     public static void sendLocalizedMessage(CommandSender sender, String key) {
-        String message = Main.getInstance().getConfigManager().getLang(key);
+        String message = plugin.getConfigManager().getLang(key);
         sendMessage(sender, message);
     }
 
@@ -40,7 +41,7 @@ public final class MessageUtils {
      * 发送带参数替换的国际化消息
      */
     public static void sendLocalizedMessage(CommandSender sender, String key, String... replacements) {
-        String message = Main.getInstance().getConfigManager().getLang(key);
+        String message = plugin.getConfigManager().getLang(key);
 
         // 替换参数 %param1%, %param2% 等
         for (int i = 0; i < replacements.length; i += 2) {
@@ -94,7 +95,7 @@ public final class MessageUtils {
                         fadeIn, stay, fadeOut
                 );
             } catch (Exception e) {
-                Main.getInstance().getLogger().warning("Failed to send title to player: " + e.getMessage());
+                plugin.getLogger().warning("Failed to send title to player: " + e.getMessage());
             }
         }
     }
@@ -107,7 +108,7 @@ public final class MessageUtils {
      */
     public static void sendLocalizedMessageList(CommandSender sender, String key, String... replacements) {
         try {
-            List<String> messages = Main.getInstance().getConfigManager().getStringList(key);
+            List<String> messages = plugin.getConfigManager().getStringList(key);
 
             if (messages != null && !messages.isEmpty()) {
                 for (String message : messages) {
@@ -162,21 +163,31 @@ public final class MessageUtils {
      * 记录带颜色的控制台消息
      */
     public static void logInfo(String message) {
-        Main.getInstance().getLogger().info(stripColors(message));
+        plugin.getLogger().info(stripColors(message));
     }
 
     /**
      * 记录警告消息
      */
     public static void logWarning(String message) {
-        Main.getInstance().getLogger().warning(stripColors(message));
+        plugin.getLogger().warning(stripColors(message));
     }
 
     /**
      * 记录错误消息
      */
     public static void logError(String message) {
-        Main.getInstance().getLogger().severe(stripColors(message));
+        plugin.getLogger().severe(stripColors(message));
+    }
+
+    /**
+     * 记录带颜色的控制台消息
+     */
+    public static void logDebug(String message) {
+
+        if (plugin.isDebugMode()) {
+            plugin.getLogger().info("[Debug]"+stripColors(message));
+        }
     }
 
     /**

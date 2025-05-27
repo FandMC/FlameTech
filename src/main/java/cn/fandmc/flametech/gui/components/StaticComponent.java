@@ -22,7 +22,6 @@ public class StaticComponent implements GUIComponent {
 
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
-        // 静态组件不处理点击
     }
 
     @Override

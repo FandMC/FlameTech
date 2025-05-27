@@ -30,11 +30,8 @@ public class RecipeManager {
      */
     public void registerDefaultRecipes() {
         try {
-            // 注册工具配方
             ToolRecipes.registerAll(this);
-
             MessageUtils.logInfo("注册了 " + recipes.size() + " 个配方");
-
         } catch (Exception e) {
             MessageUtils.logError("注册默认配方失败: " + e.getMessage());
             throw e;
@@ -61,7 +58,6 @@ public class RecipeManager {
             return false;
         }
 
-        // 检查多方块结构是否存在
         if (!plugin.getMultiblockManager().hasStructure(recipe.getMultiblockId())) {
             MessageUtils.logWarning("ID为 " + recipeId + " 的配方绑定了无效的多方快结构ID: " + recipe.getMultiblockId());
         }
@@ -91,7 +87,7 @@ public class RecipeManager {
             recipesByType.getOrDefault(removed.getType(), new ArrayList<>())
                     .remove(removed);
 
-            MessageUtils.logInfo("Unregistered recipe: " + recipeId);
+            MessageUtils.logDebug("Unregistered recipe: " + recipeId);
             return true;
         }
         return false;
@@ -204,7 +200,7 @@ public class RecipeManager {
         recipes.clear();
         recipesByMultiblock.clear();
         recipesByType.clear();
-        MessageUtils.logInfo("Cleared all recipes");
+        MessageUtils.logDebug("Cleared all recipes");
     }
 
     /**
@@ -213,7 +209,7 @@ public class RecipeManager {
     public void reload() {
         clearAllRecipes();
         registerDefaultRecipes();
-        MessageUtils.logInfo("Reloaded recipe manager");
+        MessageUtils.logDebug("Reloaded recipe manager");
     }
 
     /**

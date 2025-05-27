@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Folia服务器兼容性工具类 - 使用FoliaLib 0.4.4
+ * Folia服务器兼容性工具类
  */
 public final class FoliaUtils {
 
@@ -35,30 +35,6 @@ public final class FoliaUtils {
         if (!initialized || foliaLib == null) {
             throw new IllegalStateException("FoliaUtils not initialized! Call initialize() first.");
         }
-    }
-
-    /**
-     * 检查是否为Folia服务器
-     */
-    public static boolean isFoliaServer() {
-        ensureInitialized();
-        return foliaLib.isFolia();
-    }
-
-    /**
-     * 检查是否为Paper服务器
-     */
-    public static boolean isPaperServer() {
-        ensureInitialized();
-        return foliaLib.isPaper();
-    }
-
-    /**
-     * 检查是否为Spigot服务器
-     */
-    public static boolean isSpigotServer() {
-        ensureInitialized();
-        return foliaLib.isSpigot();
     }
 
     /**

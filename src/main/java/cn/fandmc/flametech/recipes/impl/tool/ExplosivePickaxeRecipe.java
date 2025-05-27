@@ -58,7 +58,7 @@ public class ExplosivePickaxeRecipe implements RecipeRegistrar {
         try {
             return Main.getInstance().getConfigManager().getLang(Messages.RECIPES_EXPLOSIVE_PICKAXE_NAME);
         } catch (Exception e) {
-            return "爆炸镐"; // 默认名称
+            return "爆炸镐";
         }
     }
 

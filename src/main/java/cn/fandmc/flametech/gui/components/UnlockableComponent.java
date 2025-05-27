@@ -30,7 +30,6 @@ public abstract class UnlockableComponent implements GUIComponent {
 
     @Override
     public ItemStack getDisplayItem() {
-        // 默认返回锁定状态，子类应该重写此方法提供玩家特定的显示
         return createLockedDisplay();
     }
 
@@ -81,13 +80,7 @@ public abstract class UnlockableComponent implements GUIComponent {
                 updateDisplaySafely(event, createLockedDisplay());
             }
         } else {
-            // 已解锁，执行解锁后的行为
-            try {
-                onAlreadyUnlocked(player, event);
-            } catch (Exception e) {
-                MessageUtils.logError("Error in onAlreadyUnlocked: " + e.getMessage());
-                MessageUtils.sendMessage(player, "&c执行操作时发生错误");
-            }
+            onAlreadyUnlocked(player, event);
         }
     }
 

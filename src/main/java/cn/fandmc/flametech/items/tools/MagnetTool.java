@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
  */
 public class MagnetTool extends SpecialTool {
 
-    // 配置常量
     private static final double ATTRACT_RANGE = 8.0;
     private static final long COOLDOWN_MS = 3000;
     private static final int MAX_ITEMS_PER_USE = 30;
@@ -73,9 +72,8 @@ public class MagnetTool extends SpecialTool {
      */
     public void handleRightClick(PlayerInteractEvent event, Player player, ItemStack tool) {
         // 调试信息
-        if (plugin.isDebugMode()) {
-            MessageUtils.logInfo("MagnetTool.handleRightClick called for player: " + player.getName());
-        }
+        MessageUtils.logDebug("MagnetTool.handleRightClick called for player: " + player.getName());
+
 
         // 基础验证
         if (!ValidationUtils.isValidPlayer(player)) {
@@ -88,28 +86,17 @@ public class MagnetTool extends SpecialTool {
             return;
         }
 
-        try {
-            // 检查冷却
-            if (isOnCooldown(player)) {
-                sendCooldownMessage(player);
-                return;
-            }
-
-            // 调试信息
-            if (plugin.isDebugMode()) {
-                MessageUtils.logInfo("Magnet not on cooldown, attempting to attract items...");
-            }
-
-            // 执行吸引
-            attractNearbyItemsAsync(player, tool);
-
-        } catch (Exception e) {
-            MessageUtils.logError("Error in magnet tool handleRightClick: " + e.getMessage());
-            MessageUtils.sendMessage(player, "&c使用吸铁石时发生错误: " + e.getMessage());
-            if (plugin.isDebugMode()) {
-                e.printStackTrace();
-            }
+        // 检查冷却
+        if (isOnCooldown(player)) {
+            sendCooldownMessage(player);
+            return;
         }
+
+        MessageUtils.logDebug("Magnet not on cooldown, attempting to attract items...");
+
+
+        // 执行吸引
+        attractNearbyItemsAsync(player, tool);
     }
 
     /**
@@ -136,17 +123,13 @@ public class MagnetTool extends SpecialTool {
                 // 没有找到物品
                 MessageUtils.sendLocalizedMessage(player, Messages.TOOLS_MAGNET_NO_ITEMS);
 
-                // 调试信息
-                if (plugin.isDebugMode()) {
-                    MessageUtils.logInfo("No attractable entities found in range");
-                }
+                MessageUtils.logDebug("No attractable entities found in range");
+
                 return;
             }
 
-            // 调试信息
-            if (plugin.isDebugMode()) {
-                MessageUtils.logInfo("Found " + nearbyEntities.size() + " attractable entities");
-            }
+            MessageUtils.logDebug("Found " + nearbyEntities.size() + " attractable entities");
+
 
             // 播放音效
             player.playSound(playerLoc, Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.5f);
@@ -213,9 +196,7 @@ public class MagnetTool extends SpecialTool {
                         });
                     }
                 }).exceptionally(throwable -> {
-                    if (plugin.isDebugMode()) {
-                        MessageUtils.logWarning("Failed to teleport entity: " + throwable.getMessage());
-                    }
+                    MessageUtils.logDebug("Failed to teleport entity: " + throwable.getMessage());
                     return null;
                 });
             }

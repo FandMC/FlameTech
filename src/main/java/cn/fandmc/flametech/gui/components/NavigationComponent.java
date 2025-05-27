@@ -31,24 +31,17 @@ public class NavigationComponent implements GUIComponent {
     }
 
     private ItemStack createDisplayItem() {
-        switch (type) {
-            case BACK:
-                return ItemBuilder.createBackButton();
-            case NEXT_PAGE:
-                return ItemBuilder.createNextPageButton();
-            case PREVIOUS_PAGE:
-                return ItemBuilder.createPreviousPageButton();
-            case CLOSE:
-                return new ItemBuilder(Material.BARRIER)
-                        .displayName("&c关闭")
-                        .build();
-            case OPEN_GUI:
-                return new ItemBuilder(Material.COMPASS)
-                        .displayName("&e打开界面")
-                        .build();
-            default:
-                return new ItemBuilder(Material.STONE).build();
-        }
+        return switch (type) {
+            case BACK -> ItemBuilder.createBackButton();
+            case NEXT_PAGE -> ItemBuilder.createNextPageButton();
+            case PREVIOUS_PAGE -> ItemBuilder.createPreviousPageButton();
+            case CLOSE -> new ItemBuilder(Material.BARRIER)
+                    .displayName("&c关闭")
+                    .build();
+            case OPEN_GUI -> new ItemBuilder(Material.COMPASS)
+                    .displayName("&e打开界面")
+                    .build();
+        };
     }
 
     @Override
@@ -63,7 +56,6 @@ public class NavigationComponent implements GUIComponent {
                 handleBackButton(player);
                 break;
             case CLOSE:
-                // 直接关闭，让事件监听器处理后续逻辑
                 player.closeInventory();
                 break;
             case OPEN_GUI:
@@ -72,7 +64,6 @@ public class NavigationComponent implements GUIComponent {
                 }
                 break;
             default:
-                // 其他类型的导航由具体的GUI处理
                 break;
         }
     }

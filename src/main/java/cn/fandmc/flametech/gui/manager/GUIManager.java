@@ -240,7 +240,7 @@ public class GUIManager {
         }
 
         registeredGUIs.clear();
-        MessageUtils.logInfo("Cleared all registered GUIs");
+        MessageUtils.logDebug("Cleared all registered GUIs");
     }
 
     /**
@@ -250,7 +250,7 @@ public class GUIManager {
         for (Player player : new HashMap<>(openGUIs).keySet()) {
             closeGUI(player, true); // 强制关闭
         }
-        MessageUtils.logInfo("Closed all open GUIs");
+        MessageUtils.logDebug("Closed all open GUIs");
     }
 
     /**
@@ -260,7 +260,7 @@ public class GUIManager {
         closeAllGUIs();
         clearAllGUIs();
         registerDefaultGUIs();
-        MessageUtils.logInfo("Reloaded GUI manager");
+        MessageUtils.logDebug("Reloaded GUI manager");
     }
 
     /**

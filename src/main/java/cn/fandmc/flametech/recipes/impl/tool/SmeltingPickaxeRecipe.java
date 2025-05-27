@@ -55,7 +55,7 @@ public class SmeltingPickaxeRecipe implements RecipeRegistrar {
         try {
             return Main.getInstance().getConfigManager().getLang(Messages.RECIPES_SMELTING_PICKAXE_NAME);
         } catch (Exception e) {
-            return "熔炼镐"; // 默认名称
+            return "熔炼镐";
         }
     }
 

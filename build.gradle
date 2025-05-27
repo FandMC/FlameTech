@@ -20,7 +20,7 @@ repositories {
 }
 
 group = 'cn.fandmc'
-version = '0.0.8'
+version = '0.1.0'
 
 dependencies {
     //compileOnly('dev.folia:folia-api:1.21.4-R0.1-SNAPSHOT')
