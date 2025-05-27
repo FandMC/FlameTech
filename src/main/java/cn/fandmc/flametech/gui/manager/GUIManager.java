@@ -44,6 +44,7 @@ public class GUIManager {
 
             registerGUI(new BasicMachinesGUI(plugin));
             registerGUI(new ToolsGUI(plugin));
+            registerGUI(new MaterialsGUI(plugin));
 
             MessageUtils.logInfo("成功注册了 " + registeredGUIs.size() + " 个GUI");
 

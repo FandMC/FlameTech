@@ -68,8 +68,6 @@ guide_book:
   lore:
     - "&7你的科技之旅从这里开始"
     - "&7右键点击打开主界面"
-    - ""
-    - "&e[FlameTech 指南]"
   actions:
     open_main: "&e点击打开主界面"
 
@@ -125,6 +123,85 @@ gui:
         - "&a点击查看配方和结构"
         - ""
         - "&c[基础机器]"
+  materials:
+    title: "&6&l矿物材料"
+    category_selection: "&e选择材料类别"
+    search_placeholder: "&7搜索材料..."
+    no_materials: "&c该类别暂无材料"
+    no_materials_desc: "&7该类别还没有注册任何材料，敬请期待！"
+
+    categories:
+      raw_materials:
+        name: "&8&l原材料"
+        description: "&7未经加工的原始材料"
+      dusts:
+        name: "&7&l金属粉末"
+        description: "&7各种金属的粉末形态"
+      ingots:
+        name: "&f&l金属锭"
+        description: "&7不同纯度的金属锭"
+      alloys:
+        name: "&6&l合金"
+        description: "&7多种金属混合制成的合金"
+      gems:
+        name: "&b&l宝石"
+        description: "&7人造宝石和稀有矿物"
+      processed:
+        name: "&e&l加工品"
+        description: "&7经过特殊处理的材料"
+  material_viewer:
+    title: "&6材料查看器: %material%"
+
+    # 材料信息面板
+    info:
+      title: "&e&l材料信息"
+      category: "&7类别: &e"
+      id: "&7ID: &e"
+      created_by: "&7制作方式:"
+      no_source_recipes: "&7• §c暂无制作配方"
+      used_in_count: "&7用于制作: &e%count% &7种配方"
+      view_recipes_hint: "&e右侧可查看所有相关配方"
+
+    # 材料展示
+    display:
+      material_info: "&7这是一个工业材料"
+      category: "&7类别: %category%"
+
+    # 相关配方按钮
+    related_recipes:
+      title: "&6&l相关配方"
+      description: "&7查看使用此材料的所有配方"
+      count: "&7找到 &e%count% &7个相关配方:"
+      no_recipes: "&c暂无相关配方"
+      no_recipes_message: "&c该材料暂未用于任何配方中"
+      click_to_view: "&a点击查看所有相关配方"
+      open_error: "&c打开相关配方时发生错误"
+
+  # 材料相关配方列表
+  material_related_recipes:
+    title: "&6%material% 的相关配方 &7(%count%个)"
+
+    # 配方项
+    recipe_type: "&7配方类型: &e%type%"
+    material_usage: "&7使用 &e%material% &7x%amount%"
+    click_view_recipe: "&a点击查看配方详情"
+
+    # 未解锁配方
+    recipe_locked_name: "&c%recipe% &7(未解锁)"
+    recipe_locked_lore_exp: "&7需要经验等级: &e%required%"
+    recipe_locked_lore_click: "&e点击解锁配方"
+
+    # 错误消息
+    unlock_failed_default: "&c解锁失败: %message%"
+    error_open_recipe: "&c打开配方详情时发生错误"
+    error_click_event: "&c处理点击事件时发生错误"
+
+    # 材料信息组件
+    material_info:
+      title: "&e当前查看的材料"
+      id: "&7材料ID: &e%id%"
+      usage_count: "&7相关配方数: &e%count%"
+
   buttons:
     tools:
       name: "&b工具"
@@ -133,8 +210,6 @@ gui:
         - "&7包含：爆炸镐、熔炼镐等"
         - ""
         - "&e点击查看工具列表"
-        - ""
-        - "&c[FlameTech]"
     basic_machines:
       name: "&6基础机器"
       lore:
@@ -142,8 +217,13 @@ gui:
         - "&7包含：熔炉、压缩机、粉碎机等"
         - ""
         - "&e点击查看基础机器列表"
+    materials:
+      name: "&6&l矿物材料"
+      lore:
+        - "&7查看和获取各种工业材料"
+        - "&7包含：粉末、锭、合金、宝石等"
         - ""
-        - "&c[FlameTech]"
+        - "&e点击进入材料大全"
   tools:
     title: "&b工具配方"
     description: "&7查看所有特殊工具的配方和功能"
@@ -161,8 +241,6 @@ gui:
         - "&7• 消耗额外耐久度"
         - ""
         - "&a点击查看详细配方"
-        - ""
-        - "&c[FlameTech 工具]"
     smelting_pickaxe:
       name: "&6&l熔炼镐"
       lore:
@@ -177,8 +255,7 @@ gui:
         - "&7• 100% 成功率"
         - ""
         - "&a点击查看详细配方"
-        - ""
-        - "&c[FlameTech 工具]"
+
     magnet:
       name: "&b&l吸铁石"
       lore:
@@ -193,8 +270,6 @@ gui:
         - "&7• 最多30个物品/次"
         - ""
         - "&a点击查看详细配方"
-        - ""
-        - "&c[FlameTech 工具]"
 
   recipe_viewer:
     title: "&6%machine% - 结构展示"
@@ -347,8 +422,6 @@ items:
       - "&7• 可以破坏任何可破坏的方块"
       - "&7• 产生爆炸效果和音效"
       - "&7• 消耗额外耐久度"
-      - ""
-      - "&c[FlameTech 工具]"
 
   smelting_pickaxe:
     name: "&6&l熔炼镐"
@@ -359,11 +432,6 @@ items:
       - ""
       - "&e功能:"
       - "&7• 矿石直接掉落锭"
-      - "&7• 石头变成平滑石头"
-      - "&7• 沙子变成玻璃"
-      - "&7• 播放熔炼音效和粒子"
-      - ""
-      - "&c[FlameTech 工具]"
 
   border_item:
     name: " "
@@ -391,8 +459,6 @@ items:
         - "&7包含：熔炉、压缩机、粉碎机等"
         - ""
         - "&e点击查看基础机器列表"
-        - ""
-        - "&c[FlameTech]"
     tools:
       name: "&b工具"
       lore:
@@ -400,8 +466,6 @@ items:
         - "&7包含：爆炸镐、熔炼镐等"
         - ""
         - "&e点击查看工具列表"
-        - ""
-        - "&c[FlameTech]"
   magnet:
     name: "&b&l吸铁石"
     lore:
@@ -416,8 +480,6 @@ items:
       - "&7• 3秒冷却时间"
       - ""
       - "&a右键点击使用"
-      - ""
-      - "&c[FlameTech 工具]"
 
 # 解锁系统
 unlock:
@@ -456,9 +518,6 @@ tools:
     default_lore:
       - "&7特殊工具"
       - "&7具有独特的功能"
-      - ""
-      - "&e[FlameTech 工具]"
-      -
   explosive_pickaxe:
     cooldown_message: "&c工具冷却中，请稍后再试！"
     no_permission: "&c你没有使用爆炸镐的权限"
@@ -569,35 +628,74 @@ format:
     thousands: "%number%K"
     millions: "%number%M"
 
-# 物品材料名称映射
 materials:
-  stone: "石头"
-  cobblestone: "圆石"
-  iron_ore: "铁矿石"
-  gold_ore: "金矿石"
-  diamond_ore: "钻石矿石"
-  coal_ore: "煤矿石"
-  copper_ore: "铜矿石"
-  deepslate_iron_ore: "深板岩铁矿石"
-  deepslate_gold_ore: "深板岩金矿石"
-  deepslate_diamond_ore: "深板岩钻石矿石"
-  deepslate_coal_ore: "深板岩煤矿石"
-  deepslate_copper_ore: "深板岩铜矿石"
-  iron_ingot: "铁锭"
-  gold_ingot: "金锭"
-  copper_ingot: "铜锭"
-  diamond: "钻石"
-  coal: "煤炭"
-  raw_iron: "粗铁"
-  raw_gold: "粗金"
-  raw_copper: "粗铜"
-  crafting_table: "工作台"
-  furnace: "熔炉"
-  dispenser: "发射器"
-  tnt: "TNT"
-  stick: "木棍"
-  glass: "玻璃"
-  smooth_stone: "平滑石头"
+  interaction:
+    left_click: "&7左键：查看详细信息"
+    right_click: "&7右键：获取材料"
+    shift_left: "&7Shift+左键：查看相关配方"
+    shift_right: "&7Shift+右键：获取16个"
+
+  actions:
+    opening_viewer: "&a正在打开材料查看器..."
+    found_recipes: "&a找到 %count% 个相关配方"
+    no_related_recipes: "&e该材料暂无相关配方"
+    obtained_material: "&a获得了 %amount% 个 %material%"
+    obtained_partial: "&e获得了 %received% 个 %material%，剩余掉落在地上"
+    creation_failed: "&c无法创建材料物品"
+    give_error: "&c给予材料时发生错误"
+  category:
+    raw_materials: "原材料"
+    dusts: "粉末"
+    ingots: "锭"
+    alloys: "合金"
+    gems: "宝石"
+    processed: "加工品"
+
+  common:
+    purity: "纯度"
+    melting_point: "熔点"
+    rarity: "稀有度"
+    description: "描述"
+    get_one: "左键获取 1 个"
+    get_stack: "右键获取 64 个"
+    get_half_stack: "Shift+左键获取 16 个"
+    inventory_full: "背包已满，部分物品掉落在地上"
+    obtained: "获得了材料"
+
+  names:
+    # 粉末类
+    iron_dust: "铁粉"
+    copper_dust: "铜粉"
+    zinc_dust: "锌粉"
+    aluminum_dust: "铝粉"
+    chrome_dust: "铬粉"
+    silver_dust: "银粉"
+    tin_dust: "锡粉"
+
+    # 锭类 (纯度系列)
+    iron_ingot_10: "铁锭 (10%)"
+    iron_ingot_20: "铁锭 (20%)"
+    iron_ingot_30: "铁锭 (30%)"
+    iron_ingot_40: "铁锭 (40%)"
+    iron_ingot_50: "铁锭 (50%)"
+    iron_ingot_60: "铁锭 (60%)"
+    iron_ingot_70: "铁锭 (70%)"
+    iron_ingot_80: "铁锭 (80%)"
+    iron_ingot_90: "铁锭 (90%)"
+    iron_ingot_100: "铁锭 (100%)"
+
+    # 合金
+    bronze_ingot: "青铜锭"
+
+    # 加工品
+    ore_dust: "矿粉"
+    silicon: "硅"
+    raw_silicon: "原硅"
+
+    # 人造宝石
+    artificial_diamond: "人造钻石"
+    artificial_emerald: "人造绿宝石"
+    artificial_sapphire: "人造蓝宝石"
 recipes:
   explosive_pickaxe:
     name: "爆炸镐"

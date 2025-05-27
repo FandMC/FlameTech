@@ -8,6 +8,7 @@ import cn.fandmc.flametech.gui.manager.GUIManager;
 import cn.fandmc.flametech.items.manager.ItemManager;
 import cn.fandmc.flametech.listeners.BlockBreakListener;
 import cn.fandmc.flametech.listeners.PlayerInteractListener;
+import cn.fandmc.flametech.materials.manager.MaterialManager;
 import cn.fandmc.flametech.multiblock.manager.MultiblockManager;
 import cn.fandmc.flametech.recipes.manager.RecipeManager;
 import cn.fandmc.flametech.unlock.manager.UnlockManager;
@@ -26,6 +27,7 @@ public class Main extends JavaPlugin {
     private MultiblockManager multiblockManager;
     private UnlockManager unlockManager;
     private GUIManager guiManager;
+    private MaterialManager materialManager;
 
     @Override
     public void onEnable() {
@@ -90,6 +92,7 @@ public class Main extends JavaPlugin {
         saveDefaultConfig();
 
         this.itemManager = new ItemManager(this);
+        this.materialManager = new MaterialManager(this);
         this.multiblockManager = new MultiblockManager(this);
         this.recipeManager = new RecipeManager(this);
 
@@ -115,16 +118,19 @@ public class Main extends JavaPlugin {
         // 1. 先注册物品
         itemManager.registerDefaultItems();
 
-        // 2. 再注册多方块结构
+        // 2. 注册材料
+        materialManager.registerDefaultMaterials();
+
+        // 3. 再注册多方块结构
         multiblockManager.registerDefaultStructures();
 
-        // 3. 然后注册配方
+        // 4. 然后注册配方
         recipeManager.registerDefaultRecipes();
 
-        // 4. 最后注册解锁项（依赖于上面的内容）
+        // 5. 最后注册解锁项（依赖于上面的内容）
         unlockManager.registerDefaultUnlockables();
 
-        // 5. 注册GUI
+        // 6. 注册GUI
         guiManager.registerDefaultGUIs();
     }
 
@@ -138,6 +144,7 @@ public class Main extends JavaPlugin {
 
             // 重载各个管理器
             itemManager.reload();
+            materialManager.reload();
             multiblockManager.reload();
             recipeManager.reload();
 
@@ -164,6 +171,10 @@ public class Main extends JavaPlugin {
 
     public ItemManager getItemManager() {
         return itemManager;
+    }
+
+    public MaterialManager getMaterialManager() {
+        return materialManager;
     }
 
     public RecipeManager getRecipeManager() {

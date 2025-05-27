@@ -2,8 +2,7 @@ package cn.fandmc.flametech.gui.impl;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.gui.base.PaginatedGUI;
-import cn.fandmc.flametech.gui.buttons.main.BasicMachinesButton;
-import cn.fandmc.flametech.gui.buttons.main.ToolsButton;
+import cn.fandmc.flametech.gui.buttons.main.*;
 import org.bukkit.entity.Player;
 
 /**
@@ -23,6 +22,7 @@ public class MainGUI extends PaginatedGUI {
         // 添加主要功能按钮
         addPageItem(new BasicMachinesButton());
         addPageItem(new ToolsButton());
+        addPageItem(new MaterialsButton());
 
         // 调用父类方法构建GUI
         super.buildGUI(player);

@@ -156,7 +156,6 @@ public class FlameTechCommand implements CommandExecutor {
                 return true;
             } catch (Exception e) {
                 MessageUtils.logError("Error reloading plugin: " + e.getMessage());
-                // 对于包含异常信息的错误，我们暂时保持原样，或者可以创建一个专门的错误消息
                 MessageUtils.sendMessage(sender, "&c重载插件时发生错误: " + e.getMessage());
                 return true;
             }
