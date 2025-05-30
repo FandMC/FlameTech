@@ -8,6 +8,7 @@ import cn.fandmc.flametech.gui.manager.GUIManager;
 import cn.fandmc.flametech.items.manager.ItemManager;
 import cn.fandmc.flametech.listeners.BlockBreakListener;
 import cn.fandmc.flametech.listeners.PlayerInteractListener;
+import cn.fandmc.flametech.listeners.multiblock.OreWasherListener;
 import cn.fandmc.flametech.materials.manager.MaterialManager;
 import cn.fandmc.flametech.multiblock.manager.MultiblockManager;
 import cn.fandmc.flametech.recipes.manager.RecipeManager;
@@ -111,6 +112,7 @@ public class Main extends JavaPlugin {
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
+        getServer().getPluginManager().registerEvents(new OreWasherListener(this), this);
     }
 
     private void registerDefaultContent() {

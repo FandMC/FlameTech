@@ -1,5 +1,5 @@
 name: FlameTech
-version: '0.1.1'
+version: '0.1.2'
 main: cn.fandmc.flametech.Main
 api-version: '1.21'
 authors: [20018]

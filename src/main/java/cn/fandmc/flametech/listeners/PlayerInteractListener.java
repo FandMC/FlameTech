@@ -10,6 +10,8 @@ import cn.fandmc.flametech.utils.BookUtils;
 import cn.fandmc.flametech.utils.MessageUtils;
 import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -60,6 +62,9 @@ public class PlayerInteractListener implements Listener {
                 return;
             }
 
+            if (handleSmeltingFurnaceRelight(event, player)) {
+                return;
+            }
         } catch (Exception e) {
             MessageUtils.logError("Error handling player interact event: " + e.getMessage());
             if (plugin.isDebugMode()) {
@@ -130,5 +135,37 @@ public class PlayerInteractListener implements Listener {
 
         Location location = event.getClickedBlock().getLocation();
         return multiblockManager.handleInteraction(player, location, event);
+    }
+
+    private boolean handleSmeltingFurnaceRelight(PlayerInteractEvent event, Player player) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return false;
+        }
+
+        Block clickedBlock = event.getClickedBlock();
+        ItemStack handItem = player.getInventory().getItemInMainHand();
+
+        // 检查是否手持打火石右键空气方块（准备点火的位置）
+        if (clickedBlock == null ||
+                handItem == null ||
+                handItem.getType() != Material.FLINT_AND_STEEL) {
+            return false;
+        }
+
+        // 检查点击的是否是空气方块（火应该在这里）
+        if (clickedBlock.getType() != Material.AIR) {
+            return false;
+        }
+
+        Location fireLocation = clickedBlock.getLocation();
+
+        Location furnaceMainBlock = fireLocation.clone().add(0, 2, 0);
+        Location dispenserLocation = fireLocation.clone().add(0, 1, 0);
+
+        if (furnaceMainBlock.getBlock().getType() == Material.NETHER_BRICK_FENCE) {
+            dispenserLocation.getBlock().getType();
+        }
+
+        return false;
     }
 }

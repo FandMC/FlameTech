@@ -2,7 +2,7 @@ package cn.fandmc.flametech.multiblock.manager;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
-import cn.fandmc.flametech.multiblock.impl.EnhancedCraftingTable;
+import cn.fandmc.flametech.multiblock.impl.*;
 import cn.fandmc.flametech.utils.MessageUtils;
 import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.Location;
@@ -31,6 +31,10 @@ public class MultiblockManager {
     public void registerDefaultStructures() {
         try {
             registerStructure(new EnhancedCraftingTable(plugin));
+            registerStructure(new SmeltingFurnace(plugin));
+            registerStructure(new OreWasher(plugin));
+            registerStructure(new OreSifter(plugin));
+            registerStructure(new PressureMachine(plugin));
 
             MessageUtils.logInfo("成功注册 " + structures.size() + " 个多方块结构");
 

@@ -1,12 +1,10 @@
 package cn.fandmc.flametech.gui.buttons.tools;
 
-import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ItemKeys;
 import cn.fandmc.flametech.gui.components.UnlockableComponent;
-import cn.fandmc.flametech.gui.impl.ItemRecipeGUI;
+import cn.fandmc.flametech.gui.impl.utils.ItemRecipeGUI;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import cn.fandmc.flametech.recipes.base.Recipe;
-import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

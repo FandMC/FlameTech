@@ -3,6 +3,8 @@ package cn.fandmc.flametech.materials.manager;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.materials.base.Material;
 import cn.fandmc.flametech.materials.impl.*;
+import cn.fandmc.flametech.materials.impl.dust.*;
+import cn.fandmc.flametech.materials.impl.ingot.*;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
 
@@ -31,10 +33,11 @@ public class MaterialManager {
             // 2. 金属粉末类 (按字母顺序)
             registerMaterial(new AluminumDust(plugin));
             registerMaterial(new ChromeDust(plugin));
-            registerMaterial(new CoalDust(plugin));
+            registerMaterial(new CarbonDust(plugin));
             registerMaterial(new CopperDust(plugin));
             registerMaterial(new GoldDust(plugin));
             registerMaterial(new IronDust(plugin));
+            registerMaterial(new MagnesiumDust(plugin));
             registerMaterial(new SilverDust(plugin));
             registerMaterial(new TinDust(plugin));
             registerMaterial(new ZincDust(plugin));
@@ -51,8 +54,15 @@ public class MaterialManager {
             registerMaterial(new GoldIngot90(plugin));
             registerMaterial(new GoldIngot100(plugin));
 
-            // 4. 合金
+            registerMaterial(new CobaltIngot(plugin));
+            registerMaterial(new CopperIngotFT(plugin));
+            registerMaterial(new MagnesiumIngot(plugin));
+            registerMaterial(new SilverIngot(plugin));
+            registerMaterial(new ZincIngot(plugin));
+            registerMaterial(new AluminumIngot(plugin));
+            registerMaterial(new TinIngot(plugin));
             registerMaterial(new BronzeIngot(plugin));
+            registerMaterial(new TitaniumIngot(plugin));
 
             // 5. 硅材料系列
             registerMaterial(new RawSilicon(plugin));

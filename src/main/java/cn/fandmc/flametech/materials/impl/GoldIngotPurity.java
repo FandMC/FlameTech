@@ -22,9 +22,7 @@ public abstract class GoldIngotPurity extends Material {
                 .lore(
                         "§7纯度锭",
                         "§7纯度: " + purityColor + purity + "%",
-                        "§7熔点: §e" + (1000 + purity * 5) + "°C",
-                        "",
-                        "§c[FlameTech 材料]"
+                        ""
                 )
                 .nbt(nbtKey, "true")
                 .nbt("flametech_purity", purity)

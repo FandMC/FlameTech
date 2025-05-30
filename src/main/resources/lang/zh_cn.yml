@@ -73,12 +73,17 @@ guide_book:
 
 # 多方块结构
 multiblock:
+  not_unlocked: "&c你还未解锁 %machine%！"
+  debug:
+    space_before: "&7合成前：空槽 %empty%，部分满 %partial%，已满 %full%"
+    space_after: "&7合成后：空槽 %empty%，部分满 %partial%，已满 %full%"
+    simulation_success: "&a模拟合成成功，实际执行中..."
+    simulation_failed: "&c模拟合成失败：%reason%"
   enhanced_crafting_table:
     name: "&6增强型工作台"
     description: "&7一个增强版的工作台，可以合成特殊物品"
     created: "&a✔ 成功创建了增强型工作台！"
     hint: "&7将物品放入下方的发射器中，再次右键工作台即可自动合成"
-    error: "&c错误：多方块结构不完整！请检查搭建是否正确"
     no_recipe: "&c发射器中的物品无法匹配任何配方！"
     inventory_full: "&c发射器已满！无法放入合成结果"
     craft_success: "&a✔ 成功合成了 %item%！"
@@ -95,12 +100,85 @@ multiblock:
     craft_failed: "&c合成失败，请检查材料和空间"
     insufficient_materials: "&c材料不足！请检查配方要求"
     materials_consumed: "&7已消耗 %count% 种材料"
-    debug:
-      space_before: "&7合成前：空槽 %empty%，部分满 %partial%，已满 %full%"
-      space_after: "&7合成后：空槽 %empty%，部分满 %partial%，已满 %full%"
-      simulation_success: "&a模拟合成成功，实际执行中..."
-      simulation_failed: "&c模拟合成失败：%reason%"
-  not_unlocked: "&c你还未解锁 %machine%！"
+  # 治炼炉
+  smelting_furnace:
+    name: "&c&l治炼炉"
+    description: "&7高温熔炼设备，可以熔炼各种金属"
+    created: "&a✔ 成功创建了治炼炉！"
+    hint: "&7将材料放入发射器中，右键下界砖栅栏开始熔炼"
+    fire_out: "&c火焰已熄灭！无法进行熔炼"
+    final_use_warning: "&c⚠ 注意：这是最后一次使用，火焰即将熄灭！"
+    relight_hint: "&7使用打火石重新点燃底部的火焰"
+    relight_required: "&7请重新点火后继续使用"
+    relight_success: "&a✔ 火焰重新点燃成功！"
+    smelting_complete: "&a熔炼完成！"
+    remaining_uses: "&7火焰还可使用 &e%count% &7次"
+    structure_info:
+      - "&7结构要求："
+      - "&7上层(Y+1)：下界砖栅栏（主方块）"
+      - "&7中层(Y+0)：发射器"
+      - "&7下层(Y-1)：火焰"
+      - ""
+      - "&c搭建提示："
+      - "&e• 先搭建发射器和下界砖栅栏"
+      - "&e• 用打火石在最下层点火"
+      - "&e• 确保火焰持续燃烧"
+      - ""
+      - "&c注意：每5次使用火焰会熄灭一次"
+      - "&7火焰熄灭后用打火石重新点燃"
+      - "&e右键下界砖栅栏激活结构"
+
+  # 洗矿机
+  ore_washer:
+    name: "&b&l洗矿机"
+    description: "&7清洗矿物杂质的设备"
+    created: "&a✔ 成功创建了洗矿机！"
+    hint: "&7手持沙砾右键活版门开始洗矿"
+    need_gravel: "&c请手持沙砾来进行洗矿！"
+    need_water: "&c炼药锅中需要有水才能洗矿！"
+    structure_info:
+      - "&7结构要求："
+      - "&7上层(Y+0)：活版门（主方块）"
+      - "&7下层(Y-1)：炼药锅（需要有水）"
+      - ""
+      - "&7使用方法："
+      - "&e• 手持沙砾右键活版门"
+      - "&e• 消耗1个沙砾开始洗矿"
+
+  # 筛矿机
+  ore_sifter:
+    name: "&e&l筛矿机"
+    description: "&7筛选矿物的精密设备"
+    created: "&a✔ 成功创建了筛矿机！"
+    hint: "&7将材料放入上方发射器中，右键木栅栏开始筛选"
+    no_recipe: "&c发射器中的物品无法匹配任何筛选配方！"
+    inventory_full: "&c发射器已满！无法放入筛选结果"
+    sifting_success: "&a✔ 成功筛选了 %item%！"
+    structure_info:
+      - "&7结构要求："
+      - "&7上层(Y+1)：发射器"
+      - "&7中层(Y+0)：木栅栏（主方块）"
+      - "&7下层(Y-1)：炼药锅（收集筛选物）"
+      - ""
+      - "&e右键木栅栏激活结构"
+
+  # 压力机
+  pressure_machine:
+    name: "&d&l压力机"
+    description: "&7高压压制设备，制造压缩物品"
+    created: "&a✔ 成功创建了压力机！"
+    hint: "&7将材料放入发射器中，右键玻璃开始压制"
+    no_recipe: "&c发射器中的物品无法匹配任何压制配方！"
+    inventory_full: "&c发射器已满！无法放入压制结果"
+    pressing_success: "&a✔ 成功压制了 %item%！"
+    pressing_partial: "&e压制完成，但部分物品掉落在地上"
+    structure_info:
+      - "&7结构要求（3x3布局）："
+      - "&7平滑石头 活塞 平滑石头"
+      - "&7活塞 玻璃(主方块) 活塞"
+      - "&7平滑石头 发射器 平滑石头"
+      - ""
+      - "&e右键中心玻璃激活结构"
 # GUI界面
 gui:
   main:
@@ -123,6 +201,84 @@ gui:
         - "&a点击查看配方和结构"
         - ""
         - "&c[基础机器]"
+        # 治炼炉GUI
+    smelting_furnace:
+      name: "&c&l治炼炉"
+      lore:
+        - "&7高温熔炼设备"
+        - "&7可以熔炼各种金属和矿物"
+        - "&c使用5次后火焰会熄灭"
+        - ""
+        - "&e多方块结构："
+        - "&7上层：下界砖栅栏（主方块）"
+        - "&7中层：发射器（存放材料）"
+        - "&7下层：火焰（用打火石点燃）"
+        - ""
+        - "&c搭建注意事项："
+        - "&e• 先搭建发射器和栅栏"
+        - "&e• 用打火石在下层点火"
+        - "&e• 火焰熄灭后需重新点燃"
+        - ""
+        - "&a点击查看配方和结构"
+        - ""
+        - "&c[基础机器]"
+
+    # 洗矿机GUI
+    ore_washer:
+      name: "&b&l洗矿机"
+      lore:
+        - "&7清洗矿物杂质的设备"
+        - "&7手持沙砾右键使用"
+        - "&b洗矿时间：3-5秒"
+        - ""
+        - "&e多方块结构："
+        - "&7上层：活版门（主方块）"
+        - "&7下层：炼药锅（需要有水）"
+        - ""
+        - "&7使用方法："
+        - "&e• 手持沙砾右键活版门"
+        - "&e• 消耗1个沙砾进行洗矿"
+        - ""
+        - "&a点击查看详细信息"
+        - ""
+        - "&b[基础机器]"
+
+    # 筛矿机GUI
+    ore_sifter:
+      name: "&e&l筛矿机"
+      lore:
+        - "&7筛选矿物的精密设备"
+        - "&7通过配方系统筛选材料"
+        - "&e需要特定的筛选配方"
+        - ""
+        - "&e多方块结构："
+        - "&7上层：发射器"
+        - "&7中层：木栅栏（主方块）"
+        - "&7下层：炼药锅（收集物）"
+        - ""
+        - "&a点击查看配方和结构"
+        - ""
+        - "&e[基础机器]"
+
+    # 压力机GUI
+    pressure_machine:
+      name: "&d&l压力机"
+      lore:
+        - "&7高压压制设备"
+        - "&7制造各种压缩物品"
+        - "&d复杂的3x3多方块结构"
+        - ""
+        - "&e多方块结构："
+        - "&7四角：平滑石头"
+        - "&7四边：活塞 + 发射器"
+        - "&7中心：玻璃（主方块）"
+        - ""
+        - "&7布局：p-h-p / h-g-h / p-t-p"
+        - "&8(p=平滑石头, h=活塞, g=玻璃, t=发射器)"
+        - ""
+        - "&a点击查看配方和结构"
+        - ""
+        - "&d[基础机器]"
   materials:
     title: "&6&l矿物材料"
     category_selection: "&e选择材料类别"
@@ -339,6 +495,61 @@ gui:
         - "&7将物品放入其中进行合成"
       generic_lore:
         - "&7结构组成方块"
+      fire_name: "&c火焰 &7(用打火石点燃)"
+      fire_lore:
+        - "&c需要保持燃烧状态"
+        - "&7使用打火石在此位置点火"
+        - "&7火焰会在使用5次后熄灭"
+        - "&c重要：必须有火焰才能工作"
+
+      # 下界砖栅栏 (治炼炉)
+      nether_brick_fence_name: "&c下界砖栅栏 &7(主方块)"
+      nether_brick_fence_lore:
+        - "&7治炼炉的主控制方块"
+        - "&7右键点击激活治炼炉"
+        - "&c确保下方有火焰在燃烧"
+
+      # 活版门 (洗矿机)
+      oak_trapdoor_name: "&6活版门 &7(主方块)"
+      oak_trapdoor_lore:
+        - "&7洗矿机的操作界面"
+        - "&7手持沙砾右键使用"
+        - "&b需要下方炼药锅有水"
+
+      # 炼药锅
+      cauldron_name: "&9炼药锅"
+      cauldron_lore:
+        - "&7用于收集和储存"
+        - "&7洗矿机：需要装水"
+        - "&7筛矿机：收集筛选物"
+
+      # 木栅栏 (筛矿机)
+      oak_fence_name: "&6木栅栏 &7(主方块)"
+      oak_fence_lore:
+        - "&7筛矿机的控制中心"
+        - "&7右键点击开始筛选"
+        - "&e需要上方发射器有材料"
+
+      # 活塞 (压力机)
+      piston_name: "&7活塞"
+      piston_lore:
+        - "&7提供压制力量"
+        - "&7压力机的关键组件"
+        - "&d必须按正确位置摆放"
+
+      # 平滑石头 (压力机)
+      smooth_stone_name: "&f平滑石头"
+      smooth_stone_lore:
+        - "&7压力机的支撑结构"
+        - "&7提供稳定的基础"
+        - "&7摆放在四个角落"
+
+      # 玻璃 (压力机)
+      glass_name: "&b玻璃 &7(主方块)"
+      glass_lore:
+        - "&7压力机的控制中心"
+        - "&7右键点击开始压制"
+        - "&d复杂的3x3结构中心"
     layer_up:
       enabled: "&a▲ 上一层"
       disabled: "&7▲ 已是最高层"
@@ -631,9 +842,7 @@ format:
 materials:
   interaction:
     left_click: "&7左键：查看详细信息"
-    right_click: "&7右键：获取材料"
     shift_left: "&7Shift+左键：查看相关配方"
-    shift_right: "&7Shift+右键：获取16个"
 
   actions:
     opening_viewer: "&a正在打开材料查看器..."
@@ -686,7 +895,12 @@ materials:
 
     # 合金
     bronze_ingot: "青铜锭"
-
+    copper_ingot_ft: "铜锭"
+    magnesium_ingot: "镁锭"
+    silver_ingot: "银锭"
+    zinc_ingot: "锌锭"
+    aluminum_ingot: "铝锭"
+    tin_ingot: "锡锭"
     # 加工品
     ore_dust: "矿粉"
     silicon: "硅"

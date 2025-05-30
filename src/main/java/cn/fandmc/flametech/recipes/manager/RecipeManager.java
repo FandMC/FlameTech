@@ -3,7 +3,7 @@ package cn.fandmc.flametech.recipes.manager;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.recipes.base.RecipeType;
-import cn.fandmc.flametech.recipes.impl.ToolRecipes;
+import cn.fandmc.flametech.recipes.impl.*;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
 
@@ -31,6 +31,7 @@ public class RecipeManager {
     public void registerDefaultRecipes() {
         try {
             ToolRecipes.registerAll(this);
+            SmeltingFurnaceRecipes.registerAll(this);
             MessageUtils.logInfo("注册了 " + recipes.size() + " 个配方");
         } catch (Exception e) {
             MessageUtils.logError("注册默认配方失败: " + e.getMessage());
