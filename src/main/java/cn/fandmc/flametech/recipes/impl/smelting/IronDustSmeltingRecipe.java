@@ -1,50 +1,41 @@
 package cn.fandmc.flametech.recipes.impl.smelting;
 
 import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.recipes.base.ShapedRecipe;
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
 import cn.fandmc.flametech.recipes.manager.RecipeManager;
-import cn.fandmc.flametech.recipes.registrar.RecipeRegistrar;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-
 import java.util.HashMap;
 import java.util.Map;
 
-public class IronDustSmeltingRecipe implements RecipeRegistrar {
+public class IronDustSmeltingRecipe extends BaseDustSmeltingRecipe {
 
-    private static final String[] PATTERN = {
-            "I"
-    };
+    public IronDustSmeltingRecipe() {
+        super("iron_dust", null, "smelting_iron_dust", "铁粉熔炼", 5);
+    }
 
     @Override
     public boolean register(RecipeManager recipeManager) {
         Main plugin = Main.getInstance();
 
-        // 创建铁粉
         ItemStack ironDust = plugin.getMaterialManager().createMaterial("iron_dust").orElse(null);
         if (ironDust == null) return false;
 
-        // 结果：原版铁锭
         ItemStack result = new ItemStack(Material.IRON_INGOT, 1);
 
         Map<Character, ItemStack> ingredients = new HashMap<>();
-        ingredients.put('I', ironDust);
+        ingredients.put('D', ironDust);
 
-        ShapedRecipe recipe = new ShapedRecipe(
-                "smelting_iron_dust",
-                "铁粉熔炼",
+        cn.fandmc.flametech.recipes.base.ShapedRecipe recipe = new cn.fandmc.flametech.recipes.base.ShapedRecipe(
+                recipeId,
+                recipeName,
                 result,
                 "smelting_furnace",
-                PATTERN,
+                new String[]{"D"},
                 ingredients,
-                5
+                requiredLevel
         );
 
         return recipeManager.registerRecipe(recipe);
-    }
-
-    @Override
-    public String getRecipeName() {
-        return "铁粉熔炼";
     }
 }

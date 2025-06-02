@@ -136,6 +136,12 @@ multiblock:
     hint: "&7手持沙砾右键活版门开始洗矿"
     need_gravel: "&c请手持沙砾来进行洗矿！"
     need_water: "&c炼药锅中需要有水才能洗矿！"
+    already_washing: "&c正在洗矿中，请等待 %time% 秒"
+    washing_started: "&a开始洗矿，请稍等片刻..."
+    reward_gravel: "&7你获得了 &f碎石 &7x1"
+    reward_ore_dust: "&a你获得了 &e矿粉 &ax1！"
+    reward_nothing: "&7真遗憾，这次什么都没洗出来..."
+    reward_inventory_full: " &7(背包已满，物品掉落在地上)"
     structure_info:
       - "&7结构要求："
       - "&7上层(Y+0)：活版门（主方块）"

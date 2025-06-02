@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -36,6 +37,11 @@ public class OreWasher extends MultiblockStructure {
     private static final Map<String, Long> washingLocations = new ConcurrentHashMap<>();
     private static final long WASHING_TIME_MIN = 3000; // 3秒
     private static final long WASHING_TIME_MAX = 5000; // 5秒
+
+    // 洗矿奖励配置
+    private static final double GRAVEL_CHANCE = 0.30;      // 30% 碎石
+    private static final double ORE_DUST_CHANCE = 0.60;    // 60% 矿粉
+    private static final double NOTHING_CHANCE = 0.10;     // 10% 无奖励
 
     public OreWasher(Main plugin) {
         super(plugin, "ore_washer",
@@ -79,6 +85,14 @@ public class OreWasher extends MultiblockStructure {
                 return;
             }
 
+            // 检查是否已经在洗矿
+            if (isWashing(location)) {
+                int remainingTime = getRemainingTime(location);
+                MessageUtils.sendLocalizedMessage(player, "multiblock.ore_washer.already_washing",
+                        "%time%", String.valueOf(remainingTime));
+                return;
+            }
+
             // 开始洗矿过程
             startWashing(player, location, handItem);
 
@@ -89,9 +103,15 @@ public class OreWasher extends MultiblockStructure {
     }
 
     private boolean hasCauldronWater(Location location) {
-        // 检查炼药锅是否有水（这里简化处理，实际可以检查水位）
-        // 在真实实现中可以检查 Levelled 数据
-        return true; // 暂时返回true，后续可以完善
+        Block cauldronBlock = location.clone().add(0, -1, 0).getBlock();
+
+        if (cauldronBlock.getType() != Material.CAULDRON) {
+            return false;
+        }
+
+        // 检查炼药锅的水位
+        org.bukkit.block.data.Levelled cauldronData = (org.bukkit.block.data.Levelled) cauldronBlock.getBlockData();
+        return cauldronData.getLevel() > 0;
     }
 
     private void startWashing(Player player, Location location, ItemStack gravelItem) {
@@ -110,6 +130,9 @@ public class OreWasher extends MultiblockStructure {
         String locationKey = getLocationKey(location);
         long washingTime = ThreadLocalRandom.current().nextLong(WASHING_TIME_MIN, WASHING_TIME_MAX + 1);
         washingLocations.put(locationKey, System.currentTimeMillis() + washingTime);
+
+        // 发送开始消息
+        MessageUtils.sendLocalizedMessage(player, "multiblock.ore_washer.washing_started");
 
         // 开始粒子效果循环
         startWashingEffects(location, washingTime);
@@ -155,8 +178,84 @@ public class OreWasher extends MultiblockStructure {
                     location.clone().add(0.5, 0.5, 0.5), 8, 0.3, 0.3, 0.3, 0);
         }
 
-        // TODO: 目前设置为什么也不掉落，后续可以在这里添加掉落物逻辑
-        // giveWashingRewards(player, location);
+        // 给予洗矿奖励
+        giveWashingRewards(player, location);
+    }
+
+    /**
+     * 给予洗矿奖励
+     */
+    private void giveWashingRewards(Player player, Location location) {
+        double random = ThreadLocalRandom.current().nextDouble();
+
+        ItemStack reward = null;
+        String rewardMessage = null;
+
+        if (random < GRAVEL_CHANCE) {
+            // 30% 获得碎石
+            reward = new ItemStack(Material.COBBLESTONE, 1);
+            rewardMessage = "&7你获得了 &f碎石 &7x1";
+
+        } else if (random < GRAVEL_CHANCE + ORE_DUST_CHANCE) {
+            // 60% 获得矿粉
+            reward = createOreDust();
+            if (reward != null) {
+                rewardMessage = "&a你获得了 &e矿粉 &ax1！";
+            } else {
+                MessageUtils.logError("无法创建矿粉物品");
+                rewardMessage = "&c获取矿粉失败，请联系管理员";
+            }
+
+        } else {
+            // 10% 什么都没有
+            rewardMessage = "&7真遗憾，这次什么都没洗出来...";
+
+            // 播放失败音效
+            if (location.getWorld() != null) {
+                location.getWorld().playSound(location, Sound.ENTITY_VILLAGER_NO, 0.8f, 1.0f);
+            }
+        }
+
+        // 给予奖励
+        if (reward != null) {
+            Location dropLocation = location.clone().add(0.5, 0.5, 0.5);
+
+            // 尝试直接给玩家，如果背包满了就掉落
+            Map<Integer, ItemStack> leftover = player.getInventory().addItem(reward.clone());
+
+            if (!leftover.isEmpty()) {
+                // 背包满了，掉落在地上
+                for (ItemStack overflow : leftover.values()) {
+                    if (dropLocation.getWorld() != null) {
+                        dropLocation.getWorld().dropItemNaturally(dropLocation, overflow);
+                    }
+                }
+                rewardMessage += " &7(背包已满，物品掉落在地上)";
+            }
+
+            // 播放获得物品的音效
+            if (location.getWorld() != null) {
+                location.getWorld().playSound(location, Sound.ENTITY_ITEM_PICKUP, 1.0f, 1.0f);
+            }
+        }
+
+        // 发送消息
+        if (rewardMessage != null) {
+            MessageUtils.sendMessage(player, rewardMessage);
+        }
+    }
+
+    /**
+     * 创建矿粉物品
+     */
+    private ItemStack createOreDust() {
+        try {
+            // 尝试从材料管理器获取矿粉
+            return plugin.getMaterialManager().createMaterial("ore_dust").orElse(null);
+        } catch (Exception e) {
+            MessageUtils.logError("创建矿粉失败: " + e.getMessage());
+            return null;
+        }
     }
 
     private String getLocationKey(Location location) {

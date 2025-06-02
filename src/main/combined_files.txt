@@ -2,13 +2,211 @@
 路径：.\生成此代码的脚本.py
 ==================================================
 import os
+import argparse
+import sys
 
-def combine_files(output_file='combined_files.txt'):
+def should_ignore_file(file_path, max_size_mb=10):
+    """检查是否应该忽略该文件"""
+    # 图片文件扩展名
+    image_extensions = {
+        '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.svg', '.ico', '.cur',
+        '.psd', '.ai', '.eps', '.raw', '.cr2', '.nef', '.orf', '.sr2', '.dng',  # 专业图像格式
+        '.heic', '.heif', '.avif', '.jxl',  # 新型图像格式
+    }
+
+    # 字体文件扩展名
+    font_extensions = {
+        '.ttf', '.otf', '.woff', '.woff2', '.eot',  # 网页字体
+        '.ttc', '.pfb', '.pfm', '.afm', '.fon', '.fnt',  # 桌面字体
+    }
+
+    # 音频文件扩展名
+    audio_extensions = {
+        '.mp3', '.wav', '.flac', '.aac', '.ogg', '.wma', '.m4a', '.opus',
+        '.aiff', '.au', '.mid', '.midi', '.mod', '.s3m', '.xm', '.it',
+    }
+
+    # 视频文件扩展名
+    video_extensions = {
+        '.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v',
+        '.3gp', '.3g2', '.asf', '.rm', '.rmvb', '.vob', '.ts', '.mts',
+    }
+
+    # 压缩文件扩展名
+    archive_extensions = {
+        '.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz', '.lz', '.lzma',
+        '.cab', '.iso', '.dmg', '.pkg', '.deb', '.rpm', '.msi', '.apk',
+    }
+
+    # 可执行文件和库
+    executable_extensions = {
+        '.exe', '.dll', '.so', '.dylib', '.app', '.deb', '.rpm', '.msi',
+        '.com', '.bat', '.cmd', '.scr', '.vbs', '.ps1', '.sh', '.run',
+    }
+
+    # 办公文档
+    document_extensions = {
+        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+        '.odt', '.ods', '.odp', '.rtf', '.pages', '.numbers', '.key',
+    }
+
+    # 数据库和二进制文件
+    binary_extensions = {
+        '.bin', '.dat', '.db', '.sqlite', '.sqlite3', '.mdb', '.accdb',
+        '.dbf', '.frm', '.myi', '.myd', '.ibd', '.ldf', '.mdf',
+    }
+
+    # 编译文件和缓存
+    compiled_extensions = {
+        '.pyc', '.pyo', '.pyd', '.pyz', '.pywz',  # Python
+        '.class', '.jar', '.war', '.ear',  # Java
+        '.o', '.obj', '.lib', '.a', '.lo', '.la',  # C/C++
+        '.dcu', '.dcp', '.dcpil', '.dres',  # Delphi
+        '.beam',  # Erlang
+        '.elc',  # Emacs Lisp
+        '.fasl', '.fas', '.lib64fasl',  # Lisp
+    }
+
+    # 临时文件和系统文件
+    temp_extensions = {
+        '.tmp', '.temp', '.bak', '.backup', '.swp', '.swo', '.orig',
+        '.DS_Store', '.Thumbs.db', '.desktop.ini', '.directory',
+        '.~lock.*', '.*.swp', '.*.swo',
+    }
+
+    # 开发工具相关文件
+    dev_extensions = {
+        '.map', '.min.js', '.min.css',  # 压缩和映射文件
+        '.d.ts', '.tsbuildinfo',  # TypeScript
+        '.log', '.out', '.err',  # 日志文件
+        '.lock', '.pid', '.socket',  # 锁定和进程文件
+    }
+
+    # 合并所有需要忽略的扩展名
+    all_ignore_extensions = (
+            image_extensions | font_extensions | audio_extensions | video_extensions |
+            archive_extensions | executable_extensions | document_extensions |
+            binary_extensions | compiled_extensions | temp_extensions | dev_extensions
+    )
+
+
+    # 检查文件扩展名
+    _, ext = os.path.splitext(file_path.lower())
+    if ext in all_ignore_extensions:
+        return True
+
+    # 检查文件名模式（用于匹配特殊文件名）
+    filename = os.path.basename(file_path).lower()
+    ignore_patterns = {
+        'thumbs.db', '.ds_store', 'desktop.ini', '.directory',
+        'icon\r', '.icon', '.DS_Store',
+    }
+
+    if filename in ignore_patterns:
+        return True
+
+    # 检查以特定前缀开头的文件
+    ignore_prefixes = {'.~lock.', '~',}
+
+    # 检查文件大小
+    try:
+        file_size = os.path.getsize(file_path)
+        max_size_bytes = max_size_mb * 1024 * 1024
+        if file_size > max_size_bytes:
+            return True
+    except OSError:
+        return True
+
+    return False
+
+def should_ignore_directory(dir_path, ignore_dirs):
+    """检查是否应该忽略该目录"""
+    dir_name = os.path.basename(dir_path)
+
+    # 默认忽略的目录
+    default_ignore_dirs = {
+        # 版本控制
+        '.git', '.svn', '.hg', '.bzr', '.cvs',
+
+        # Python 相关
+        '__pycache__', '.pytest_cache', '.tox', '.coverage',
+        'venv', 'env', '.env', '.venv', 'virtualenv',
+        '.mypy_cache', '.pytype', 'site-packages',
+
+        # Node.js 相关
+        'node_modules', '.npm', '.yarn', '.pnpm-store',
+        '.next', '.nuxt', 'dist', 'build',
+
+        # IDE 和编辑器配置
+        '.vscode', '.idea', '.vs', '.sublime-project', '.sublime-workspace',
+        '.atom', '.brackets.json', '.project', '.settings',
+
+        # 构建和输出目录
+        'build', 'dist', 'target', 'bin', 'obj', 'out',
+        'release', 'debug', 'tmp', 'temp', 'cache',
+
+        # 系统文件和缓存
+        '.DS_Store', 'Thumbs.db', '.Spotlight-V100', '.Trashes',
+        '.fseventsd', '.DocumentRevisions-V100', '.TemporaryItems',
+
+        # 日志和临时文件
+        'logs', 'log', 'tmp', 'temp', '.tmp', '.temp',
+
+        # 测试和覆盖率
+        'coverage', 'test-results', 'test-reports',
+        '.nyc_output', 'lcov-report', 'htmlcov',
+
+        # 包管理器
+        '.bundle', 'vendor', 'Pods', 'Carthage',
+
+        # 其他常见目录
+        'backup', 'backups', '.sass-cache', '.gradle',
+        '.m2', '.ivy2', '.sbt', 'bower_components',
+    }
+
+    # 检查是否在默认忽略列表中
+    if dir_name in default_ignore_dirs:
+        return True
+
+    # 检查是否在用户指定的忽略列表中
+    if ignore_dirs:
+        for ignore_dir in ignore_dirs:
+            if dir_name == ignore_dir or dir_path.endswith(ignore_dir):
+                return True
+
+    return False
+
+def combine_files(output_file='combined_files.txt', ignore_dirs=None, max_size_mb=10, verbose=False):
+    """
+    合并当前目录及子目录下的所有文本文件
+
+    Args:
+        output_file: 输出文件名
+        ignore_dirs: 要忽略的目录列表
+        max_size_mb: 文件大小限制（MB）
+        verbose: 是否显示详细信息
+    """
     current_dir = os.path.abspath('.')
     output_path = os.path.abspath(output_file)
-    
+
+    if ignore_dirs is None:
+        ignore_dirs = []
+
+    processed_files = 0
+    ignored_files = 0
+
+    print(f"开始合并文件到: {output_file}")
+    print(f"文件大小限制: {max_size_mb}MB")
+    if ignore_dirs:
+        print(f"忽略目录: {', '.join(ignore_dirs)}")
+    print("-" * 50)
+
     with open(output_file, 'w', encoding='utf-8') as outfile:
         for root, dirs, files in os.walk('.'):
+            # 过滤要忽略的目录
+            dirs[:] = [d for d in dirs if not should_ignore_directory(os.path.join(root, d), ignore_dirs)]
+
+            # 跳过输出文件所在目录的输出文件
             if os.path.abspath(root) == os.path.dirname(output_path):
                 if output_file in files:
                     files.remove(output_file)
@@ -17,27 +215,203 @@ def combine_files(output_file='combined_files.txt'):
                 file_path = os.path.join(root, file)
                 abs_path = os.path.abspath(file_path)
 
+                # 跳过输出文件本身
                 if abs_path == output_path:
                     continue
 
+                # 检查是否应该忽略该文件
+                if should_ignore_file(file_path, max_size_mb):
+                    ignored_files += 1
+                    if verbose:
+                        print(f"忽略文件: {file_path}")
+                    continue
+
+                # 写入文件分隔符和路径
                 outfile.write(f'{"="*50}\n')
                 outfile.write(f'路径：{file_path}\n')
                 outfile.write(f'{"="*50}\n')
-                
+
                 try:
                     with open(file_path, 'r', encoding='utf-8', errors='replace') as infile:
                         content = infile.read()
                         outfile.write(content)
                         if not content.endswith('\n'):
                             outfile.write('\n')
+                    processed_files += 1
+                    if verbose:
+                        print(f"处理文件: {file_path}")
                 except Exception as e:
                     outfile.write(f'!!! 读取失败：{str(e)}\n')
+                    if verbose:
+                        print(f"读取失败: {file_path} - {str(e)}")
+
                 outfile.write('\n\n')
-    
-    print(f'GG：{output_file}')
+
+    print("-" * 50)
+    print(f'完成！输出文件: {output_file}')
+    print(f'处理文件数: {processed_files}')
+    print(f'忽略文件数: {ignored_files}')
+
+def main():
+    parser = argparse.ArgumentParser(description='合并目录中的文本文件')
+    parser.add_argument('-o', '--output', default='combined_files.txt',
+                        help='输出文件名 (默认: combined_files.txt)')
+    parser.add_argument('-i', '--ignore-dirs', nargs='*', default=[],
+                        help='要忽略的目录名称 (可指定多个)')
+    parser.add_argument('-s', '--max-size', type=int, default=10,
+                        help='文件大小限制，单位MB (默认: 10)')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='显示详细处理信息')
+
+    args = parser.parse_args()
+
+    try:
+        combine_files(
+            output_file=args.output,
+            ignore_dirs=args.ignore_dirs,
+            max_size_mb=args.max_size,
+            verbose=args.verbose
+        )
+    except KeyboardInterrupt:
+        print("\n操作被用户中断")
+        sys.exit(1)
+    except Exception as e:
+        print(f"错误: {str(e)}")
+        sys.exit(1)
+
+def should_ignore_directory(dir_path, ignore_dirs):
+    """检查是否应该忽略该目录"""
+    dir_name = os.path.basename(dir_path)
+
+    # 默认忽略的目录
+    default_ignore_dirs = {
+        '.git', '.svn', '.hg',  # 版本控制
+        '__pycache__', '.pytest_cache',  # Python 缓存
+        'node_modules', '.npm',  # Node.js
+        '.vscode', '.idea', '.vs',  # IDE 配置
+        'venv', 'env', '.env',  # Python 虚拟环境
+        'build', 'dist', 'target',  # 构建输出
+        '.DS_Store', 'Thumbs.db',  # 系统文件
+        'logs', 'log',  # 日志目录
+    }
+
+    # 检查是否在默认忽略列表中
+    if dir_name in default_ignore_dirs:
+        return True
+
+    # 检查是否在用户指定的忽略列表中
+    if ignore_dirs:
+        for ignore_dir in ignore_dirs:
+            if dir_name == ignore_dir or dir_path.endswith(ignore_dir):
+                return True
+
+    return False
+
+def combine_files(output_file='combined_files.txt', ignore_dirs=None, max_size_mb=10, verbose=False):
+    """
+    合并当前目录及子目录下的所有文本文件
+
+    Args:
+        output_file: 输出文件名
+        ignore_dirs: 要忽略的目录列表
+        max_size_mb: 文件大小限制（MB）
+        verbose: 是否显示详细信息
+    """
+    current_dir = os.path.abspath('.')
+    output_path = os.path.abspath(output_file)
+
+    if ignore_dirs is None:
+        ignore_dirs = []
+
+    processed_files = 0
+    ignored_files = 0
+
+    print(f"开始合并文件到: {output_file}")
+    print(f"文件大小限制: {max_size_mb}MB")
+    if ignore_dirs:
+        print(f"忽略目录: {', '.join(ignore_dirs)}")
+    print("-" * 50)
+
+    with open(output_file, 'w', encoding='utf-8') as outfile:
+        for root, dirs, files in os.walk('.'):
+            # 过滤要忽略的目录
+            dirs[:] = [d for d in dirs if not should_ignore_directory(os.path.join(root, d), ignore_dirs)]
+
+            # 跳过输出文件所在目录的输出文件
+            if os.path.abspath(root) == os.path.dirname(output_path):
+                if output_file in files:
+                    files.remove(output_file)
+
+            for file in sorted(files):
+                file_path = os.path.join(root, file)
+                abs_path = os.path.abspath(file_path)
+
+                # 跳过输出文件本身
+                if abs_path == output_path:
+                    continue
+
+                # 检查是否应该忽略该文件
+                if should_ignore_file(file_path, max_size_mb):
+                    ignored_files += 1
+                    if verbose:
+                        print(f"忽略文件: {file_path}")
+                    continue
+
+                # 写入文件分隔符和路径
+                outfile.write(f'{"="*50}\n')
+                outfile.write(f'路径：{file_path}\n')
+                outfile.write(f'{"="*50}\n')
+
+                try:
+                    with open(file_path, 'r', encoding='utf-8', errors='replace') as infile:
+                        content = infile.read()
+                        outfile.write(content)
+                        if not content.endswith('\n'):
+                            outfile.write('\n')
+                    processed_files += 1
+                    if verbose:
+                        print(f"处理文件: {file_path}")
+                except Exception as e:
+                    outfile.write(f'!!! 读取失败：{str(e)}\n')
+                    if verbose:
+                        print(f"读取失败: {file_path} - {str(e)}")
+
+                outfile.write('\n\n')
+
+    print("-" * 50)
+    print(f'完成！输出文件: {output_file}')
+    print(f'处理文件数: {processed_files}')
+    print(f'忽略文件数: {ignored_files}')
+
+def main():
+    parser = argparse.ArgumentParser(description='合并目录中的文本文件')
+    parser.add_argument('-o', '--output', default='combined_files.txt',
+                        help='输出文件名 (默认: combined_files.txt)')
+    parser.add_argument('-i', '--ignore-dirs', nargs='*', default=[],
+                        help='要忽略的目录名称 (可指定多个)')
+    parser.add_argument('-s', '--max-size', type=int, default=10,
+                        help='文件大小限制，单位MB (默认: 10)')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='显示详细处理信息')
+
+    args = parser.parse_args()
+
+    try:
+        combine_files(
+            output_file=args.output,
+            ignore_dirs=args.ignore_dirs,
+            max_size_mb=args.max_size,
+            verbose=args.verbose
+        )
+    except KeyboardInterrupt:
+        print("\n操作被用户中断")
+        sys.exit(1)
+    except Exception as e:
+        print(f"错误: {str(e)}")
+        sys.exit(1)
 
 if __name__ == '__main__':
-    combine_files()
+    main()
 
 
 ==================================================
@@ -7697,7 +8071,7 @@ public abstract class Material {
 
 
 ==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\AluminumDust.java
+路径：.\java\cn\fandmc\flametech\materials\impl\AluminumIngot.java
 ==================================================
 package cn.fandmc.flametech.materials.impl;
 
@@ -7706,17 +8080,16 @@ import cn.fandmc.flametech.items.builders.ItemBuilder;
 import cn.fandmc.flametech.materials.base.Material;
 import org.bukkit.inventory.ItemStack;
 
-// 铝粉 - 使用白糖
-public class AluminumDust extends Material {
-    public AluminumDust(Main plugin) {
-        super(plugin, "aluminum_dust", "铝粉");
+public class AluminumIngot extends Material {
+    public AluminumIngot(Main plugin) {
+        super(plugin, "aluminum_ingot", "铝锭");
     }
 
     @Override
     public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.SUGAR)
-                .displayName("§f铝粉")
-                .lore("§7金属粉末", "§7可用于合成铝锭")
+        return new ItemBuilder(org.bukkit.Material.IRON_INGOT)
+                .displayName("§f铝锭")
+                .lore("§7轻金属锭", "§7轻质高强度")
                 .nbt(nbtKey, "true")
                 .build();
     }
@@ -7825,306 +8198,6 @@ public class ArtificialSapphire extends Material {
 
 
 ==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\BronzeIngot.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-// 青铜锭
-public class BronzeIngot extends Material {
-    public BronzeIngot(Main plugin) {
-        super(plugin, "bronze_ingot", "青铜锭");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.COPPER_INGOT)
-                .displayName("§6青铜锭")
-                .lore("§7合金锭", "§7由铜和锡合成")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\CarbonDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-public class CarbonDust extends Material {
-    public CarbonDust(Main plugin) {
-        super(plugin, "carbon_dust", "碳粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.GUNPOWDER)
-                .displayName("§8碳粉")
-                .lore("§7碳的粉末", "§7高纯度碳材料")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\ChromeDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-// 铬粉 - 使用白糖
-public class ChromeDust extends Material {
-    public ChromeDust(Main plugin) {
-        super(plugin, "chrome_dust", "铬粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.SUGAR)
-                .displayName("§8铬粉")
-                .lore("§7金属粉末", "§7可用于合成铬锭")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\CobaltIngot.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-public class CobaltIngot extends Material {
-    public CobaltIngot(Main plugin) {
-        super(plugin, "cobalt_ingot", "钴锭");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.GOLD_INGOT)
-                .displayName("§9钴锭")
-                .lore("§7稀有金属锭", "§7用于制造合金")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\CopperDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-// 铜粉 - 使用萤石粉
-public class CopperDust extends Material {
-    public CopperDust(Main plugin) {
-        super(plugin, "copper_dust", "铜粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.GLOWSTONE_DUST)
-                .displayName("§6铜粉")
-                .lore("§7金属粉末", "§7可用于合成铜锭")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-// 金粉 - 使用萤石粉
-public class GoldDust extends Material {
-    public GoldDust(Main plugin) {
-        super(plugin, "gold_dust", "金粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.GLOWSTONE_DUST)
-                .displayName("§e金粉")
-                .lore("§7贵金属粉末", "§7可用于合成金锭")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot10.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot10 extends GoldIngotPurity {
-    public GoldIngot10(Main plugin) {
-        super(plugin, "gold_ingot_10", "金锭 (10%)", 10);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot100.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot100 extends GoldIngotPurity {
-    public GoldIngot100(Main plugin) {
-        super(plugin, "gold_ingot_100", "金锭 (100%)", 100);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot20.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot20 extends GoldIngotPurity {
-    public GoldIngot20(Main plugin) {
-        super(plugin, "gold_ingot_20", "金锭 (20%)", 20);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot30.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot30 extends GoldIngotPurity {
-    public GoldIngot30(Main plugin) {
-        super(plugin, "gold_ingot_30", "金锭 (30%)", 30);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot40.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot40 extends GoldIngotPurity {
-    public GoldIngot40(Main plugin) {
-        super(plugin, "gold_ingot_40", "金锭 (40%)", 40);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot50.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot50 extends GoldIngotPurity {
-    public GoldIngot50(Main plugin) {
-        super(plugin, "gold_ingot_50", "金锭 (50%)", 50);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot60.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot60 extends GoldIngotPurity {
-    public GoldIngot60(Main plugin) {
-        super(plugin, "gold_ingot_60", "金锭 (60%)", 60);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot70.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot70 extends GoldIngotPurity {
-    public GoldIngot70(Main plugin) {
-        super(plugin, "gold_ingot_70", "金锭 (70%)", 70);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot80.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot80 extends GoldIngotPurity {
-    public GoldIngot80(Main plugin) {
-        super(plugin, "gold_ingot_80", "金锭 (80%)", 80);
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngot90.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-
-public class GoldIngot90 extends GoldIngotPurity {
-    public GoldIngot90(Main plugin) {
-        super(plugin, "gold_ingot_90", "金锭 (90%)", 90);
-    }
-}
-
-
-==================================================
 路径：.\java\cn\fandmc\flametech\materials\impl\GoldIngotPurity.java
 ==================================================
 package cn.fandmc.flametech.materials.impl;
@@ -8164,87 +8237,6 @@ public abstract class GoldIngotPurity extends Material {
         if (purity >= 50) return "§6";
         if (purity >= 30) return "§c";
         return "§4";
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\IronDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.materials.base.Material;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.utils.SkullUtils;
-import org.bukkit.inventory.ItemStack;
-
-// 铁粉 - 使用火药
-public class IronDust extends Material {
-    public IronDust(Main plugin) {
-        super(plugin, "iron_dust", "铁粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.GUNPOWDER)
-                .displayName("§7铁粉")
-                .lore("§7金属粉末", "§7可用于合成铁锭")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\MagnesiumDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-public class MagnesiumDust extends Material {
-    public MagnesiumDust(Main plugin) {
-        super(plugin, "magnesium_dust", "镁粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.SUGAR)
-                .displayName("§f镁粉")
-                .lore("§7轻金属粉末", "§7易燃，小心处理", "§c⚠ 遇水剧烈反应")
-                .nbt(nbtKey, "true")
-                .build();
-    }
-}
-
-
-==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\OreDust.java
-==================================================
-package cn.fandmc.flametech.materials.impl;
-
-import cn.fandmc.flametech.Main;
-import cn.fandmc.flametech.items.builders.ItemBuilder;
-import cn.fandmc.flametech.materials.base.Material;
-import org.bukkit.inventory.ItemStack;
-
-// 矿粉 - 一切的起源
-public class OreDust extends Material {
-    public OreDust(Main plugin) {
-        super(plugin, "ore_dust", "矿粉");
-    }
-
-    @Override
-    public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.GRAVEL)
-                .displayName("§8矿粉")
-                .lore("§7原始矿粉", "§7一切的起源", "§7可加工成各种金属粉末")
-                .nbt(nbtKey, "true")
-                .build();
     }
 }
 
@@ -8316,9 +8308,249 @@ public class Silicon extends Material {
 
 
 ==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\SilverDust.java
+路径：.\java\cn\fandmc\flametech\materials\impl\TinIngot.java
 ==================================================
 package cn.fandmc.flametech.materials.impl;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class TinIngot extends Material {
+    public TinIngot(Main plugin) {
+        super(plugin, "tin_ingot", "锡锭");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.IRON_INGOT)
+                .displayName("§7锡锭")
+                .lore("§7金属锭", "§7低熔点金属")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\AluminumDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 铝粉 - 使用白糖
+public class AluminumDust extends Material {
+    public AluminumDust(Main plugin) {
+        super(plugin, "aluminum_dust", "铝粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.SUGAR)
+                .displayName("§f铝粉")
+                .lore("§7金属粉末", "§7可用于合成铝锭")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\CarbonDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class CarbonDust extends Material {
+    public CarbonDust(Main plugin) {
+        super(plugin, "carbon_dust", "碳粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.GUNPOWDER)
+                .displayName("§8碳粉")
+                .lore("§7碳的粉末", "§7高纯度碳材料")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\ChromeDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 铬粉 - 使用白糖
+public class ChromeDust extends Material {
+    public ChromeDust(Main plugin) {
+        super(plugin, "chrome_dust", "铬粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.SUGAR)
+                .displayName("§8铬粉")
+                .lore("§7金属粉末", "§7可用于合成铬锭")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\CopperDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 铜粉 - 使用萤石粉
+public class CopperDust extends Material {
+    public CopperDust(Main plugin) {
+        super(plugin, "copper_dust", "铜粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.GLOWSTONE_DUST)
+                .displayName("§6铜粉")
+                .lore("§7金属粉末", "§7可用于合成铜锭")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\GoldDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 金粉 - 使用萤石粉
+public class GoldDust extends Material {
+    public GoldDust(Main plugin) {
+        super(plugin, "gold_dust", "金粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.GLOWSTONE_DUST)
+                .displayName("§e金粉")
+                .lore("§7贵金属粉末", "§7可用于合成金锭")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\IronDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.base.Material;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import org.bukkit.inventory.ItemStack;
+
+// 铁粉 - 使用火药
+public class IronDust extends Material {
+    public IronDust(Main plugin) {
+        super(plugin, "iron_dust", "铁粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.GUNPOWDER)
+                .displayName("§7铁粉")
+                .lore("§7金属粉末", "§7可用于合成铁锭")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\MagnesiumDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class MagnesiumDust extends Material {
+    public MagnesiumDust(Main plugin) {
+        super(plugin, "magnesium_dust", "镁粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.SUGAR)
+                .displayName("§f镁粉")
+                .lore("§7轻金属粉末", "§7易燃，小心处理", "§c⚠ 遇水剧烈反应")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\OreDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 矿粉 - 一切的起源
+public class OreDust extends Material {
+    public OreDust(Main plugin) {
+        super(plugin, "ore_dust", "矿粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.GRAVEL)
+                .displayName("§8矿粉")
+                .lore("§7原始矿粉", "§7一切的起源", "§7可加工成各种金属粉末")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\SilverDust.java
+==================================================
+package cn.fandmc.flametech.materials.impl.dust;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
@@ -8343,9 +8575,9 @@ public class SilverDust extends Material {
 
 
 ==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\TinDust.java
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\TinDust.java
 ==================================================
-package cn.fandmc.flametech.materials.impl;
+package cn.fandmc.flametech.materials.impl.dust;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
@@ -8370,9 +8602,319 @@ public class TinDust extends Material {
 
 
 ==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\TitaniumIngot.java
+路径：.\java\cn\fandmc\flametech\materials\impl\dust\ZincDust.java
 ==================================================
-package cn.fandmc.flametech.materials.impl;
+package cn.fandmc.flametech.materials.impl.dust;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 锌粉 - 使用白糖
+public class ZincDust extends Material {
+    public ZincDust(Main plugin) {
+        super(plugin, "zinc_dust", "锌粉");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.SUGAR)
+                .displayName("§f锌粉")
+                .lore("§7金属粉末", "§7可用于合成锌锭")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\BronzeIngot.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+// 青铜锭
+public class BronzeIngot extends Material {
+    public BronzeIngot(Main plugin) {
+        super(plugin, "bronze_ingot", "青铜锭");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.COPPER_INGOT)
+                .displayName("§6青铜锭")
+                .lore("§7合金锭", "§7由铜和锡合成")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\CobaltIngot.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class CobaltIngot extends Material {
+    public CobaltIngot(Main plugin) {
+        super(plugin, "cobalt_ingot", "钴锭");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.GOLD_INGOT)
+                .displayName("§9钴锭")
+                .lore("§7稀有金属锭", "§7用于制造合金")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\CopperIngotFT.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class CopperIngotFT extends Material {
+    public CopperIngotFT(Main plugin) {
+        super(plugin, "copper_ingot_ft", "铜锭");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.COPPER_INGOT)
+                .displayName("§6铜锭")
+                .lore("§7金属锭", "§7工业纯铜")
+                .nbt(nbtKey, "true")
+                .glow()
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot10.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot10 extends GoldIngotPurity {
+    public GoldIngot10(Main plugin) {
+        super(plugin, "gold_ingot_10", "金锭 (10%)", 10);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot100.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot100 extends GoldIngotPurity {
+    public GoldIngot100(Main plugin) {
+        super(plugin, "gold_ingot_100", "金锭 (100%)", 100);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot20.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot20 extends GoldIngotPurity {
+    public GoldIngot20(Main plugin) {
+        super(plugin, "gold_ingot_20", "金锭 (20%)", 20);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot30.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot30 extends GoldIngotPurity {
+    public GoldIngot30(Main plugin) {
+        super(plugin, "gold_ingot_30", "金锭 (30%)", 30);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot40.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot40 extends GoldIngotPurity {
+    public GoldIngot40(Main plugin) {
+        super(plugin, "gold_ingot_40", "金锭 (40%)", 40);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot50.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot50 extends GoldIngotPurity {
+    public GoldIngot50(Main plugin) {
+        super(plugin, "gold_ingot_50", "金锭 (50%)", 50);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot60.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot60 extends GoldIngotPurity {
+    public GoldIngot60(Main plugin) {
+        super(plugin, "gold_ingot_60", "金锭 (60%)", 60);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot70.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot70 extends GoldIngotPurity {
+    public GoldIngot70(Main plugin) {
+        super(plugin, "gold_ingot_70", "金锭 (70%)", 70);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot80.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot80 extends GoldIngotPurity {
+    public GoldIngot80(Main plugin) {
+        super(plugin, "gold_ingot_80", "金锭 (80%)", 80);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\GoldIngot90.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.materials.impl.GoldIngotPurity;
+
+public class GoldIngot90 extends GoldIngotPurity {
+    public GoldIngot90(Main plugin) {
+        super(plugin, "gold_ingot_90", "金锭 (90%)", 90);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\MagnesiumIngot.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class MagnesiumIngot extends Material {
+    public MagnesiumIngot(Main plugin) {
+        super(plugin, "magnesium_ingot", "镁锭");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.IRON_INGOT)
+                .displayName("§f镁锭")
+                .lore("§7轻金属锭", "§7高活性金属", "§c⚠ 遇水剧烈反应")
+                .nbt(nbtKey, "true")
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\SilverIngot.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.items.builders.ItemBuilder;
+import cn.fandmc.flametech.materials.base.Material;
+import org.bukkit.inventory.ItemStack;
+
+public class SilverIngot extends Material {
+    public SilverIngot(Main plugin) {
+        super(plugin, "silver_ingot", "银锭");
+    }
+
+    @Override
+    public ItemStack createItem() {
+        return new ItemBuilder(org.bukkit.Material.IRON_INGOT)
+                .displayName("§f银锭")
+                .lore("§7贵金属锭", "§7导电性极佳")
+                .nbt(nbtKey, "true")
+                .glow()
+                .build();
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\TitaniumIngot.java
+==================================================
+package cn.fandmc.flametech.materials.impl.ingot;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
@@ -8398,26 +8940,25 @@ public class TitaniumIngot extends Material {
 
 
 ==================================================
-路径：.\java\cn\fandmc\flametech\materials\impl\ZincDust.java
+路径：.\java\cn\fandmc\flametech\materials\impl\ingot\ZincIngot.java
 ==================================================
-package cn.fandmc.flametech.materials.impl;
+package cn.fandmc.flametech.materials.impl.ingot;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.items.builders.ItemBuilder;
 import cn.fandmc.flametech.materials.base.Material;
 import org.bukkit.inventory.ItemStack;
 
-// 锌粉 - 使用白糖
-public class ZincDust extends Material {
-    public ZincDust(Main plugin) {
-        super(plugin, "zinc_dust", "锌粉");
+public class ZincIngot extends Material {
+    public ZincIngot(Main plugin) {
+        super(plugin, "zinc_ingot", "锌锭");
     }
 
     @Override
     public ItemStack createItem() {
-        return new ItemBuilder(org.bukkit.Material.SUGAR)
-                .displayName("§f锌粉")
-                .lore("§7金属粉末", "§7可用于合成锌锭")
+        return new ItemBuilder(org.bukkit.Material.IRON_INGOT)
+                .displayName("§7锌锭")
+                .lore("§7金属锭", "§7用于合金制造")
                 .nbt(nbtKey, "true")
                 .build();
     }
@@ -8432,6 +8973,8 @@ package cn.fandmc.flametech.materials.manager;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.materials.base.Material;
 import cn.fandmc.flametech.materials.impl.*;
+import cn.fandmc.flametech.materials.impl.dust.*;
+import cn.fandmc.flametech.materials.impl.ingot.*;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
 
@@ -8461,7 +9004,6 @@ public class MaterialManager {
             registerMaterial(new AluminumDust(plugin));
             registerMaterial(new ChromeDust(plugin));
             registerMaterial(new CarbonDust(plugin));
-            registerMaterial(new CobaltIngot(plugin));
             registerMaterial(new CopperDust(plugin));
             registerMaterial(new GoldDust(plugin));
             registerMaterial(new IronDust(plugin));
@@ -8482,7 +9024,13 @@ public class MaterialManager {
             registerMaterial(new GoldIngot90(plugin));
             registerMaterial(new GoldIngot100(plugin));
 
-            // 4. 合金
+            registerMaterial(new CobaltIngot(plugin));
+            registerMaterial(new CopperIngotFT(plugin));
+            registerMaterial(new MagnesiumIngot(plugin));
+            registerMaterial(new SilverIngot(plugin));
+            registerMaterial(new ZincIngot(plugin));
+            registerMaterial(new AluminumIngot(plugin));
+            registerMaterial(new TinIngot(plugin));
             registerMaterial(new BronzeIngot(plugin));
             registerMaterial(new TitaniumIngot(plugin));
 
@@ -9778,6 +10326,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -9803,6 +10352,11 @@ public class OreWasher extends MultiblockStructure {
     private static final Map<String, Long> washingLocations = new ConcurrentHashMap<>();
     private static final long WASHING_TIME_MIN = 3000; // 3秒
     private static final long WASHING_TIME_MAX = 5000; // 5秒
+
+    // 洗矿奖励配置
+    private static final double GRAVEL_CHANCE = 0.30;      // 30% 碎石
+    private static final double ORE_DUST_CHANCE = 0.60;    // 60% 矿粉
+    private static final double NOTHING_CHANCE = 0.10;     // 10% 无奖励
 
     public OreWasher(Main plugin) {
         super(plugin, "ore_washer",
@@ -9846,6 +10400,14 @@ public class OreWasher extends MultiblockStructure {
                 return;
             }
 
+            // 检查是否已经在洗矿
+            if (isWashing(location)) {
+                int remainingTime = getRemainingTime(location);
+                MessageUtils.sendLocalizedMessage(player, "multiblock.ore_washer.already_washing",
+                        "%time%", String.valueOf(remainingTime));
+                return;
+            }
+
             // 开始洗矿过程
             startWashing(player, location, handItem);
 
@@ -9856,9 +10418,15 @@ public class OreWasher extends MultiblockStructure {
     }
 
     private boolean hasCauldronWater(Location location) {
-        // 检查炼药锅是否有水（这里简化处理，实际可以检查水位）
-        // 在真实实现中可以检查 Levelled 数据
-        return true; // 暂时返回true，后续可以完善
+        Block cauldronBlock = location.clone().add(0, -1, 0).getBlock();
+
+        if (cauldronBlock.getType() != Material.CAULDRON) {
+            return false;
+        }
+
+        // 检查炼药锅的水位
+        org.bukkit.block.data.Levelled cauldronData = (org.bukkit.block.data.Levelled) cauldronBlock.getBlockData();
+        return cauldronData.getLevel() > 0;
     }
 
     private void startWashing(Player player, Location location, ItemStack gravelItem) {
@@ -9877,6 +10445,9 @@ public class OreWasher extends MultiblockStructure {
         String locationKey = getLocationKey(location);
         long washingTime = ThreadLocalRandom.current().nextLong(WASHING_TIME_MIN, WASHING_TIME_MAX + 1);
         washingLocations.put(locationKey, System.currentTimeMillis() + washingTime);
+
+        // 发送开始消息
+        MessageUtils.sendLocalizedMessage(player, "multiblock.ore_washer.washing_started");
 
         // 开始粒子效果循环
         startWashingEffects(location, washingTime);
@@ -9922,8 +10493,84 @@ public class OreWasher extends MultiblockStructure {
                     location.clone().add(0.5, 0.5, 0.5), 8, 0.3, 0.3, 0.3, 0);
         }
 
-        // TODO: 目前设置为什么也不掉落，后续可以在这里添加掉落物逻辑
-        // giveWashingRewards(player, location);
+        // 给予洗矿奖励
+        giveWashingRewards(player, location);
+    }
+
+    /**
+     * 给予洗矿奖励
+     */
+    private void giveWashingRewards(Player player, Location location) {
+        double random = ThreadLocalRandom.current().nextDouble();
+
+        ItemStack reward = null;
+        String rewardMessage = null;
+
+        if (random < GRAVEL_CHANCE) {
+            // 30% 获得碎石
+            reward = new ItemStack(Material.COBBLESTONE, 1);
+            rewardMessage = "&7你获得了 &f碎石 &7x1";
+
+        } else if (random < GRAVEL_CHANCE + ORE_DUST_CHANCE) {
+            // 60% 获得矿粉
+            reward = createOreDust();
+            if (reward != null) {
+                rewardMessage = "&a你获得了 &e矿粉 &ax1！";
+            } else {
+                MessageUtils.logError("无法创建矿粉物品");
+                rewardMessage = "&c获取矿粉失败，请联系管理员";
+            }
+
+        } else {
+            // 10% 什么都没有
+            rewardMessage = "&7真遗憾，这次什么都没洗出来...";
+
+            // 播放失败音效
+            if (location.getWorld() != null) {
+                location.getWorld().playSound(location, Sound.ENTITY_VILLAGER_NO, 0.8f, 1.0f);
+            }
+        }
+
+        // 给予奖励
+        if (reward != null) {
+            Location dropLocation = location.clone().add(0.5, 0.5, 0.5);
+
+            // 尝试直接给玩家，如果背包满了就掉落
+            Map<Integer, ItemStack> leftover = player.getInventory().addItem(reward.clone());
+
+            if (!leftover.isEmpty()) {
+                // 背包满了，掉落在地上
+                for (ItemStack overflow : leftover.values()) {
+                    if (dropLocation.getWorld() != null) {
+                        dropLocation.getWorld().dropItemNaturally(dropLocation, overflow);
+                    }
+                }
+                rewardMessage += " &7(背包已满，物品掉落在地上)";
+            }
+
+            // 播放获得物品的音效
+            if (location.getWorld() != null) {
+                location.getWorld().playSound(location, Sound.ENTITY_ITEM_PICKUP, 1.0f, 1.0f);
+            }
+        }
+
+        // 发送消息
+        if (rewardMessage != null) {
+            MessageUtils.sendMessage(player, rewardMessage);
+        }
+    }
+
+    /**
+     * 创建矿粉物品
+     */
+    private ItemStack createOreDust() {
+        try {
+            // 尝试从材料管理器获取矿粉
+            return plugin.getMaterialManager().createMaterial("ore_dust").orElse(null);
+        } catch (Exception e) {
+            MessageUtils.logError("创建矿粉失败: " + e.getMessage());
+            return null;
+        }
     }
 
     private String getLocationKey(Location location) {
@@ -10511,6 +11158,7 @@ import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.multiblock.base.BlockOffset;
 import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
+import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.utils.MessageUtils;
 import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.Location;
@@ -10526,6 +11174,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -10644,13 +11293,108 @@ public class SmeltingFurnace extends MultiblockStructure {
 
     private boolean performSmelting(Player player, Inventory dispenserInv, Location location) {
         try {
+            // 获取输入物品
+            Map<Integer, ItemStack> inputs = getInputsFromDispenser(dispenserInv);
+
+            // 查找匹配的配方
+            Optional<Recipe> recipeOpt = plugin.getRecipeManager()
+                    .findMatchingRecipe(getStructureId(), inputs);
+
+            if (recipeOpt.isEmpty()) {
+                MessageUtils.sendLocalizedMessage(player, "multiblock.smelting_furnace.no_recipe");
+                return false;
+            }
+
+            Recipe recipe = recipeOpt.get();
+
+            // 检查配方解锁状态
+            String recipeUnlockId = "recipe." + recipe.getRecipeId();
+            if (!plugin.getUnlockManager().isUnlocked(player, recipeUnlockId)) {
+                MessageUtils.sendLocalizedMessage(player, Messages.RECIPE_NOT_UNLOCKED,
+                        "%recipe%", recipe.getDisplayName());
+                return false;
+            }
+
+            // 播放熔炼效果
             playSmeltingEffects(location);
-            MessageUtils.sendLocalizedMessage(player, "multiblock.smelting_furnace.smelting_complete");
+
+            // 消耗材料
+            if (!consumeIngredients(dispenserInv, recipe)) {
+                return false;
+            }
+
+            // 添加结果物品
+            ItemStack result = recipe.getResult();
+            Map<Integer, ItemStack> leftover = dispenserInv.addItem(result.clone());
+
+            // 处理溢出
+            if (!leftover.isEmpty()) {
+                Location dropLocation = location.clone().add(0.5, 1.5, 0.5);
+                for (ItemStack overflow : leftover.values()) {
+                    if (dropLocation.getWorld() != null) {
+                        dropLocation.getWorld().dropItemNaturally(dropLocation, overflow);
+                    }
+                }
+            }
+
+            MessageUtils.sendLocalizedMessage(player, "multiblock.smelting_furnace.smelting_success",
+                    "%item%", recipe.getDisplayName());
             return true;
+
         } catch (Exception e) {
             MessageUtils.logError("Error during smelting process: " + e.getMessage());
             return false;
         }
+    }
+
+    // 添加辅助方法
+    private Map<Integer, ItemStack> getInputsFromDispenser(Inventory dispenserInv) {
+        Map<Integer, ItemStack> inputs = new HashMap<>();
+
+        for (int i = 0; i < Math.min(9, dispenserInv.getSize()); i++) {
+            ItemStack item = dispenserInv.getItem(i);
+            if (item != null && item.getType() != Material.AIR) {
+                inputs.put(i, item.clone());
+            }
+        }
+
+        return inputs;
+    }
+
+    private boolean consumeIngredients(Inventory dispenserInv, Recipe recipe) {
+        Map<Integer, ItemStack> required = recipe.getIngredients();
+
+        // 验证材料
+        for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {
+            int slot = entry.getKey();
+            ItemStack requiredItem = entry.getValue();
+
+            if (slot >= dispenserInv.getSize()) {
+                return false;
+            }
+
+            ItemStack current = dispenserInv.getItem(slot);
+            if (current == null || current.getType() != requiredItem.getType() ||
+                    current.getAmount() < requiredItem.getAmount()) {
+                return false;
+            }
+        }
+
+        // 消耗材料
+        for (Map.Entry<Integer, ItemStack> entry : required.entrySet()) {
+            int slot = entry.getKey();
+            ItemStack requiredItem = entry.getValue();
+
+            ItemStack current = dispenserInv.getItem(slot);
+            if (current != null) {
+                current.setAmount(current.getAmount() - requiredItem.getAmount());
+                if (current.getAmount() <= 0) {
+                    dispenserInv.setItem(slot, null);
+                }
+            }
+        }
+
+        return true;
     }
 
     private void extinguishFire(Location location) {
@@ -11217,6 +11961,103 @@ public class ShapedRecipe extends Recipe {
 
 
 ==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\SmeltingFurnaceRecipes.java
+==================================================
+package cn.fandmc.flametech.recipes.impl;
+
+import cn.fandmc.flametech.recipes.manager.RecipeManager;
+import cn.fandmc.flametech.recipes.registrar.RecipeRegistrar;
+import cn.fandmc.flametech.recipes.impl.smelting.*;
+import cn.fandmc.flametech.utils.MessageUtils;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 治炼炉配方管理器 - 优化版
+ */
+public final class SmeltingFurnaceRecipes {
+
+    private static final Map<String, RecipeRegistrar> RECIPE_MAP = new LinkedHashMap<>();
+
+    static {
+        // 基础金属粉末熔炼配方
+        registerRecipe("iron_dust", new IronDustSmeltingRecipe());
+        registerRecipe("copper_dust", new CopperDustSmeltingRecipe());
+        registerRecipe("magnesium_dust", new MagnesiumDustSmeltingRecipe());
+        registerRecipe("silver_dust", new SilverDustSmeltingRecipe());
+        registerRecipe("zinc_dust", new ZincDustSmeltingRecipe());
+        registerRecipe("aluminum_dust", new AluminumDustSmeltingRecipe());
+        registerRecipe("tin_dust", new TinDustSmeltingRecipe());
+
+        // 金粉熔炼配方
+        registerRecipe("gold_dust", new GoldDustSmeltingRecipe());
+
+        // 金锭纯度提升配方（10% -> 100%）
+        for (int purity = 10; purity < 100; purity += 10) {
+            String key = "gold_purity_" + purity + "_to_" + (purity + 10);
+            registerRecipe(key, new GoldIngotPurityUpgradeRecipe(purity));
+        }
+    }
+
+    /**
+     * 注册配方到映射
+     */
+    private static void registerRecipe(String key, RecipeRegistrar recipe) {
+        RECIPE_MAP.put(key, recipe);
+    }
+
+    /**
+     * 注册所有治炼炉配方
+     */
+    public static void registerAll(RecipeManager recipeManager) {
+        int successCount = 0;
+        int failCount = 0;
+
+        for (Map.Entry<String, RecipeRegistrar> entry : RECIPE_MAP.entrySet()) {
+            String key = entry.getKey();
+            RecipeRegistrar registrar = entry.getValue();
+
+            try {
+                if (registrar.register(recipeManager)) {
+                    successCount++;
+                    MessageUtils.logDebug("成功注册治炼炉配方: " + registrar.getRecipeName());
+                } else {
+                    failCount++;
+                    MessageUtils.logWarning("注册治炼炉配方失败: " + registrar.getRecipeName());
+                }
+            } catch (Exception e) {
+                failCount++;
+                MessageUtils.logError("注册配方时发生异常 [" + key + "]: " + e.getMessage());
+            }
+        }
+
+        MessageUtils.logInfo("治炼炉配方注册完成 - 成功: " + successCount + ", 失败: " + failCount);
+    }
+
+    /**
+     * 获取所有配方注册器（用于调试）
+     */
+    public static Map<String, RecipeRegistrar> getAllRecipes() {
+        return new LinkedHashMap<>(RECIPE_MAP);
+    }
+
+    /**
+     * 获取配方数量
+     */
+    public static int getRecipeCount() {
+        return RECIPE_MAP.size();
+    }
+
+    private SmeltingFurnaceRecipes() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+}
+
+
+==================================================
 路径：.\java\cn\fandmc\flametech\recipes\impl\ToolRecipes.java
 ==================================================
 package cn.fandmc.flametech.recipes.impl;
@@ -11254,6 +12095,339 @@ public final class ToolRecipes {
 
     private ToolRecipes() {
         throw new UnsupportedOperationException("Utility class");
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\AluminumDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+
+public class AluminumDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+    public AluminumDustSmeltingRecipe() {
+        super("aluminum_dust", "aluminum_ingot", "smelting_aluminum_dust", "铝粉熔炼", 6);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\CopperDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+
+public class CopperDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+    public CopperDustSmeltingRecipe() {
+        super("copper_dust", "copper_ingot_ft", "smelting_copper_dust", "铜粉熔炼", 5);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\GoldDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+
+public class GoldDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+    public GoldDustSmeltingRecipe() {
+        super("gold_dust", "gold_ingot_ft", "smelting_gold_dust", "金粉熔炼", 5);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\GoldIngotPurityUpgradeRecipe.java
+==================================================
+// 文件：.\java\cn\fandmc\flametech\recipes\impl\smelting\GoldIngotPurityUpgradeRecipe.java
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.recipes.base.ShapedRecipe;
+import cn.fandmc.flametech.recipes.manager.RecipeManager;
+import cn.fandmc.flametech.recipes.registrar.RecipeRegistrar;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class GoldIngotPurityUpgradeRecipe implements RecipeRegistrar {
+
+    private final int currentPurity;
+    private final int nextPurity;
+
+    private static final String[] PATTERN = {
+            "DI"
+    };
+
+    public GoldIngotPurityUpgradeRecipe(int currentPurity) {
+        this.currentPurity = currentPurity;
+        this.nextPurity = currentPurity + 10;
+    }
+
+    @Override
+    public boolean register(RecipeManager recipeManager) {
+        Main plugin = Main.getInstance();
+
+        // 金粉
+        ItemStack goldDust = plugin.getMaterialManager().createMaterial("gold_dust").orElse(null);
+        if (goldDust == null) return false;
+
+        // 当前纯度金锭
+        ItemStack currentIngot = plugin.getMaterialManager().createMaterial("gold_ingot_" + currentPurity).orElse(null);
+        if (currentIngot == null) return false;
+
+        // 下一纯度金锭
+        ItemStack nextIngot = plugin.getMaterialManager().createMaterial("gold_ingot_" + nextPurity).orElse(null);
+        if (nextIngot == null) return false;
+
+        Map<Character, ItemStack> ingredients = new HashMap<>();
+        ingredients.put('D', goldDust);
+        ingredients.put('I', currentIngot);
+
+        ShapedRecipe recipe = new ShapedRecipe(
+                "gold_purity_" + currentPurity + "_to_" + nextPurity,
+                "金锭纯度提升 (" + currentPurity + "% → " + nextPurity + "%)",
+                nextIngot,
+                "smelting_furnace",
+                PATTERN,
+                ingredients,
+                10 + (currentPurity / 10) // 纯度越高，需要的等级越高
+        );
+
+        return recipeManager.registerRecipe(recipe);
+    }
+
+    @Override
+    public String getRecipeName() {
+        return "金锭纯度提升 " + currentPurity + "% → " + nextPurity + "%";
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\IronDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+import cn.fandmc.flametech.recipes.manager.RecipeManager;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import java.util.HashMap;
+import java.util.Map;
+
+public class IronDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+
+    public IronDustSmeltingRecipe() {
+        super("iron_dust", null, "smelting_iron_dust", "铁粉熔炼", 5);
+    }
+
+    @Override
+    public boolean register(RecipeManager recipeManager) {
+        Main plugin = Main.getInstance();
+
+        ItemStack ironDust = plugin.getMaterialManager().createMaterial("iron_dust").orElse(null);
+        if (ironDust == null) return false;
+
+        ItemStack result = new ItemStack(Material.IRON_INGOT, 1);
+
+        Map<Character, ItemStack> ingredients = new HashMap<>();
+        ingredients.put('D', ironDust);
+
+        cn.fandmc.flametech.recipes.base.ShapedRecipe recipe = new cn.fandmc.flametech.recipes.base.ShapedRecipe(
+                recipeId,
+                recipeName,
+                result,
+                "smelting_furnace",
+                new String[]{"D"},
+                ingredients,
+                requiredLevel
+        );
+
+        return recipeManager.registerRecipe(recipe);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\MagnesiumDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+
+public class MagnesiumDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+    public MagnesiumDustSmeltingRecipe() {
+        super("magnesium_dust", "magnesium_ingot", "smelting_magnesium_dust", "镁粉熔炼", 6);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\SilverDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+
+public class SilverDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+    public SilverDustSmeltingRecipe() {
+        super("silver_dust", "silver_ingot", "smelting_silver_dust", "银粉熔炼", 6);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\TinDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.recipes.base.ShapedRecipe;
+import cn.fandmc.flametech.recipes.manager.RecipeManager;
+import cn.fandmc.flametech.recipes.registrar.RecipeRegistrar;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class TinDustSmeltingRecipe implements RecipeRegistrar {
+
+    private static final String[] PATTERN = {
+            "T"
+    };
+
+    @Override
+    public boolean register(RecipeManager recipeManager) {
+        Main plugin = Main.getInstance();
+
+        ItemStack tinDust = plugin.getMaterialManager().createMaterial("tin_dust").orElse(null);
+        if (tinDust == null) return false;
+
+        ItemStack result = plugin.getMaterialManager().createMaterial("tin_ingot").orElse(null);
+        if (result == null) return false;
+
+        Map<Character, ItemStack> ingredients = new HashMap<>();
+        ingredients.put('T', tinDust);
+
+        ShapedRecipe recipe = new ShapedRecipe(
+                "smelting_tin_dust",
+                "锡粉熔炼",
+                result,
+                "smelting_furnace",
+                PATTERN,
+                ingredients,
+                6
+        );
+
+        return recipeManager.registerRecipe(recipe);
+    }
+
+    @Override
+    public String getRecipeName() {
+        return "锡粉熔炼";
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\ZincDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting;
+
+import cn.fandmc.flametech.recipes.impl.smelting.base.BaseDustSmeltingRecipe;
+
+public class ZincDustSmeltingRecipe extends BaseDustSmeltingRecipe {
+    public ZincDustSmeltingRecipe() {
+        super("zinc_dust", "zinc_ingot", "smelting_zinc_dust", "锌粉熔炼", 6);
+    }
+}
+
+
+==================================================
+路径：.\java\cn\fandmc\flametech\recipes\impl\smelting\base\BaseDustSmeltingRecipe.java
+==================================================
+package cn.fandmc.flametech.recipes.impl.smelting.base;
+
+import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.recipes.base.ShapedRecipe;
+import cn.fandmc.flametech.recipes.manager.RecipeManager;
+import cn.fandmc.flametech.recipes.registrar.RecipeRegistrar;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 粉末熔炼配方基类
+ */
+public abstract class BaseDustSmeltingRecipe implements RecipeRegistrar {
+
+    protected final String dustMaterialId;
+    protected final String ingotMaterialId;
+    protected final String recipeId;
+    protected final String recipeName;
+    protected final int requiredLevel;
+
+    private static final String[] PATTERN = {
+            "D"  // D = Dust
+    };
+
+    public BaseDustSmeltingRecipe(String dustMaterialId, String ingotMaterialId,
+                                  String recipeId, String recipeName, int requiredLevel) {
+        this.dustMaterialId = dustMaterialId;
+        this.ingotMaterialId = ingotMaterialId;
+        this.recipeId = recipeId;
+        this.recipeName = recipeName;
+        this.requiredLevel = requiredLevel;
+    }
+
+    @Override
+    public boolean register(RecipeManager recipeManager) {
+        Main plugin = Main.getInstance();
+
+        // 获取粉末材料
+        ItemStack dustItem = plugin.getMaterialManager().createMaterial(dustMaterialId).orElse(null);
+        if (dustItem == null) {
+            plugin.getLogger().warning("无法创建材料: " + dustMaterialId);
+            return false;
+        }
+
+        // 获取锭材料
+        ItemStack ingotItem = plugin.getMaterialManager().createMaterial(ingotMaterialId).orElse(null);
+        if (ingotItem == null) {
+            plugin.getLogger().warning("无法创建材料: " + ingotMaterialId);
+            return false;
+        }
+
+        // 创建材料映射
+        Map<Character, ItemStack> ingredients = new HashMap<>();
+        ingredients.put('D', dustItem);
+
+        // 创建配方
+        ShapedRecipe recipe = new ShapedRecipe(
+                recipeId,
+                recipeName,
+                ingotItem,
+                "smelting_furnace",
+                PATTERN,
+                ingredients,
+                requiredLevel
+        );
+
+        return recipeManager.registerRecipe(recipe);
+    }
+
+    @Override
+    public String getRecipeName() {
+        return recipeName;
     }
 }
 
@@ -11532,7 +12706,7 @@ package cn.fandmc.flametech.recipes.manager;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.recipes.base.RecipeType;
-import cn.fandmc.flametech.recipes.impl.ToolRecipes;
+import cn.fandmc.flametech.recipes.impl.*;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
 
@@ -11560,6 +12734,7 @@ public class RecipeManager {
     public void registerDefaultRecipes() {
         try {
             ToolRecipes.registerAll(this);
+            SmeltingFurnaceRecipes.registerAll(this);
             MessageUtils.logInfo("注册了 " + recipes.size() + " 个配方");
         } catch (Exception e) {
             MessageUtils.logError("注册默认配方失败: " + e.getMessage());
@@ -13997,6 +15172,12 @@ multiblock:
     hint: "&7手持沙砾右键活版门开始洗矿"
     need_gravel: "&c请手持沙砾来进行洗矿！"
     need_water: "&c炼药锅中需要有水才能洗矿！"
+    already_washing: "&c正在洗矿中，请等待 %time% 秒"
+    washing_started: "&a开始洗矿，请稍等片刻..."
+    reward_gravel: "&7你获得了 &f碎石 &7x1"
+    reward_ore_dust: "&a你获得了 &e矿粉 &ax1！"
+    reward_nothing: "&7真遗憾，这次什么都没洗出来..."
+    reward_inventory_full: " &7(背包已满，物品掉落在地上)"
     structure_info:
       - "&7结构要求："
       - "&7上层(Y+0)：活版门（主方块）"
@@ -14723,6 +15904,7 @@ materials:
 
   common:
     purity: "纯度"
+    melting_point: "熔点"
     rarity: "稀有度"
     description: "描述"
     get_one: "左键获取 1 个"
@@ -14741,9 +15923,26 @@ materials:
     silver_dust: "银粉"
     tin_dust: "锡粉"
 
+    # 锭类 (纯度系列)
+    iron_ingot_10: "铁锭 (10%)"
+    iron_ingot_20: "铁锭 (20%)"
+    iron_ingot_30: "铁锭 (30%)"
+    iron_ingot_40: "铁锭 (40%)"
+    iron_ingot_50: "铁锭 (50%)"
+    iron_ingot_60: "铁锭 (60%)"
+    iron_ingot_70: "铁锭 (70%)"
+    iron_ingot_80: "铁锭 (80%)"
+    iron_ingot_90: "铁锭 (90%)"
+    iron_ingot_100: "铁锭 (100%)"
+
     # 合金
     bronze_ingot: "青铜锭"
-
+    copper_ingot_ft: "铜锭"
+    magnesium_ingot: "镁锭"
+    silver_ingot: "银锭"
+    zinc_ingot: "锌锭"
+    aluminum_ingot: "铝锭"
+    tin_ingot: "锡锭"
     # 加工品
     ore_dust: "矿粉"
     silicon: "硅"

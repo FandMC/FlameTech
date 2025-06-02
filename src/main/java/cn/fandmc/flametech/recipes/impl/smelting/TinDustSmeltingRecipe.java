@@ -26,7 +26,7 @@ public class TinDustSmeltingRecipe implements RecipeRegistrar {
         if (result == null) return false;
 
         Map<Character, ItemStack> ingredients = new HashMap<>();
-        ingredients.put('M', tinDust);
+        ingredients.put('T', tinDust);
 
         ShapedRecipe recipe = new ShapedRecipe(
                 "smelting_tin_dust",
