@@ -199,7 +199,7 @@ def combine_files(output_file='combined_files.txt', ignore_dirs=None, max_size_m
     print("-" * 50)
 
     with open(output_file, 'w', encoding='utf-8') as outfile:
-        for root, dirs, files in os.walk('.'):
+        for root, dirs, files in os.walk('../../../src/main'):
             # 过滤要忽略的目录
             dirs[:] = [d for d in dirs if not should_ignore_directory(os.path.join(root, d), ignore_dirs)]
 
