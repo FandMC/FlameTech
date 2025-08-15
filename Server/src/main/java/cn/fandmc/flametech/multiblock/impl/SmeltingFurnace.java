@@ -5,6 +5,7 @@ import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.multiblock.base.BlockOffset;
 import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
 import cn.fandmc.flametech.recipes.base.Recipe;
+import cn.fandmc.flametech.utils.LocationUtils;
 import cn.fandmc.flametech.utils.MessageUtils;
 import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.Location;
@@ -119,7 +120,7 @@ public class SmeltingFurnace extends MultiblockStructure {
     }
 
     private void attemptSmelting(Player player, Inventory dispenserInv, Location location) {
-        String locationKey = getLocationKey(location);
+        String locationKey = LocationUtils.getLocationKey(location);
 
         // 获取当前会话的使用次数
         int currentUsage = currentSessionUsage.getOrDefault(locationKey, 0);
@@ -269,26 +270,18 @@ public class SmeltingFurnace extends MultiblockStructure {
      * 重置使用次数（当重新点火或新建结构时调用）
      */
     private void resetUsageCount(Location location) {
-        String locationKey = getLocationKey(location);
+        String locationKey = LocationUtils.getLocationKey(location);
         currentSessionUsage.put(locationKey, 0);
         MessageUtils.logDebug("重置治炼炉使用次数: " + locationKey);
     }
 
-    private String getLocationKey(Location location) {
-        return location.getWorld().getName() + "_" +
-                location.getBlockX() + "_" +
-                location.getBlockY() + "_" +
-                location.getBlockZ();
-    }
+
 
     /**
      * 获取当前使用次数（用于调试）
      */
     public static int getCurrentUsage(Location location) {
-        String locationKey = location.getWorld().getName() + "_" +
-                location.getBlockX() + "_" +
-                location.getBlockY() + "_" +
-                location.getBlockZ();
+        String locationKey = LocationUtils.getLocationKey(location);
         return currentSessionUsage.getOrDefault(locationKey, 0);
     }
 
@@ -302,7 +295,13 @@ public class SmeltingFurnace extends MultiblockStructure {
 
     @Override
     public boolean canCraft(String recipeId) {
-        // TODO: 这里可以添加治炼炉专用配方的检查
-        return true;
+        // 检查是否为治炼炉专用配方
+        if (recipeId == null || recipeId.isEmpty()) {
+            return false;
+        }
+        
+        // 治炼炉支持所有冶炼类型的配方
+        return recipeId.contains("smelting") || recipeId.contains("furnace") || 
+               recipeId.startsWith("smelting_furnace_");
     }
 }

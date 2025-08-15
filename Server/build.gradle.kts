@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "cn.fandmc.flametech"
-version = "0.1.3"
+version = "0.1.4"
 
 repositories {
     mavenCentral()
@@ -23,9 +23,9 @@ repositories {
 
 dependencies {
     // Server 模块的依赖
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("dev.folia:folia-api:1.21.8-R0.1-SNAPSHOT")
 
-    // 依赖 API 模块，这会自动包含 FoliaLib
+    // 依赖 API 模块
     implementation(project(":api"))
 
     // 测试依赖

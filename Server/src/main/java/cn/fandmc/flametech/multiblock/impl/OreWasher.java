@@ -5,6 +5,7 @@ import cn.fandmc.flametech.constants.Messages;
 import cn.fandmc.flametech.multiblock.base.BlockOffset;
 import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
 import cn.fandmc.flametech.utils.FoliaUtils;
+import cn.fandmc.flametech.utils.LocationUtils;
 import cn.fandmc.flametech.utils.MessageUtils;
 import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.Location;
@@ -127,7 +128,7 @@ public class OreWasher extends MultiblockStructure {
         }
 
         // 记录洗矿位置
-        String locationKey = getLocationKey(location);
+        String locationKey = LocationUtils.getLocationKey(location);
         long washingTime = ThreadLocalRandom.current().nextLong(WASHING_TIME_MIN, WASHING_TIME_MAX + 1);
         washingLocations.put(locationKey, System.currentTimeMillis() + washingTime);
 
@@ -168,7 +169,7 @@ public class OreWasher extends MultiblockStructure {
     }
 
     private void completeWashing(Player player, Location location) {
-        String locationKey = getLocationKey(location);
+        String locationKey = LocationUtils.getLocationKey(location);
         washingLocations.remove(locationKey);
 
         // 播放完成音效
@@ -258,21 +259,13 @@ public class OreWasher extends MultiblockStructure {
         }
     }
 
-    private String getLocationKey(Location location) {
-        return location.getWorld().getName() + "_" +
-                location.getBlockX() + "_" +
-                location.getBlockY() + "_" +
-                location.getBlockZ();
-    }
+
 
     /**
      * 检查指定位置是否正在洗矿
      */
     public static boolean isWashing(Location location) {
-        String locationKey = location.getWorld().getName() + "_" +
-                location.getBlockX() + "_" +
-                location.getBlockY() + "_" +
-                location.getBlockZ();
+        String locationKey = LocationUtils.getLocationKey(location);
 
         Long endTime = washingLocations.get(locationKey);
         if (endTime == null) {
@@ -291,10 +284,7 @@ public class OreWasher extends MultiblockStructure {
      * 获取洗矿剩余时间（秒）
      */
     public static int getRemainingTime(Location location) {
-        String locationKey = location.getWorld().getName() + "_" +
-                location.getBlockX() + "_" +
-                location.getBlockY() + "_" +
-                location.getBlockZ();
+        String locationKey = LocationUtils.getLocationKey(location);
 
         Long endTime = washingLocations.get(locationKey);
         if (endTime == null) {

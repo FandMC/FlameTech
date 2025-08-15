@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cn.fandmc.flametech"
-version = "0.1.3"
+version = "0.1.4"
 
 repositories {
     mavenCentral()
@@ -25,7 +25,7 @@ repositories {
 dependencies {
     // API 模块的依赖
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    api("com.github.TechnicallyCoded:FoliaLib:0.4.4") // 使用 api 而不是 implementation
+    // 移除FoliaLib依赖，改为直接使用Folia原生API
 }
 
 val targetJavaVersion = 21

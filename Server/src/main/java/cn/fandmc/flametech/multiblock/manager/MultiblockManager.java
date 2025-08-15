@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.multiblock.manager;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
 import cn.fandmc.flametech.multiblock.impl.*;
 import cn.fandmc.flametech.utils.MessageUtils;
@@ -16,19 +17,19 @@ import java.util.Optional;
 /**
  * 多方块结构管理器
  */
-public class MultiblockManager {
+public class MultiblockManager extends BaseManager<MultiblockStructure> {
 
-    private final Main plugin;
     private final Map<String, MultiblockStructure> structures = new HashMap<>();
 
     public MultiblockManager(Main plugin) {
-        this.plugin = plugin;
+        super(plugin, "多方块结构管理器");
     }
 
     /**
      * 注册默认结构
      */
-    public void registerDefaultStructures() {
+    @Override
+    public void registerDefaults() {
         try {
             registerStructure(new EnhancedCraftingTable(plugin));
             registerStructure(new SmeltingFurnace(plugin));
@@ -36,10 +37,10 @@ public class MultiblockManager {
             registerStructure(new OreSifter(plugin));
             registerStructure(new PressureMachine(plugin));
 
-            MessageUtils.logInfo("成功注册 " + structures.size() + " 个多方块结构");
+            logRegistrationSuccess();
 
         } catch (Exception e) {
-            MessageUtils.logError("注册默认多方块结构失败: " + e.getMessage());
+            logRegistrationFailure(e);
             throw e;
         }
     }
@@ -146,26 +147,23 @@ public class MultiblockManager {
     /**
      * 获取已注册结构数量
      */
-    public int getRegisteredStructureCount() {
+    @Override
+    public int getRegisteredCount() {
         return structures.size();
     }
 
     /**
      * 清空所有结构
      */
-    public void clearAllStructures() {
+    @Override
+    public void clearAll() {
         structures.clear();
-        MessageUtils.logDebug("Cleared all multiblock structures");
+        logClearDebug();
     }
 
-    /**
-     * 重新加载多方块管理器
-     */
-    public void reload() {
-        clearAllStructures();
-        registerDefaultStructures();
-        MessageUtils.logDebug("Reloaded multiblock manager");
-    }
+
+
+
 
     /**
      * 获取统计信息

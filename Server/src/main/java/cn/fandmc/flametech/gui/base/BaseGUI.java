@@ -131,7 +131,9 @@ public abstract class BaseGUI implements InventoryHolder {
 
         } catch (Exception e) {
             MessageUtils.logError("Failed to open GUI " + guiId + " for player " + player.getName() + ": " + e.getMessage());
-            e.printStackTrace();
+            if (plugin.isDebugMode()) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -158,7 +160,9 @@ public abstract class BaseGUI implements InventoryHolder {
                 onClick(player, event, component);
             } catch (Exception e) {
                 MessageUtils.logError("Error handling click in GUI " + guiId + ": " + e.getMessage());
-                e.printStackTrace();
+                if (plugin.isDebugMode()) {
+                    e.printStackTrace();
+                }
             }
         }
     }

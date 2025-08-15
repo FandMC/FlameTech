@@ -7,6 +7,7 @@ import cn.fandmc.flametech.gui.impl.main.BasicMachinesGUI;
 import cn.fandmc.flametech.gui.impl.main.MaterialsGUI;
 import cn.fandmc.flametech.gui.impl.main.ToolsGUI;
 import cn.fandmc.flametech.gui.listeners.GUIListener;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.utils.MessageUtils;
 import cn.fandmc.flametech.utils.ValidationUtils;
 import org.bukkit.entity.Player;
@@ -20,9 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * GUI管理器 - 管理所有GUI界面
  */
-public class GUIManager {
+public class GUIManager extends BaseManager<BaseGUI> {
 
-    private final Main plugin;
     private final Map<String, BaseGUI> registeredGUIs = new HashMap<>();
     private final Map<Player, BaseGUI> openGUIs = new HashMap<>();
 
@@ -31,17 +31,15 @@ public class GUIManager {
     private static GUIManager instance;
 
     public GUIManager(Main plugin) {
-        this.plugin = plugin;
+        super(plugin, "GUI管理器");
         instance = this;
 
         // 注册GUI监听器
         plugin.getServer().getPluginManager().registerEvents(new GUIListener(), plugin);
     }
 
-    /**
-     * 注册默认GUI
-     */
-    public void registerDefaultGUIs() {
+    @Override
+    public void registerDefaults() {
         try {
             registerGUI(new MainGUI(plugin));
 
@@ -49,10 +47,10 @@ public class GUIManager {
             registerGUI(new ToolsGUI(plugin));
             registerGUI(new MaterialsGUI(plugin));
 
-            MessageUtils.logInfo("成功注册了 " + registeredGUIs.size() + " 个GUI");
+            logRegistrationSuccess();
 
         } catch (Exception e) {
-            MessageUtils.logError("注册默认GUI失败: " + e.getMessage());
+            logRegistrationFailure(e);
             throw e;
         }
     }
@@ -220,11 +218,20 @@ public class GUIManager {
         return new HashMap<>(registeredGUIs);
     }
 
-    /**
-     * 获取已注册GUI数量
-     */
-    public int getRegisteredGUICount() {
+    @Override
+    public int getRegisteredCount() {
         return registeredGUIs.size();
+    }
+
+    @Override
+    public void clearAll() {
+        // 先关闭所有打开的GUI
+        for (Player player : new HashMap<>(openGUIs).keySet()) {
+            closeGUI(player, true); // 强制关闭
+        }
+
+        registeredGUIs.clear();
+        logClearDebug();
     }
 
     /**
@@ -232,19 +239,6 @@ public class GUIManager {
      */
     public int getOpenGUICount() {
         return openGUIs.size();
-    }
-
-    /**
-     * 清空所有注册的GUI
-     */
-    public void clearAllGUIs() {
-        // 先关闭所有打开的GUI
-        for (Player player : new HashMap<>(openGUIs).keySet()) {
-            closeGUI(player, true); // 强制关闭
-        }
-
-        registeredGUIs.clear();
-        MessageUtils.logDebug("Cleared all registered GUIs");
     }
 
     /**
@@ -260,12 +254,13 @@ public class GUIManager {
     /**
      * 重新加载GUI管理器
      */
+    @Override
     public void reload() {
         closeAllGUIs();
-        clearAllGUIs();
-        registerDefaultGUIs();
-        MessageUtils.logDebug("Reloaded GUI manager");
+        super.reload();
     }
+
+
 
     /**
      * 处理玩家断开连接

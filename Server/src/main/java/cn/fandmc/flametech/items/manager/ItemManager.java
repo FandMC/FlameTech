@@ -3,7 +3,10 @@ package cn.fandmc.flametech.items.manager;
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ItemKeys;
 import cn.fandmc.flametech.items.base.CustomItem;
-import cn.fandmc.flametech.items.tools.*;
+import cn.fandmc.flametech.items.tools.ExplosivePickaxe;
+import cn.fandmc.flametech.items.tools.MagnetTool;
+import cn.fandmc.flametech.items.tools.SmeltingPickaxe;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.utils.ItemUtils;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
@@ -15,29 +18,29 @@ import java.util.Optional;
 /**
  * 物品管理器 - 管理所有自定义物品
  */
-public class ItemManager {
+public class ItemManager extends BaseManager<CustomItem> {
 
-    private final Main plugin;
     private final Map<String, CustomItem> customItems = new HashMap<>();
 
     public ItemManager(Main plugin) {
-        this.plugin = plugin;
+        super(plugin, "物品管理器");
     }
 
     /**
      * 注册默认物品
      */
-    public void registerDefaultItems() {
+    @Override
+    public void registerDefaults() {
         try {
             // 注册工具
             registerItem(new ExplosivePickaxe(plugin));
             registerItem(new SmeltingPickaxe(plugin));
             registerItem(new MagnetTool(plugin));
 
-            MessageUtils.logInfo("注册了 " + customItems.size() + " 个自定义物品");
+            logRegistrationSuccess();
 
         } catch (Exception e) {
-            MessageUtils.logError("注册默认物品失败: " + e.getMessage());
+            logRegistrationFailure(e);
             throw e;
         }
     }
@@ -170,24 +173,17 @@ public class ItemManager {
     /**
      * 获取已注册物品数量
      */
-    public int getRegisteredItemCount() {
+    @Override
+    public int getRegisteredCount() {
         return customItems.size();
     }
 
     /**
      * 清空所有注册的物品
      */
-    public void clearAllItems() {
+    @Override
+    public void clearAll() {
         customItems.clear();
-        MessageUtils.logDebug("Cleared all registered custom items");
-    }
-
-    /**
-     * 重新加载物品
-     */
-    public void reload() {
-        clearAllItems();
-        registerDefaultItems();
-        MessageUtils.logDebug("Reloaded item manager");
+        logClearDebug();
     }
 }

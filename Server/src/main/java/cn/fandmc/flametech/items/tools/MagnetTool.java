@@ -249,6 +249,17 @@ public class MagnetTool extends SpecialTool {
 
     private void setCooldown(Player player) {
         playerCooldowns.put(player.getUniqueId(), System.currentTimeMillis());
+        // 清理过期的冷却记录以防止内存泄漏
+        cleanupExpiredCooldowns();
+    }
+
+    /**
+     * 清理过期的冷却记录
+     */
+    private static void cleanupExpiredCooldowns() {
+        long currentTime = System.currentTimeMillis();
+        playerCooldowns.entrySet().removeIf(entry -> 
+            currentTime - entry.getValue() > COOLDOWN_MS * 2); // 保留2倍冷却时间以确保安全
     }
 
     private void sendCooldownMessage(Player player) {

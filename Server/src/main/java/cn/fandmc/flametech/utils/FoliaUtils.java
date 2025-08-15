@@ -1,40 +1,58 @@
 package cn.fandmc.flametech.utils;
 
 import cn.fandmc.flametech.Main;
-import com.tcoded.folialib.FoliaLib;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Folia服务器兼容性工具类
+ * Folia兼容性工具类
+ * 提供统一的任务调度接口，兼容Folia和Paper/Spigot
+ * 直接使用Folia原生API而不依赖第三方库
  */
 public final class FoliaUtils {
 
-    private static FoliaLib foliaLib;
+    private static Main plugin;
     private static boolean initialized = false;
+    private static boolean isFolia;
 
     /**
-     * 初始化FoliaLib
+     * 初始化FoliaUtils
      */
-    public static void initialize(Main plugin) {
+    public static void initialize(Main pluginInstance) {
         if (!initialized) {
-            foliaLib = new FoliaLib(plugin);
+            plugin = pluginInstance;
+            // 检测是否为Folia环境
+            try {
+                Class.forName("io.papermc.paper.threadedregions.scheduler.RegionScheduler");
+                isFolia = true;
+            } catch (ClassNotFoundException e) {
+                isFolia = false;
+            }
             initialized = true;
         }
     }
 
     /**
-     * 确保FoliaLib已初始化
+     * 确保已初始化
      */
     private static void ensureInitialized() {
-        if (!initialized || foliaLib == null) {
+        if (!initialized || plugin == null) {
             throw new IllegalStateException("FoliaUtils not initialized! Call initialize() first.");
         }
+    }
+
+    /**
+     * 检查是否为Folia环境
+     */
+    public static boolean isFolia() {
+        return isFolia;
     }
 
     /**
@@ -42,9 +60,13 @@ public final class FoliaUtils {
      * @param location 任务相关的位置（用于Folia区域调度）
      * @param task 要执行的任务
      */
-    public static void runTask(Location location, Runnable task) {
+    public static Object runTask(Location location, Runnable task) {
         ensureInitialized();
-        foliaLib.getScheduler().runAtLocation(location, wrappedTask -> task.run());
+        if (isFolia) {
+            return Bukkit.getRegionScheduler().run(plugin, location, scheduledTask -> task.run());
+        } else {
+            return Bukkit.getScheduler().runTask(plugin, task);
+        }
     }
 
     /**
@@ -52,18 +74,26 @@ public final class FoliaUtils {
      * @param entity 实体
      * @param task 要执行的任务
      */
-    public static void runTask(Entity entity, Runnable task) {
+    public static Object runTask(Entity entity, Runnable task) {
         ensureInitialized();
-        foliaLib.getScheduler().runAtEntity(entity, wrappedTask -> task.run());
+        if (isFolia) {
+            return entity.getScheduler().run(plugin, scheduledTask -> task.run(), null);
+        } else {
+            return Bukkit.getScheduler().runTask(plugin, task);
+        }
     }
 
     /**
      * 运行全局任务（仅用于特定操作，如世界时间、天气等）
      * @param task 要执行的任务
      */
-    public static void runGlobalTask(Runnable task) {
+    public static Object runGlobalTask(Runnable task) {
         ensureInitialized();
-        foliaLib.getScheduler().runNextTick(wrappedTask -> task.run());
+        if (isFolia) {
+            return Bukkit.getGlobalRegionScheduler().run(plugin, scheduledTask -> task.run());
+        } else {
+            return Bukkit.getScheduler().runTask(plugin, task);
+        }
     }
 
     /**
@@ -71,11 +101,15 @@ public final class FoliaUtils {
      * @param location 任务相关的位置
      * @param task 要执行的任务
      * @param delay 延迟时间（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runTaskLater(Location location, Runnable task, long delay) {
+    public static Object runTaskLater(Location location, Runnable task, long delay) {
         ensureInitialized();
-        return foliaLib.getScheduler().runAtLocationLater(location, task, delay);
+        if (isFolia) {
+            return Bukkit.getRegionScheduler().runDelayed(plugin, location, scheduledTask -> task.run(), delay);
+        } else {
+            return Bukkit.getScheduler().runTaskLater(plugin, task, delay);
+        }
     }
 
     /**
@@ -83,22 +117,30 @@ public final class FoliaUtils {
      * @param entity 实体
      * @param task 要执行的任务
      * @param delay 延迟时间（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runTaskLater(Entity entity, Runnable task, long delay) {
+    public static Object runTaskLater(Entity entity, Runnable task, long delay) {
         ensureInitialized();
-        return foliaLib.getScheduler().runAtEntityLater(entity, task, delay);
+        if (isFolia) {
+            return entity.getScheduler().runDelayed(plugin, scheduledTask -> task.run(), null, delay);
+        } else {
+            return Bukkit.getScheduler().runTaskLater(plugin, task, delay);
+        }
     }
 
     /**
      * 延迟运行全局任务
      * @param task 要执行的任务
      * @param delay 延迟时间（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runGlobalTaskLater(Runnable task, long delay) {
+    public static Object runGlobalTaskLater(Runnable task, long delay) {
         ensureInitialized();
-        return foliaLib.getScheduler().runLater(task, delay);
+        if (isFolia) {
+            return Bukkit.getGlobalRegionScheduler().runDelayed(plugin, scheduledTask -> task.run(), delay);
+        } else {
+            return Bukkit.getScheduler().runTaskLater(plugin, task, delay);
+        }
     }
 
     /**
@@ -107,11 +149,15 @@ public final class FoliaUtils {
      * @param task 要执行的任务
      * @param delay 初始延迟（tick）
      * @param period 重复周期（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runTaskTimer(Location location, Runnable task, long delay, long period) {
+    public static Object runTaskTimer(Location location, Runnable task, long delay, long period) {
         ensureInitialized();
-        return foliaLib.getScheduler().runAtLocationTimer(location, task, delay, period);
+        if (isFolia) {
+            return Bukkit.getRegionScheduler().runAtFixedRate(plugin, location, scheduledTask -> task.run(), delay, period);
+        } else {
+            return Bukkit.getScheduler().runTaskTimer(plugin, task, delay, period);
+        }
     }
 
     /**
@@ -120,11 +166,15 @@ public final class FoliaUtils {
      * @param task 要执行的任务
      * @param delay 初始延迟（tick）
      * @param period 重复周期（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runTaskTimer(Entity entity, Runnable task, long delay, long period) {
+    public static Object runTaskTimer(Entity entity, Runnable task, long delay, long period) {
         ensureInitialized();
-        return foliaLib.getScheduler().runAtEntityTimer(entity, task, delay, period);
+        if (isFolia) {
+            return entity.getScheduler().runAtFixedRate(plugin, scheduledTask -> task.run(), null, delay, period);
+        } else {
+            return Bukkit.getScheduler().runTaskTimer(plugin, task, delay, period);
+        }
     }
 
     /**
@@ -132,31 +182,43 @@ public final class FoliaUtils {
      * @param task 要执行的任务
      * @param delay 初始延迟（tick）
      * @param period 重复周期（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runGlobalTaskTimer(Runnable task, long delay, long period) {
+    public static Object runGlobalTaskTimer(Runnable task, long delay, long period) {
         ensureInitialized();
-        return foliaLib.getScheduler().runTimer(task, delay, period);
+        if (isFolia) {
+            return Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> task.run(), delay, period);
+        } else {
+            return Bukkit.getScheduler().runTaskTimer(plugin, task, delay, period);
+        }
     }
 
     /**
      * 运行异步任务
      * @param task 要执行的任务
      */
-    public static void runAsync(Runnable task) {
+    public static Object runAsync(Runnable task) {
         ensureInitialized();
-        foliaLib.getScheduler().runAsync(wrappedTask -> task.run());
+        if (isFolia) {
+            return Bukkit.getAsyncScheduler().runNow(plugin, scheduledTask -> task.run());
+        } else {
+            return Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
+        }
     }
 
     /**
      * 延迟运行异步任务
      * @param task 要执行的任务
      * @param delay 延迟时间（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runAsyncLater(Runnable task, long delay) {
+    public static Object runAsyncLater(Runnable task, long delay) {
         ensureInitialized();
-        return foliaLib.getScheduler().runLaterAsync(task, delay);
+        if (isFolia) {
+            return Bukkit.getAsyncScheduler().runDelayed(plugin, scheduledTask -> task.run(), delay * 50, TimeUnit.MILLISECONDS);
+        } else {
+            return Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, task, delay);
+        }
     }
 
     /**
@@ -164,11 +226,15 @@ public final class FoliaUtils {
      * @param task 要执行的任务
      * @param delay 初始延迟（tick）
      * @param period 重复周期（tick）
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runAsyncTimer(Runnable task, long delay, long period) {
+    public static Object runAsyncTimer(Runnable task, long delay, long period) {
         ensureInitialized();
-        return foliaLib.getScheduler().runTimerAsync(task, delay, period);
+        if (isFolia) {
+            return Bukkit.getAsyncScheduler().runAtFixedRate(plugin, scheduledTask -> task.run(), delay * 50, period * 50, TimeUnit.MILLISECONDS);
+        } else {
+            return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, task, delay, period);
+        }
     }
 
     /**
@@ -177,11 +243,18 @@ public final class FoliaUtils {
      * @param delay 初始延迟
      * @param period 重复周期
      * @param timeUnit 时间单位
-     * @return WrappedTask 对象，可用于取消任务
+     * @return 任务对象，可用于取消任务
      */
-    public static WrappedTask runAsyncTimer(Runnable task, long delay, long period, TimeUnit timeUnit) {
+    public static Object runAsyncTimer(Runnable task, long delay, long period, TimeUnit timeUnit) {
         ensureInitialized();
-        return foliaLib.getScheduler().runTimerAsync(task, delay, period, timeUnit);
+        if (isFolia) {
+            return Bukkit.getAsyncScheduler().runAtFixedRate(plugin, scheduledTask -> task.run(), delay, period, timeUnit);
+        } else {
+            // 转换为tick
+            long delayTicks = timeUnit.toMillis(delay) / 50;
+            long periodTicks = timeUnit.toMillis(period) / 50;
+            return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, task, delayTicks, periodTicks);
+        }
     }
 
     /**
@@ -192,7 +265,12 @@ public final class FoliaUtils {
      */
     public static CompletableFuture<Boolean> teleportAsync(Entity entity, Location location) {
         ensureInitialized();
-        return foliaLib.getScheduler().teleportAsync(entity, location);
+        if (isFolia) {
+            return entity.teleportAsync(location);
+        } else {
+            // Paper/Spigot环境下也支持异步传送
+            return entity.teleportAsync(location);
+        }
     }
 
     /**
@@ -204,7 +282,11 @@ public final class FoliaUtils {
      */
     public static CompletableFuture<Boolean> teleportAsync(Entity entity, Location location, PlayerTeleportEvent.TeleportCause cause) {
         ensureInitialized();
-        return foliaLib.getScheduler().teleportAsync(entity, location, cause);
+        if (isFolia) {
+            return entity.teleportAsync(location, cause);
+        } else {
+            return entity.teleportAsync(location, cause);
+        }
     }
 
     /**
@@ -212,16 +294,29 @@ public final class FoliaUtils {
      */
     public static void cancelAllTasks() {
         ensureInitialized();
-        foliaLib.getScheduler().cancelAllTasks();
+        if (isFolia) {
+            // Folia环境下，任务会在插件禁用时自动取消
+            // 这里可以添加额外的清理逻辑
+        } else {
+            Bukkit.getScheduler().cancelTasks(plugin);
+        }
     }
 
     /**
      * 取消特定任务
      * @param task 要取消的任务
      */
-    public static void cancelTask(WrappedTask task) {
-        if (task != null) {
-            task.cancel();
+    public static void cancelTask(Object task) {
+        if (task == null) return;
+        
+        if (isFolia) {
+            if (task instanceof ScheduledTask) {
+                ((ScheduledTask) task).cancel();
+            }
+        } else {
+            if (task instanceof BukkitTask) {
+                ((BukkitTask) task).cancel();
+            }
         }
     }
 
@@ -230,8 +325,19 @@ public final class FoliaUtils {
      * @param task 要检查的任务
      * @return 如果任务已取消返回true
      */
-    public static boolean isTaskCancelled(WrappedTask task) {
-        return task != null && task.isCancelled();
+    public static boolean isTaskCancelled(Object task) {
+        if (task == null) return true;
+        
+        if (isFolia) {
+            if (task instanceof ScheduledTask) {
+                return ((ScheduledTask) task).isCancelled();
+            }
+        } else {
+            if (task instanceof BukkitTask) {
+                return ((BukkitTask) task).isCancelled();
+            }
+        }
+        return true;
     }
 
     /**
@@ -239,21 +345,19 @@ public final class FoliaUtils {
      */
     public static String getSchedulerInfo() {
         ensureInitialized();
-        if (foliaLib.isFolia()) {
-            return "Folia (Region-based scheduling via FoliaLib)";
-        } else if (foliaLib.isPaper()) {
-            return "Paper (Traditional scheduling with async teleport support via FoliaLib)";
+        if (isFolia) {
+            return "Folia (Region-based scheduling using native API)";
         } else {
-            return "Spigot (Traditional scheduling via FoliaLib)";
+            return "Paper/Spigot (Traditional scheduling using Bukkit API)";
         }
     }
 
     /**
-     * 获取FoliaLib实例（供高级用法使用）
+     * 获取插件实例（供高级用法使用）
      */
-    public static FoliaLib getFoliaLib() {
+    public static Main getPlugin() {
         ensureInitialized();
-        return foliaLib;
+        return plugin;
     }
 
     private FoliaUtils() {

@@ -69,6 +69,21 @@ public final class LocationUtils {
     }
 
     /**
+     * 生成位置的唯一键（用于Map存储）
+     * 使用方块坐标确保一致性
+     */
+    public static String getLocationKey(Location location) {
+        if (!ValidationUtils.isValidLocation(location)) {
+            return "invalid_location";
+        }
+
+        return location.getWorld().getName() + "_" +
+                location.getBlockX() + "_" +
+                location.getBlockY() + "_" +
+                location.getBlockZ();
+    }
+
+    /**
      * 获取方块坐标的简短描述
      */
     public static String getBlockLocationString(Location location) {

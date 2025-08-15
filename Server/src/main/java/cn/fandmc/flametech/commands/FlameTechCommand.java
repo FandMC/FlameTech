@@ -184,16 +184,16 @@ public class FlameTechCommand implements CommandExecutor {
                         "%version%", plugin.getPluginVersion());
 
                 MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_ITEMS,
-                        "%count%", String.valueOf(plugin.getItemManager().getRegisteredItemCount()));
+                        "%count%", String.valueOf(plugin.getItemManager().getRegisteredCount()));
 
                 MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_RECIPES,
                         "%count%", String.valueOf(plugin.getRecipeManager().getRecipeCount()));
 
                 MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_MULTIBLOCKS,
-                        "%count%", String.valueOf(plugin.getMultiblockManager().getRegisteredStructureCount()));
+                        "%count%", String.valueOf(plugin.getMultiblockManager().getRegisteredCount()));
 
                 MessageUtils.sendLocalizedMessage(sender, Messages.COMMAND_INFO_GUIS,
-                        "%count%", String.valueOf(plugin.getGuiManager().getRegisteredGUICount()));
+                        "%count%", String.valueOf(plugin.getGuiManager().getRegisteredCount()));
 
                 String debugStatus = plugin.isDebugMode() ?
                         plugin.getConfigManager().getLang(Messages.COMMON_STATUS_ENABLED) :

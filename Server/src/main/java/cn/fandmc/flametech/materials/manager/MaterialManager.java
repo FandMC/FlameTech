@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.materials.manager;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.materials.base.Material;
 import cn.fandmc.flametech.materials.impl.*;
 import cn.fandmc.flametech.materials.impl.dust.*;
@@ -10,21 +11,18 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
-public class MaterialManager {
+public class MaterialManager extends BaseManager<Material> {
 
-    private final Main plugin;
     // 使用LinkedHashMap保持注册顺序
     private final Map<String, Material> materials = new LinkedHashMap<>();
 
     public MaterialManager(Main plugin) {
-        this.plugin = plugin;
+        super(plugin, "材料管理器");
     }
 
-    public void registerDefaultMaterials() {
+    @Override
+    public void registerDefaults() {
         try {
-            // 清空现有材料
-            materials.clear();
-
             // 按逻辑顺序注册材料 - 确保顺序稳定
 
             // 1. 基础原料
@@ -73,13 +71,10 @@ public class MaterialManager {
             registerMaterial(new ArtificialEmerald(plugin));
             registerMaterial(new ArtificialSapphire(plugin));
 
-            MessageUtils.logInfo("成功注册了 " + materials.size() + " 种材料");
-
-            // 记录注册顺序用于调试
-            MessageUtils.logDebug("材料注册顺序: " + String.join(", ", materials.keySet()));
+            logRegistrationSuccess();
 
         } catch (Exception e) {
-            MessageUtils.logError("注册默认材料失败: " + e.getMessage());
+            logRegistrationFailure(e);
             throw e;
         }
     }
@@ -215,21 +210,18 @@ public class MaterialManager {
         }
     }
 
-    public int getRegisteredMaterialCount() {
+    @Override
+    public int getRegisteredCount() {
         return materials.size();
     }
 
-    public void clearAllMaterials() {
+    @Override
+    public void clearAll() {
         materials.clear();
-        MessageUtils.logDebug("清空所有材料");
+        logClearDebug();
     }
 
-    public void reload() {
-        MessageUtils.logInfo("重载材料管理器...");
-        clearAllMaterials();
-        registerDefaultMaterials();
-        MessageUtils.logInfo("材料管理器重载完成");
-    }
+
 
     /**
      * 获取材料统计信息

@@ -1,8 +1,10 @@
 package cn.fandmc.flametech.config;
 
+import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ConfigKeys;
 import cn.fandmc.flametech.constants.FileConstants;
 import cn.fandmc.flametech.constants.Messages;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.utils.MessageUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -19,9 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * 配置管理器 - 统一管理插件配置和语言文件
  */
-public class ConfigManager {
-
-    private final JavaPlugin plugin;
+public class ConfigManager extends BaseManager<Object> {
     private FileConfiguration config;
     private File configFile;
 
@@ -34,8 +34,8 @@ public class ConfigManager {
     private final ConcurrentMap<String, List<String>> langListCache = new ConcurrentHashMap<>();
     private long lastReloadTime;
 
-    public ConfigManager(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public ConfigManager(Main plugin) {
+        super(plugin, "配置管理器");
         this.lastReloadTime = System.currentTimeMillis();
 
         initializeConfig();
@@ -83,10 +83,28 @@ public class ConfigManager {
         MessageUtils.logInfo("加载语言文件: " + currentLanguage);
     }
 
+    @Override
+    public void registerDefaults() {
+        // ConfigManager不需要注册默认项，在构造函数中已初始化
+    }
+
+    @Override
+    public int getRegisteredCount() {
+        // 返回缓存项数量作为"注册"项数量
+        return langCache.size() + langListCache.size();
+    }
+
+    @Override
+    public void clearAll() {
+        clearCache();
+        logClearDebug();
+    }
+
     /**
      * 重载配置
      */
-    public void reloadConfig() {
+    @Override
+    public void reload() {
         try {
             // 重载主配置
             if (configFile.exists()) {
@@ -104,13 +122,17 @@ public class ConfigManager {
             }
 
             lastReloadTime = System.currentTimeMillis();
-            MessageUtils.logInfo("已重载");
+            
+            // 调用父类方法进行统一的重载处理
+            super.reload();
 
         } catch (Exception e) {
             MessageUtils.logError("Failed to reload configuration: " + e.getMessage());
             throw new RuntimeException("Configuration reload failed", e);
         }
     }
+
+
 
     /**
      * 重载语言文件

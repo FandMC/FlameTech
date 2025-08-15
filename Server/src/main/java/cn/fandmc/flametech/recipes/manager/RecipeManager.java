@@ -1,6 +1,7 @@
 package cn.fandmc.flametech.recipes.manager;
 
 import cn.fandmc.flametech.Main;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.recipes.base.RecipeType;
 import cn.fandmc.flametech.recipes.impl.*;
@@ -14,27 +15,27 @@ import java.util.stream.Collectors;
 /**
  * 配方管理器
  */
-public class RecipeManager {
+public class RecipeManager extends BaseManager<Recipe> {
 
-    private final Main plugin;
     private final Map<String, Recipe> recipes = new ConcurrentHashMap<>();
     private final Map<String, List<Recipe>> recipesByMultiblock = new ConcurrentHashMap<>();
     private final Map<RecipeType, List<Recipe>> recipesByType = new ConcurrentHashMap<>();
 
     public RecipeManager(Main plugin) {
-        this.plugin = plugin;
+        super(plugin, "配方管理器");
     }
 
     /**
      * 注册默认配方
      */
-    public void registerDefaultRecipes() {
+    @Override
+    public void registerDefaults() {
         try {
             ToolRecipes.registerAll(this);
             SmeltingFurnaceRecipes.registerAll(this);
-            MessageUtils.logInfo("注册了 " + recipes.size() + " 个配方");
+            logRegistrationSuccess();
         } catch (Exception e) {
-            MessageUtils.logError("注册默认配方失败: " + e.getMessage());
+            logRegistrationFailure(e);
             throw e;
         }
     }
@@ -197,26 +198,25 @@ public class RecipeManager {
     /**
      * 清空所有配方
      */
-    public void clearAllRecipes() {
+    @Override
+    public void clearAll() {
         recipes.clear();
         recipesByMultiblock.clear();
         recipesByType.clear();
-        MessageUtils.logDebug("Cleared all recipes");
+        logClearDebug();
+    }
+
+    @Override
+    public int getRegisteredCount() {
+        return recipes.size();
     }
 
     /**
-     * 重新加载配方
-     */
-    public void reload() {
-        clearAllRecipes();
-        registerDefaultRecipes();
-        MessageUtils.logDebug("Reloaded recipe manager");
-    }
-
-    /**
-     * 获取已注册配方数量
+     * 获取配方数量
      */
     public int getRecipeCount() {
         return recipes.size();
     }
+
+
 }

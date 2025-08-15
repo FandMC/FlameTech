@@ -48,7 +48,9 @@ public class Main extends JavaPlugin {
             registerDefaultContent();
         } catch (Exception e) {
             MessageUtils.logError("Failed to enable FlameTech plugin: " + e.getMessage());
-            e.printStackTrace();
+            if (isDebugMode()) {
+                e.printStackTrace();
+            }
             setEnabled(false);
         }
     }
@@ -63,7 +65,9 @@ public class Main extends JavaPlugin {
 
         } catch (Exception e) {
             MessageUtils.logError("Error during plugin disable: " + e.getMessage());
-            e.printStackTrace();
+            if (isDebugMode()) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -118,22 +122,22 @@ public class Main extends JavaPlugin {
     private void registerDefaultContent() {
         // 注册顺序很重要
         // 1. 先注册物品
-        itemManager.registerDefaultItems();
+        itemManager.registerDefaults();
 
         // 2. 注册材料
-        materialManager.registerDefaultMaterials();
+        materialManager.registerDefaults();
 
         // 3. 再注册多方块结构
-        multiblockManager.registerDefaultStructures();
+        multiblockManager.registerDefaults();
 
         // 4. 然后注册配方
-        recipeManager.registerDefaultRecipes();
+        recipeManager.registerDefaults();
 
         // 5. 最后注册解锁项（依赖于上面的内容）
-        unlockManager.registerDefaultUnlockables();
+        unlockManager.registerDefaults();
 
         // 6. 注册GUI
-        guiManager.registerDefaultGUIs();
+        guiManager.registerDefaults();
     }
 
     /**
@@ -142,7 +146,7 @@ public class Main extends JavaPlugin {
     public void reloadPluginConfig() {
         try {
             reloadConfig();
-            configManager.reloadConfig();
+            configManager.reload();
 
             // 重载各个管理器
             itemManager.reload();

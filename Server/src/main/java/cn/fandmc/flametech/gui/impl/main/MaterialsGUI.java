@@ -54,7 +54,9 @@ public class MaterialsGUI extends PaginatedGUI {
 
         } catch (Exception e) {
             MessageUtils.logError("MaterialsGUI构建失败: " + e.getMessage());
-            e.printStackTrace();
+            if (plugin.isDebugMode()) {
+                e.printStackTrace();
+            }
 
             // 出错时重置并显示错误
             resetAndShowError("GUI构建失败: " + e.getMessage());

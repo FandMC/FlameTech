@@ -2,6 +2,7 @@ package cn.fandmc.flametech.unlock.manager;
 
 import cn.fandmc.flametech.Main;
 import cn.fandmc.flametech.constants.ItemKeys;
+import cn.fandmc.flametech.managers.BaseManager;
 import cn.fandmc.flametech.multiblock.base.MultiblockStructure;
 import cn.fandmc.flametech.recipes.base.Recipe;
 import cn.fandmc.flametech.unlock.data.PlayerUnlocks;
@@ -21,9 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 解锁管理器
  */
-public class UnlockManager {
+public class UnlockManager extends BaseManager<UnlockableItem> {
 
-    private final Main plugin;
     private final Map<UUID, PlayerUnlocks> playerUnlocks = new ConcurrentHashMap<>();
     private final Map<String, UnlockableItem> unlockableItems = new ConcurrentHashMap<>();
 
@@ -31,7 +31,7 @@ public class UnlockManager {
     private FileConfiguration unlocksConfig;
 
     public UnlockManager(Main plugin) {
-        this.plugin = plugin;
+        super(plugin, "解锁管理器");
         initializeDataFile();
     }
 
@@ -48,27 +48,24 @@ public class UnlockManager {
         loadPlayerData();
     }
 
-    /**
-     * 注册默认可解锁物品
-     * 现在改为从已注册的配方和多方块结构中动态加载
-     */
-    public void registerDefaultUnlockables() {
+    @Override
+    public void registerDefaults() {
         try {
-            unlockableItems.clear();
-
             // 从配方管理器加载所有配方的解锁信息
             loadRecipeUnlockables();
 
             // 从多方块管理器加载所有结构的解锁信息
             loadMultiblockUnlockables();
 
-            MessageUtils.logInfo("动态加载了 " + unlockableItems.size() + " 个可解锁物品");
+            logRegistrationSuccess();
 
         } catch (Exception e) {
-            MessageUtils.logError("注册默认可解锁物品失败: " + e.getMessage());
+            logRegistrationFailure(e);
             throw e;
         }
     }
+
+
 
     /**
      * 从配方管理器加载配方解锁项
@@ -356,29 +353,40 @@ public class UnlockManager {
         return new HashMap<>(unlockableItems);
     }
 
+    @Override
+    public int getRegisteredCount() {
+        return unlockableItems.size();
+    }
+
+    @Override
+    public void clearAll() {
+        unlockableItems.clear();
+        logClearDebug();
+    }
+
     /**
      * 重新加载解锁管理器
      */
+    @Override
     public void reload() {
         // 保存当前数据
         saveAllData();
 
         // 清空缓存
         playerUnlocks.clear();
-        unlockableItems.clear();
 
-        // 重新加载
+        // 调用父类重载方法
+        super.reload();
+
+        // 重新初始化数据文件
         initializeDataFile();
-        registerDefaultUnlockables();
-
-        MessageUtils.logInfo("Reloaded unlock manager");
     }
 
     /**
      * 刷新解锁项（当配方或多方块结构变化时调用）
      */
     public void refreshUnlockables() {
-        unlockableItems.clear();
-        registerDefaultUnlockables();
+        clearAll();
+        registerDefaults();
     }
 }

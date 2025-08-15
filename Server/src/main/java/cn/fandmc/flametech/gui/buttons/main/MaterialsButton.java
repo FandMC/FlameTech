@@ -19,7 +19,7 @@ public class MaterialsButton implements GUIComponent {
     @Override
     public ItemStack getDisplayItem() {
         Main plugin = Main.getInstance();
-        int totalMaterials = plugin.getMaterialManager().getRegisteredMaterialCount();
+        int totalMaterials = plugin.getMaterialManager().getRegisteredCount();
 
         List<String> lore = new ArrayList<>();
         lore.add("&7查看和获取各种工业材料");
